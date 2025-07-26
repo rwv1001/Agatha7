@@ -1,0 +1,104 @@
+<% row_type = search_filter_header.row_type %>
+<% table_type = search_filter_header.table_type %>
+<% table_name = search_filter_header.table_name %>
+<% extended_filter = search_filter_header.extended_filter %>
+<% filter = extended_filter.filter_object %>
+<% field_name = "#{filter.tag}" %>
+<% class_id_name = "#{field_name}_#{table_name}" %>
+<% num_filters = search_filter_header.num_filters %>
+
+<th class= '<%=class_id_name%>' >
+  <% case row_type
+  when :header %>
+    <% if table_type == :just_filters %>
+      <%= filter.header %>
+    <% else %>
+      <% on_click_order_string = "searchOrder('#{field_name}','#{table_name}');return false" %>
+      <a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_click_order_string}"%> >
+        <%= filter.header %>
+      </a>
+    <% end %>
+  <% when :filter_string, :fixed_filter_string %>
+    <% if filter.class == SearchField %>
+      <% if table_type == :just_filters  %>
+        <%  raw on_blur_string = "onblur = doEscapeHTML('#{class_id_name}');return false" %>
+        <%  raw id_str = "id = #{class_id_name}_sent" %>
+      <% else %>
+        <%  raw on_blur_string = "onblur = updatePostFilterStrings('#{class_id_name}');return false" %>
+        <%  raw id_str = "id = #{class_id_name}_typed" %>
+      <% end %>
+      <% if filter.data_type == :integer || filter.data_type == :boolean %>
+        <% col_width = 10 %>
+         <%  raw class_name_str = "class = narrow_filter" %>
+         <% min_width_str = "65px" %>
+      <% else %>
+        <% col_width = 10 %>
+         <%  raw class_name_str = "class = wide_filter" %>
+         <% min_width_str = "95px" %>
+      <% end%>
+
+
+      <div   style ="position:relative; min-width: <%= min_width_str%>;  overflow: hidden; background: #fff; border: 1px solid #000;" align ="left" class="div_column_edit">
+        
+          <%  raw filter_string = filter.current_filter_string.gsub(/\"/){|s| '&quot'}; %>
+          <%  value_str =  "\"#{filter_string}\""  %>
+          
+                     <input type=text style="border:none" <%= id_str %> name="<%=filter.tag %>" value=<%= raw "#{value_str}" %> <%= on_blur_string %> size= <%= col_width %> >
+          
+          <%  raw id_str_x = "id = #{class_id_name}_x" %>
+          <% if row_type == :filter_string && !filter.primary && num_filters > 1 %>
+                     <% on_click_string = "deleteColumn('#{field_name}','#{table_name}');return false" %>
+                     <div  style="position:absolute;  float:right;top:0; right:0;   height: 100%;    background: #AAAAAA;    border-left: 1px solid;    border-color: #000000;" <%= id_str_x %>
+                     class="remove_column"><a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_click_string}"%> >X</a> </div>
+
+          <% else %>
+                     <div <%= id_str_x %> style ="float:right" class="do_not_remove_column" > &nbsp </div>
+          <% end %>
+          <div style ="float:right">
+
+                                 &nbsp 
+                            
+                     </div>
+     </div>
+     <% elsif filter.class == SubQuery %>
+          <% if table_type == :just_filters  %>
+                     <% on_change_str = "" %>
+                     <%  raw id_str = "id = #{class_id_name}_sent" %>
+          <% else %>
+                     <%  raw on_change_str = "onchange = updatePostExternalFilter('#{class_id_name}');return false" %>
+                     <%  raw id_str = "id = #{class_id_name}_typed" %>
+          <% end %>
+     
+          <% col_width = 5 %>
+          <%  raw class_name_str = "class = narrow_filter" %>
+          <div    style ="position:relative; min-width: 120px; overflow: hidden; background: #fff; border: 1px solid #000;" class="div_column_edit">
+                     
+                     <%  raw id_str_x = "id = #{class_id_name}_x" %>
+                     <% on_click_string = "deleteColumn('#{field_name}','#{table_name}');return false" %>
+                     <div style ="position:absolute; top:0; right:0; width:100%; height: 100%; background-color: #ffffff;">
+                     <div   <%= raw  id_str_x %> style ="float:right;  background: #AAAAAA;    border-left: 1px solid;    border-color: #000000;" class="remove_column"><a href ="/" data-remote="true" rel="nofollow" onclick= <%="#{on_click_string}"%> >X</a> </div>
+
+                     <div style ="float:right">
+                             <% if filter.argument_class.length>0  %>
+                                  <%  raw value_str =  "value= #{filter_string}"  %>
+                                  <select class="select_filter select_<%=filter.argument_class %> " name = "<%=filter.tag%>"  <%= id_str  %> <%="#{on_change_str }"%> style="border:none; background-color: #ffffff; overflow:hidden" >
+                                            <% selection_list = filter.selection_controller.GetAllShortFields(true, "desc", false); %>
+                                            <% for group_member in selection_list -%>
+                                                       <%  if filter.current_argument_value == group_member.id  && group_member.name.length > 0%>
+                                                                  <option selected value = "<%=  group_member.id %>"><%= group_member.name %></option>
+                                                       <%  else %>
+                                                                  <option  value = "<%=  group_member.id %>"><%= group_member.name %></option>
+                                                       <% end %>
+                                           <% end -%>
+                                 </select>
+                            <% else %>
+                                 &nbsp <input type=text style="display:none"  name = "<%=filter.tag%>" />
+                            <% end %>
+                     </div>
+                     </div>
+          </div>
+     <% end %>
+  <% else %>
+  <% end %>
+</th>
+

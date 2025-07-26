@@ -1,0 +1,13 @@
+<p>
+  <b>Course:</b>
+  <%=h @pcourse.course_id %>
+</p>
+
+<p>
+  <b>Programme:</b>
+  <%=h @pcourse.programme_id %>
+</p>
+
+
+<%= link_to 'Edit', edit_pcourse_path(@pcourse) %> |
+<%= link_to 'Back', pcourses_path %>

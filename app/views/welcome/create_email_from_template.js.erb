@@ -1,0 +1,29 @@
+unwait();
+<% if error_str.length >0  %>
+    alert('<%="#{error_str}"%>')
+<% else  %>
+    <% results_table_name = "search_results_table_AgathaEmail" %>
+    <% current_filter_name = "current_filters_AgathaEmail" %>
+
+    <% eval("AgathaEmail.set_controller(search_ctl)"); %>
+
+    <%  eval_str = "AgathaEmail.find_by_sql(\"SELECT * FROM agatha_emails WHERE id IN (#{id_str})\")" %>
+    <%  Rails.logger.info("create_email_from_template eval_str = #{eval_str}"); %>
+    <%  new_emails = eval(eval_str); %>
+    <%  search_results = SearchResults.new(new_emails , :search_results, search_ctl); %>
+    <%  search_results.table_type = :search_results; %>
+    jQuery('#<%="#{current_filter_name}"%>').hide()
+    if  (jQuery('#<%="#{results_table_name}"%>')[0]!=null){  
+        <%  new_emails.each do |new_row| %>
+            jQuery('#<%="#{results_table_name}"%> tr:last').after('<%= j render(:partial => "shared/search_results_row_button", :object =>new_row )%>');
+        <% end %>
+    }else{              
+        jQuery("#search_results_AgathaEmail").html('<%= j render(:partial => "shared/search_results" , :object => search_results)%>');
+        resizeX();
+    }
+    action_select_no_js();
+    recolour('AgathaEmail');
+    <% str = "#{success_str+warning_str}" %>
+    alert('<%="#{str}"%>');
+<% end %>
+  

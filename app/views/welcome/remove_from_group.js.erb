@@ -1,0 +1,43 @@
+<% if db_group== nil %>
+    alert('<%="Remove Selected Failed: Could not find group id #{group_id} in database"%>');
+<% elsif(!class_ok) %>
+    alert('<%="Remove Selected Failed: The #{db_group.group_name} is for members of type #{db_group.table.classify} rather than type #{class_name2}"%>');
+<% elsif(ids.length == 0) %>
+    alert('<%="Remove Selected Failed: You have not selected any #{db_group.table_name}"%>');
+<% else %>
+    <% success_str = ""  %>
+    <% if  num_existing == 1 %>
+        <% success_str << "1 #{class_name2} has been removed from the group #{db_group.group_name}. " %>
+    <% elsif num_existing >1 %>
+        <% success_str << "#{num_existing} #{class_name2.tableize} have been removed from the group #{db_group.group_name}. " %>
+    <% end %>
+    <% if not_present_members.length == 1 %>
+        <% success_str <<  "1 #{class_name2} was not in the group #{db_group.group_name} to begin with. " %>
+    <% elsif not_present_members.length > 1  %>
+        <% success_str << "#{not_present_members.length} #{class_name2.tableize} were not in the group #{db_group.group_name} to begin with." %>
+    <% end %>
+
+    <% eval("#{table_name}.set_controller(search_ctl)"); %>
+    <% updated_objects = search_ctl.GetUpdateObjects(table_name, ["id"], ids); %>
+    <% updated_objects.each do |row| %>
+        if (jQuery('#<%="#{row.id}_#{table_name}"%>') ){
+            jQuery('#<%="#{row.id}_#{table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
+            setcheck('#<%="#{table_name}_check_#{row.id.to_s}"%>',true)
+        }
+    <% end %>
+    recolour('<%="#{table_name}"%>');            
+    <% table_name = "Group" %>
+    <% eval("#{table_name}.set_controller(search_ctl_group)"); %>
+    <% updated_objects = search_ctl_group.GetUpdateObjects(table_name, ["id"], [group_id.to_i]); %>
+    <% updated_objects.each do |row| %>
+        if (jQuery('#<%="#{row.id}_#{table_name}"%>') ){
+            jQuery('#<%="#{row.id}_#{table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");               
+        }                
+    <% end %>
+    recolour('Group'); 
+    action_select_no_js();    
+    alert('<%="#{success_str}"%>');
+<% end %>
+unwait();
+
+

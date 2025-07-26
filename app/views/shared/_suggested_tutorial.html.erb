@@ -1,0 +1,38 @@
+<% tutorial_schedule =  suggested_tutorial.tutorial_schedule; %>
+<% previous_suggestions = suggested_tutorial.previous_suggestions %>
+<% search_ctl = suggested_tutorial.search_ctl %>
+<% filter_controller = search_ctl.filter_controller %>
+
+<%  possible_tutors = filter_controller.GetOptions("tutor","Person", tutorial_schedule.person_id, false,false) %>
+        <label>Tutor</label><br>
+        <select  style="width: 115px" name = "person_id"  id= "new_tutor">
+          <% for p in possible_tutors -%>
+            <% if p.id == tutorial_schedule.person_id %>
+              <option selected value = "<%=p.id %>"><%= p.name %></option>
+            <% else %>
+              <option  value = "<%= p.id %>"><%= p.name %></option>
+            <% end  %>
+          <% end -%>
+        </select>
+        <br>
+          <%  possible_terms = filter_controller.GetOptions("term","Term", tutorial_schedule.term_id, true,false) %>
+          <label>Term</label><br>
+        <select style="width: 115px"  name = "term_id"  id= "tutorial_schedule_term">
+          <% for p in possible_terms -%>
+            <% if p.id == tutorial_schedule.term_id %>
+              <option selected value = "<%=p.id %>"><%= p.name %></option>
+            <% else %>
+              <option  value = "<%= p.id %>"><%= p.name %></option>
+            <% end  %>
+          <% end -%>
+        </select>
+
+          <label>Number of tutorials</label><input type="text"  style="width: 2em" value="<%= tutorial_schedule.number_of_tutorials  %>" id="number_of_tutorials" name ="number_of_tutorials"/>
+          <br>
+          <label>Collection required</label><input type="checkbox"  style="width: 2em" value=0 id="collection_required" name ="collection_required"/>
+          
+          <input type="text" id="previous_tutorial_schedule_suggestions"  style ="display: none" value=<%= raw "#{previous_suggestions}"%> name="previous_suggestions" />
+          
+
+
+

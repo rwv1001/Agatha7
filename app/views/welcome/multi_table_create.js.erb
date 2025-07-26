@@ -1,0 +1,8 @@
+wait();
+<% if  table_name.length >0 %>
+<% new_multi_table = MultiTable.new("#{table_name}", search_ctl) %>
+jQuery('#<%="multi_change_table_div_#{table_name}"%>').html("<%= j render(:partial => "shared/multi_table" , :object => new_multi_table)%>"); 
+<% else %>
+alert('something went wrong with multi_table_create');
+<% end %>
+unwait();

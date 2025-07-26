@@ -1,0 +1,16 @@
+<% search_controller = search_results.search_controller %>
+<% table_type = search_results.table_type %>
+<% table = search_results.table %>
+
+<% table_name = search_controller.table_name %>
+
+
+<table id=<%="search_results_table_#{table_name}"%> >
+     <% search_controller_header =  SearchControllerHeader.new(table_type, search_controller) %>
+     <%= raw  render(:partial => "shared/search_controller_header", :object => search_controller_header) %>
+     <%= raw  render(:partial => "shared/search_results_row_button", :collection => table ) %>
+           
+    
+</table>
+  
+  

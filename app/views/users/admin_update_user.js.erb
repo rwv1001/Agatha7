@@ -1,0 +1,6 @@
+<% if(update_status) %>
+    jQuery("#user").html("<%= j render(:partial => 'shared/create_user', :object => current_user) %>");
+    alert('<%="Username #{current_user.name} has been successfully updated"%>');
+<% else %>
+    alert('Unable to update user. Make sure new password and confirm password are identical');
+<% end %>

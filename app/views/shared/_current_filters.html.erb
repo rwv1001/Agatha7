@@ -1,0 +1,26 @@
+<% search_controller = current_filters %>
+<div style="display:none">
+  <input id= <%= raw "order_text_#{search_controller.table_name}" %>
+         name="default_order_text" type="text" value="Display Field for ordering" >
+  <label name ="order_text_label"> Display Field for ordering </label>
+  <input id= <%="\"order_indices_#{search_controller.table_name}\"" %>
+         name="default_order_indices" type="text" value="Indices for ordering" >  
+</div>
+
+<div id= <%="\"order_checks_#{search_controller.table_name}\"" %> >
+
+</div>
+
+<div style="display:none">
+  <input id=<%= raw "add_filter_value_#{search_controller.table_name}" %> name="", type="text"  >
+  <label name ="add_filter_value_label"> This will be renamed the field that is to be added to the display </label>
+</div>
+
+
+
+
+<table>
+  <% search_controller_header = SearchControllerHeader.new(:just_filters, search_controller) %>
+  <%= raw  render(:partial => "shared/search_controller_header", :object => search_controller_header) %>
+</table>
+<p>Click search to see result</p>

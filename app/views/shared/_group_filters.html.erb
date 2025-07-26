@@ -1,0 +1,51 @@
+<style type="text/css">
+  .group_filter {
+width:<%= group_filters.possible_char_length %>em;
+}
+</style>
+  <% table_name =  group_filters.table_name %>
+<div id = <%= raw   "group_filters_#{table_name}"%> >
+
+
+<h3>  <%=  table_name.humanize %> </h3>
+<table>
+  <tr>
+  <th> Field </th>
+  <th> Group </th>
+  </tr>
+  <%  for group_filter in group_filters.group_filter_elts %>
+  <tr class="<%= cycle('row-even', 'row-odd')%>">
+  <td>
+     <%=  group_filter.foreign_key %>
+  </td>
+  <td>
+    <% foreign_key =  group_filter.foreign_key %>
+
+        <% onchange_str = "UpdateGroupFilter('#{table_name}', '#{foreign_key}');return false" %>
+        <% onchange_str2 = "UpdateGroupFilter2('#{table_name}', '#{foreign_key}');return false" %>
+      <% possible_groups = group_filter.possible_groups %>
+  <select onchange= <%= raw "#{onchange_str }"%> class="group_filter" id=<%= raw "group_filters_option_#{table_name}_#{group_filter.foreign_key}" %>  >
+     <% no_filter_str  = "No Filter" %>
+     
+     <% if group_filter.group_id == 0 %>
+        <option  selected value = "0"> <%=  no_filter_str %></option>
+        <% else %>
+        <option   value = "0" > <%=  no_filter_str %></option>
+        <% end %>
+        <% for possible_group in possible_groups -%>
+            
+            <% if group_filter.group_id ==  possible_group.id %>
+              <option selected value = "<%= possible_group.id %>"><%= possible_group.group_name %></option>
+            <% else %>
+               <option  value = "<%= possible_group.id %>"><%= possible_group.group_name %></option>
+            <% end  %>
+        <% end -%>
+    </select>
+  </td>
+
+  </tr>
+
+<% end %>
+</table>
+  
+</div>

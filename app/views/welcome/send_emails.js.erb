@@ -1,0 +1,8 @@
+<% if error_str.length >0  %>
+    <% str = "error_str"; %>
+    alert('<%="#{status_val[str]}"%>');
+<% else  %>
+    <% str = "success_str"; %>
+    alert('<%="#{status_val[str]}"%>')
+<% end  %>
+unwait();  

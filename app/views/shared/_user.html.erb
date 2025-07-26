@@ -1,0 +1,24 @@
+
+<div class ="separator_class">&nbsp</div>
+<div class ="content_class" style="width: 100%">
+  <div class ="pad_class">
+    <h3> Update User Account </h3>
+
+    <form action="/users/update_user" method="post" onsubmit="new Ajax.Request('/users/update_user', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;"><div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> ></div>
+      <table>
+      <tr><td>User Name: </td><td> <input type="text" name="user[name]" value=<%= raw "#{user.name}" %>  >  </td></tr>
+      <tr><td>Old Password:</td><td> <input type="password" id="old_password" name="old_password"  value=""  >  </td></tr>
+      <tr><td>New Password</td><td> <input type="password" name="user[password]"   >  </td></tr>
+      <tr><td>Confirm Password </td><td> <input type="password" name="user[password_confirmation]"  >  </td></tr>
+      </table>
+      <input type="text" name="user[person_id]" value=<%= user.person_id %>  style="visibility: hidden"  >
+      <input type="text" name="user_id" value=<%= user.id %>  style="visibility: hidden"  >
+
+      <input name="commit" type="submit" value="Update Account" >
+    </form>
+  </div>
+</div>
+      <script type="text/javascript">
+       jQuery(window).on( 'load', function() {
+        jQuery('#old_password').val("");});
+        </script>

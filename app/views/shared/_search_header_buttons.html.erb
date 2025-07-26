@@ -1,0 +1,59 @@
+<% row_type = search_header_buttons.row_type %>
+<% table_type = search_header_buttons.table_type %>
+<% table_name = search_header_buttons.table_name %>
+
+<th class = "help-cell">
+   <% if row_type == :filter_string %>
+
+     
+      <a href="help" onclick="window.open('help', 'help',
+ 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=1,width='+ screen.width/2+ ',height=' + screen.height +',left='+(screen.width/2 +1)+',top=0');
+  return false;">Help </a>
+   <% end %>      
+</th>
+<th class="toadd-cell">
+  <% if row_type == :filter_string %>
+ <span style="white-space: nowrap">  Add/Update |</span>
+  <% end %>
+  </th>
+
+<% if table_name == "Person" || table_name == "Lecture" %>
+  <th class="exam-cell">
+    <% if row_type == :filter_string %>
+   <span style="white-space: nowrap"> Examine |</span>
+    <%end %></th>
+    <th class="compulsory-cell">
+      <% if row_type == :filter_string %>
+      Compulsory
+      <% end %>
+      </th>
+      <% end %>
+<% if table_type == :search_results %>
+     <th class = "update-cell"> 
+     <% if table_name == "Course" %>
+     <th class ="create-cell"></th>
+     <% end  %>
+      <% if table_name == "EmailTemplate" %>
+     <th class ="create-email-cell"></th>
+     <% end  %>
+     <% if table_name == "Course" %>
+     <th class ="suggest-cell"></th>
+     <% end %>
+     <th class = "delete-cell"></th>
+     <% if table_name == "AgathaEmail" %>
+     <th class="attach-cell"></th>
+     <th class = "send-cell"></th>
+     <% end %>
+      <% if table_name == "AgathaFile" %>
+        <th class="attach_to-cell"></th>
+        <th class="download-cell"></th>
+     <% end %>
+     <th class="add-cell"></th>
+     <% if table_name == "Person" %>
+     <th class="assign-cell">
+     
+     </th><th class="willing-cell"></th>
+     <% end %>
+<% else %>
+   
+<% end %>

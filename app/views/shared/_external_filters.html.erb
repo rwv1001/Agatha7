@@ -1,0 +1,22 @@
+<% search_controller = external_filters %>
+<% table_name = search_controller.table_name %>
+<% current_external_filters = search_controller.GetCurrentExternalFilters() %>
+
+
+<input type="text" name="number_of_external_filters" id =<%= raw "number_of_external_filters_#{table_name}"%> value=<%= current_external_filters.length   %> style="display:none" />
+  
+<% if  current_external_filters.length > 0 %>
+   <div id =<%= raw "external_filters_header_#{table_name}" %> > <label>Search Filters </label> </div>
+  <%  else %>
+ <div id =<%= raw "external_filters_header_#{table_name}" %> > </div>
+<% end %>
+
+  <table id = <%= raw   "external_filters_#{table_name}" %> >
+    <% for external_filter in  current_external_filters  %>
+      <% if external_filter.current_arguments.length > 0 %>
+      <%= raw  render(:partial => "shared/external_filter", :object => external_filter) %>
+      <% end %>
+    <%end%>
+  </table>
+
+

@@ -1,0 +1,11 @@
+<%= form_with url: "/welcome/new", method: :post, remote: true do |form| %>
+
+
+     <div style ="display:none">
+       <input  name="class_name" type="text" value= '<%= create_entry %>'  >
+       <label  name ="hash_for_new_label"> Hash For New Label </label>
+     </div>
+     <div>
+     <%= submit_tag "Create new entry in #{create_entry} database", :class => 'new_entry', :name => 'new_entry'  %>
+     </div>
+ <% end %>

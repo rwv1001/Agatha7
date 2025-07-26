@@ -1,0 +1,14 @@
+<% Rails.logger.info("table_search.js.erb updating #{table_name}") %>
+jQuery('#<%="possible_filters_div_"  + table_name%>').html("<%= j render(:partial => 'shared/possible_filters', :object => search_ctl) %>");
+jQuery('#<%="current_filters_"  + table_name%>').html("<%= j render(:partial => 'shared/current_filters', :object => search_ctl) %>");
+<% if(params.has_key?("do_search")) %>  
+    jQuery('#<%="search_results_"  + table_name%>').html("<%= j render(:partial => 'shared/search_results', :object => search_results) %>");    
+    resizeX();            
+<% end %>  
+
+        
+action_select_no_js();
+  
+resizeFilters();
+
+unwait();

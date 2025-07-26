@@ -1,15 +1,62 @@
 Rails.application.routes.draw do
-  resources :posts
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  # Home page
+  root to: "welcome#default"
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  # Admin login/logout
+  get  "admin/login",  to: "admin#login"
+  post "admin/login",  to: "admin#login"
+  get  "admin/logout", to: "admin#logout"
+  post "admin/logout", to: "admin#logout"
 
-  # Render dynamic PWA files from app/views/pwa/*
-  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  # Welcome custom actions
+  match "welcome/table_search",
+        to: "welcome#table_search",
+        via: [:get, :post]
+
+  match "accessdenied", to: "admin#accessdenied", via: [:get, :post]
+
+  # Static‐style welcome pages
+  %w[
+    admin
+    accessdenied
+    index
+    termly
+    mailing
+    help
+  ].each do |action|
+    match action,
+          to: "welcome##{action}",
+          via: [:get, :post]
+  end
+
+  # People filter
+  match "clear_filter",
+        to: "people#clear_filter",
+        via: [:get, :post]
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  # RESTful resources
+  resources :attendees
+  resources :lectures
+  resources :pcourses
+  resources :student_programmes
+  resources :programmes
+  resources :people
+  resources :courses
+  resources :users
+  resources :institutions
+  resources :locations
+  resources :tutorials
+  resources :groups
+  resources :tutorial_schedules
+  resources :willing_tutors
+  resources :willing_lecturers
+  resources :email_templates
+  resources :agatha_emails
+  resources :agatha_files
+  resources :maximum_tutorials
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  # If you really need a catch‑all (NOT recommended!), you can uncomment:
+  # match ":controller(/:action(/:id))",
+  #       via: [:get, :post],
+  #       format: false
 end

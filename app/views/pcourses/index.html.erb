@@ -1,0 +1,22 @@
+<h1>Listing pcourses</h1>
+
+<table>
+  <tr>
+    <th>Course</th>
+    <th>Programme</th>
+  </tr>
+
+<% for pcourse in @pcourses %>
+  <tr>
+    <td><%=h pcourse.course_id %></td>
+    <td><%=h pcourse.programme_id %></td>
+    <td><%= link_to 'Show', pcourse %></td>
+    <td><%= link_to 'Edit', edit_pcourse_path(pcourse) %></td>
+    <td><%= link_to 'Destroy', pcourse, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New pcourse', new_pcourse_path %>

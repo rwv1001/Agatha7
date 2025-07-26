@@ -1,0 +1,3 @@
+jQuery('#<%="external_filter_argument_span_#{class_name}_#{filter_id}_#{elt_index}"%>').replaceWith("<%= j render(:partial => 'shared/external_filter_element', :object => external_filter_element) %>");
+resizeExternalFilters('<%="#{class_name}"%>');
+unwait();

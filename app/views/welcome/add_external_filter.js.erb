@@ -1,0 +1,4 @@
+jQuery('#<%="external_filters_#{table_name}"%>').append("<%= j render(:partial => 'shared/external_filter', :object => external_filter) %>");
+resizeExternalFilters('<%="#{table_name}"%>');
+unwait();
+

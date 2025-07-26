@@ -1,0 +1,18 @@
+
+<% if ids.length > 0  %>
+<%   table_name = "Person" %>
+<%   search_ctl = search_ctls[table_name] %>
+<%   eval("#{table_name}.set_controller(search_ctl)"); %>
+<%   updated_objects = search_ctl.GetUpdateObjects(table_name, "id", ids); %>
+<%   updated_objects.each do |row| %>
+     if (jQuery('#<%="#{row.id}_#{ table_name}"%>')) {
+       jQuery('#<%="#{row.id}_#{ table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
+       setcheck('#<%="#{table_name}_check_#{row.id.to_s}"%>',true);
+     }
+<%   end %>
+     recolour('Person');
+     action_select_no_js(); 
+<% end %>
+   alert('<%="#{alert_str}"%>');
+   unwait();
+

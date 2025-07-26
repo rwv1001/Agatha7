@@ -1,0 +1,38 @@
+<p>
+  <b>Course:</b>
+  <%=h @lecture.course_id %>
+</p>
+
+<p>
+  <b>Person:</b>
+  <%=h @lecture.person_id %>
+</p>
+
+<p>
+  <b>Term:</b>
+  <%=h @lecture.term %>
+</p>
+
+<p>
+  <b>Year:</b>
+  <%=h @lecture.year %>
+</p>
+
+<p>
+  <b>Day:</b>
+  <%=h @lecture.day %>
+</p>
+
+<p>
+  <b>Hour:</b>
+  <%=h @lecture.hour %>
+</p>
+
+<p>
+  <b>Exam:</b>
+  <%=h @lecture.exam %>
+</p>
+
+
+<%= link_to 'Edit', edit_lecture_path(@lecture) %> |
+<%= link_to 'Back', lectures_path %>

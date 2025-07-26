@@ -1,0 +1,132 @@
+<html>
+  <head>
+    <title tal:content="template/title">Help</title>
+      
+      
+<body>
+
+<h1> Search Filter Examples </h1>
+<table>
+<tr class="column-header" >
+  <th> Field Type</th>
+  <th> Filter String</th>
+  <th> Meaning </th>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Text</td>
+  <td>H% </td>
+  <td>Gives all entries with value starting with H. It is case sensitive</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>">
+  <td>Text</td>
+  <td>(H|h)% </td>
+  <td>Gives all entries with value starting with H or h. </td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>" >
+  <td>Text</td>
+  <td>Henry </td>
+  <td>Gives all entries with value Henry </td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>" >
+  <td>Text</td>
+  <td>H%y </td>
+  <td>Gives all entries with value starting with H and ending with y. Beware of trailing whitespace </td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>" >
+  <td>Text</td>
+  <td>%[t-y] </td>
+  <td>Gives all entries with value ending in the range t to y </td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>" >
+  <td>Text</td>
+  <td>_([c-e]|[r-v])%</td>
+  <td>Gives all entires with value whose 2nd letter is in the range c to e or r to v</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Number</td>
+  <td>19251</td>
+  <td>Gives all entries with value 19251</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Number </td>
+  <td>19251..20251 </td>
+  <td>Gives all entries with value in the range 19251 to 20251</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td> Number</td>
+  <td> 85, 69 22</td>
+  <td>Gives allentries with value equal to 85, 69 or 22</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Boolean </td>
+  <td> 1</td>
+  <td> Gives all entries with value equal true</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Boolean </td>
+  <td> T</td>
+  <td> Gives all entries with value equal true</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Boolean </td>
+  <td> true</td>
+  <td> Gives all entries with value equal true</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Boolean </td>
+  <td> 0</td>
+  <td> Gives all entries with value equal to false</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Boolean </td>
+  <td> F</td>
+  <td> Gives all entries with value equal to false</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Boolean </td>
+  <td> false</td>
+  <td> Gives all entries with value equal to false</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Date </td>
+  <td> 2009 </td>
+  <td> Gives all entries with value in year 2009 </td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td> Date</td>
+  <td> 2008-11</td>
+  <td> Gives all entries with value in November 2008</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td> Date</td>
+  <td>2007-10-9 </td>
+  <td> Gives all entries with value equal to 9th of October 2007</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td>Date </td>
+  <td> 2005-10 .. 2006 - 7 </td>
+  <td> Gives all entries with value in between October 2005 and July 2006</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td> Date</td>
+  <td> 2004-4-6, 2005-6</td>
+  <td> Gives all entries with value on 6th April 2004 or in June 2005</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td> Time </td>
+  <td> 4:21 </td>
+  <td> Gives all entries with value at 4:21 am </td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td> Time </td>
+  <td> 13..15:30</td>
+  <td> Gives all entries with value in range 13:00 to 15:30</td>
+</tr>
+<tr class="<%= cycle('row-even', 'row-odd') %>"> 
+  <td> Time </td>
+  <td>12:23, 15:36 .. 16</td>
+  <td> Gives all entries with value equal to 12:23 or in range 15:36 to 16:00</td>
+</tr>
+</table>
+</html>
+

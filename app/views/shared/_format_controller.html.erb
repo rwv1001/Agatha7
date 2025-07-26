@@ -1,0 +1,12 @@
+<div id="format_controller_div">
+<table >
+        <% for table_object in format_controller.table_objects %>
+           <%= format_elements =  format_controller.format_elements_hash[table_object.object] %>
+           <%= raw  render(:partial => "shared/format_elements", :object => format_elements) %>
+        <%  end %>
+</table>
+</div>
+<script type="text/javascript">
+
+   resizeFormat();
+</script>

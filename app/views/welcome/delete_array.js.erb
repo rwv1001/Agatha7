@@ -1,0 +1,18 @@
+alert('<%="#{success_str}#{error_str}"%>');
+<% if deleted_ids.length>0 %>
+    
+    on_del('<%="#{table_name}"%>', [<%="#{deleted_ids}"%>]);
+    
+    <%  Rails.logger.info("RWV delete_array deleted_ids = #{deleted_ids}"); %>
+    
+    <% if delete_hash_str.empty? %>
+        <%  Rails.logger.info("RWV delete_array hash empty"); %>
+    <% else %>   
+        <%  Rails.logger.info("RWV delete_array delete_hash_str length = #{delete_hash_str.length}"); %>
+        <% delete_hash_str.each do |delete_table, delete_ids_str| %>
+            <%  Rails.logger.info("RWV delete_array delete_table=#{delete_table}, delete_ids_str = #{delete_ids_str}"); %>
+            on_del('<%="#{delete_table.to_s}"%>', [<%="#{delete_ids_str}"%>]);
+        <% end %>
+    <% end %>
+<% end %>
+unwait();  

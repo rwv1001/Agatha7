@@ -1,0 +1,57 @@
+<% lecture =  suggested_lecture.lecture; %>
+<% previous_suggestions = suggested_lecture.previous_suggestions %>
+<% search_ctl = suggested_lecture.search_ctl %>
+<% filter_controller = search_ctl.filter_controller %>
+
+<%  possible_lecturers = filter_controller.GetOptions("lecturer","Person", lecture.person_id, false,false) %>
+        <label>Lecturer</label><br>
+        <select  style="width: 115px" name = "person_id" class ="Person_select" id= "new_lecturer">
+          <% for p in possible_lecturers -%>
+            <% if p.id == lecture.person_id %>
+              <option selected value = "<%=p.id %>"><%= p.name %></option>
+            <% else %>
+            <% if  p.name !=nil %>
+              <option  value = "<%= p.id %>"><%= p.name %></option>
+              <% end %>
+            <% end  %>
+          <% end -%>
+        </select>
+        <br>
+          <%  possible_terms = filter_controller.GetOptions("term","Term", lecture.term_id, true,false) %>
+          <label>Term</label><br>
+        <select style="width: 115px"  name = "term_id"  id= "lecture_term">
+          <% for p in possible_terms -%>
+            <% if p.id == lecture.term_id %>
+              <option selected value = "<%=p.id %>"><%= p.name %></option>
+            <% else %>
+              <option  value = "<%= p.id %>"><%= p.name %></option>
+            <% end  %>
+          <% end -%>
+        </select>
+        <br>
+          <%  possible_days= filter_controller.GetOptions("day","Day", lecture.day_id, true,false) %>
+          <label>Day</label><br>
+        <select style="width: 115px" name = "day_id"  id= "lecture_day">
+          <% for p in possible_days -%>
+            <% if p.id == lecture.day_id %>
+              <option selected value = "<%=p.id %>"><%= p.name %></option>
+            <% else %>
+              <option  value = "<%= p.id %>"><%= p.name %></option>
+            <% end  %>
+          <% end -%>
+        </select>
+
+        <br>
+
+          
+          <table>
+        <tr><td><label>Time</label></td><td><input type="text"  style="width: 4em" value="<%= lecture.lecture_time.strftime('%H:%M')  %>" id="lecture_time" name ="lecture_time"/></td></tr>
+       <tr><td><label>No. lectures</label></td><td><input type="text"  style="width: 4em" value="<%= lecture.number_of_lectures  %>" id="number_of_lectures" name ="number_of_lectures"/></td></tr>
+        <tr><td> <label>No. classes</label></td><td><input type="text"  style="width: 4em" value="<%= lecture.number_of_classes  %>" id="number_of_classes" name ="number_of_classes" /></td></tr>
+          </table>
+          
+          <input type="text" id="previous_lecture_suggestions"  style= "display: none" value=<%= raw "#{previous_suggestions}"%> name="previous_suggestions" />
+          
+
+
+

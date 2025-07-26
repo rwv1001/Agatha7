@@ -1,0 +1,13 @@
+<p>
+  <b>Name:</b>
+  <%=h @programme.name %>
+</p>
+
+<p>
+  <b>Description:</b>
+  <%=h @programme.description %>
+</p>
+
+
+<%= link_to 'Edit', edit_programme_path(@programme) %> |
+<%= link_to 'Back', programmes_path %>

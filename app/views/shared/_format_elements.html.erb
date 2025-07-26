@@ -1,0 +1,82 @@
+<tr  style ="<%= cycle('background: #CCCCCC','background: #EEEEEE')%> " >
+<th align ="left">
+ <%= format_elements.table %>: 
+</th>
+<th  >
+
+
+  <% width = 250*format_elements.format_elements_array.length %>
+  <div id=<%= raw "min_width_#{format_elements.table }" %> style="min-width:<%=width%>px" >
+  <% col_width = 15 %>
+  
+<% elt_count = 0 %>
+
+          <% on_add_string = "addElement('#{format_elements.table}','#{elt_count}');return false" %>
+          <div class="add_format_field" ><a href ="#" onclick= <%= raw "#{on_add_string }"%> >+</a> </div>
+
+
+
+  <div style ="float:left"> &nbsp; </div>
+<% for elt in format_elements.format_elements_array %>
+
+
+  
+  <div style="float:left" id=<%= raw "display_format_#{format_elements.table}_#{elt_count}" %> >
+  <div  style ="float:left; background:#fff;  border: 1px solid #000;">
+  
+  <select class="format_select" style="border:none; background-color: transparent; overflow:hidden" name =<%= raw "display_format_field_#{format_elements.table}_#{elt_count}" %> id=<%= raw "display_format_field_#{format_elements.table}_#{elt_count}" %> >
+    
+      
+    <% attrs =  format_elements.attribute_list.attribute_elements %>
+        <option value = "">Select Field</option>
+        <% for a in attrs -%>
+            <% if  a.name == elt.field_name %>
+              <option selected value = "<%= a.name %>"><%= a.name%></option>
+            <% else  %>
+              <option  value = "<%= a.name %>"><%= a.name%></option>
+            <% end %>
+        <% end -%>
+    </select>
+    
+    </div>
+   <% col_width = 5 %>
+
+   <div class="format_element" style ="float:left; min-width: <%= 0.5*col_width +2 %>em; overflow: hidden;  background: #fff; border: 1px solid #000; border-left: none;"  >
+         <div class="display_format_string_div" style ="float:left; margin-top: 0.0ex"id=<%= raw "display_format_string_div_#{format_elements.table}_#{elt_count}" %>  >
+       <input class="format_input" type=text style="border:none" id=<%= raw "display_format_string_#{format_elements.table}_#{elt_count}" %>
+       name=<%= raw "display_format_string_#{format_elements.table}_#{elt_count}" %> value="<%=elt.insert_string %>"
+         size= <%= col_width %> >
+         </div>
+      <% if  format_elements.format_elements_array.length >1 %>
+          <% on_delete_string = "deleteElement('#{format_elements.table}','#{elt_count}');return false" %>
+          <div class="remove_format_field" id =<%= raw "remove_format_#{format_elements.table}_#{elt_count}" %> ><a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_delete_string}"%> >X</a> </div>
+      <% end %>
+    </div>
+    <div style ="float:left;"> &nbsp; </div>
+  <% on_add_string = "addElement('#{format_elements.table}','#{elt_count+1}');return false" %>
+          <div  class="add_format_field" id =<%= raw "add_format_#{format_elements.table}_#{elt_count}" %> ><a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_add_string }"%> >+</a> </div>
+  
+   
+  
+  <div style ="float:left"> &nbsp; </div>
+  </div>
+  <% elt_count = elt_count +1 %>
+<% end %>
+</div>
+</th>
+<td>
+  <% @search_ctls = session[:search_ctls]; %>
+  <% search_ctl = @search_ctls[format_elements.table.classify]  %>
+  <% if search_ctl!=nil %>
+  <% short_string = search_ctl.GetLastShortField() %>
+  <%  if short_string.length >0 %>
+  <i>e.g. <%= short_string %> </i>
+  <% end %>
+  <% end %>
+</td>
+ <input type=text  id=<%= raw "display_format_count_#{format_elements.table}" %>
+       name=<%= raw "display_format_count_#{format_elements.table}" %> value="<%=  elt_count  %>"  style ="visibility: hidden " >
+
+
+</tr>
+

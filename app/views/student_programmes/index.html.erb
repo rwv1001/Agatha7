@@ -1,0 +1,22 @@
+<h1>Listing student_programmes</h1>
+
+<table>
+  <tr>
+    <th>Person</th>
+    <th>Programme</th>
+  </tr>
+
+<% for student_programme in @student_programmes %>
+  <tr>
+    <td><%=h student_programme.person_id %></td>
+    <td><%=h student_programme.programme_id %></td>
+    <td><%= link_to 'Show', student_programme %></td>
+    <td><%= link_to 'Edit', edit_student_programme_path(student_programme) %></td>
+    <td><%= link_to 'Destroy', student_programme, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New student_programme', new_student_programme_path %>

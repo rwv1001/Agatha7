@@ -1,0 +1,39 @@
+<% search_controller = search_controller_header.search_controller %>
+<% table_type = search_controller_header.table_type %>
+<% table_name = search_controller.table_name %>
+<% all_display_indices = Array.new(search_controller.fixed_indices) %>
+<% all_display_indices.concat(search_controller.current_filter_indices)  %>
+<% num_filters =  all_display_indices.length %>
+<input size="3" type=text  id=<%= raw "all_display_indices_#{table_name}" %>  value="<%= all_display_indices.length  %>"  style="visibility :hidden" >
+
+
+<tr class="column-header">
+    <% for i in all_display_indices -%> 
+          <% extended_filter = search_controller.extended_filters[i] %>
+          <% filter_header = SearchFilterHeader.new(table_type, :header, extended_filter, table_name,  num_filters) %>
+          <%= raw  render(:partial => "shared/search_filter_header", :object => filter_header )%>
+    <% end -%>
+    <% filter_header = SearchFilterHeader.new(table_type, :header, nil, table_name,  num_filters)  %>
+    <%= raw  render(:partial => "shared/search_header_buttons", :object => filter_header )%>
+</tr>
+<tr class="column-filter">
+    <% for i in search_controller.fixed_indices -%> 
+          <% extended_filter = search_controller.extended_filters[i] %>
+          <% filter_header = SearchFilterHeader.new(table_type, :fixed_filter_string, extended_filter, table_name,  num_filters) %>
+          <%= raw  render(:partial => "shared/search_filter_header", :object => filter_header) %>
+    <% end %>
+    <% for i in search_controller.current_filter_indices -%> 
+            <% extended_filter = search_controller.extended_filters[i] %>
+          <% filter_header = SearchFilterHeader.new(table_type, :filter_string, extended_filter, table_name,  num_filters) %>
+          <%= raw  render(:partial => "shared/search_filter_header", :object => filter_header) %>
+    <% end %>
+    <% search_header_buttons =  SearchFilterHeader.new(table_type, :filter_string, nil,table_name,  num_filters) %>
+    <%= raw  render(:partial => "shared/search_header_buttons", :object => search_header_buttons) %>
+</tr>
+<script type="text/javascript">
+
+  jQuery('#x_height').val( jQuery('#dummy_x').height());
+   jQuery('#a_height').val( jQuery('#dummy_a').height());
+  resizeX();
+</script>
+

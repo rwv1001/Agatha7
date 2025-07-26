@@ -1,0 +1,72 @@
+<h2>Courses for <%= @person.first_name %> <%= @person.second_name %></h2>
+<div class="field" id="div1">
+  <p class="label">Courses</p>
+  
+  <table class="field" border="0">
+    <tr>
+      <th>Course title </th>
+      <th>Year</th>
+      <th>Term</th>
+      <th>Grade</th>
+      <th>Programme</th>
+      <th>Edit</th>
+    </tr>
+<% for course in @scourses %>
+    <tr>
+	<% term = "" 
+	 if course.term  
+		term = Course::TERM_NAMES[course.term]
+           end
+         %>
+      <td><%=h course.course.name %></td>
+      <td><%=h course.year %></td>
+      <td><%=h term %></td> 
+      <td><%=h course.grade %></td>
+	  <td><%= if !course.programme.nil?
+                h course.programme.name
+             end %>
+      <td><%= link_to "Edit", :action=> :edit_scourse, :id => course %> |
+      <%= button_to "Delete", :action=> :delete_scourse, :id => course %></td>
+</tr>
+<% end %>
+  </table>
+</div>
+<p>&nbsp;</p>
+<div class="field" id="progadd">
+  <p>Add a programme to this student:</p>
+  <%= form_for @programme, :url => { :action => :add_programme } do |form| %>
+    <%= form.hidden_field :person_id %>
+    <%= form.label :programme_id, "Programme:" %>
+    <%= form.select :programme_id, @programmes %>
+    <%= submit_tag "Add" %>
+  <% end %>
+</div>
+<div class="field" id="Layer1">
+  <p class="label">Programmes</p>
+  <table class="field"  border="0">
+    <tr>
+      <th scope="col">Programme</th>
+      <th scope="col">Competed</th>
+      <th scope="col">&nbsp;</th>
+    </tr>
+<% for p in @sprogrammes %>
+    <tr>
+      <td><%= p.programme.name %></td>
+      <td>No</td>
+      <td><%= button_to "Delete", :action => :delete_programme, :id => p %></td>
+    </tr>
+<% end %>
+  </table>
+  <p class="field">&nbsp;</p>
+</div>
+<div class="field" id="Layer2">
+  <p>Add a course to this student:</p>
+  <%= form_for @student_course, :url=>{ :action => :add_scourse } do |form| %>
+    <%= form.hidden_field :person_id %>
+    <%= form.label :course_id, "Course:" %>
+    <%= form.select :course_id, @courses %>
+    <%= form.select :term, Course::TERMS %>
+    <%= select_year Time.now, :prefix => "student_course" %>
+    <%= submit_tag "Add course" %>
+  <% end %>
+</div>

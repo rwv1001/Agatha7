@@ -1,0 +1,28 @@
+<p>
+  <b>Student:</b>
+  <%=h @student_course.student_id %>
+</p>
+
+<p>
+  <b>Course:</b>
+  <%=h @student_course.course_id %>
+</p>
+
+<p>
+  <b>Term:</b>
+  <%=h @student_course.term %>
+</p>
+
+<p>
+  <b>Year:</b>
+  <%=h @student_course.year %>
+</p>
+
+<p>
+  <b>Grade:</b>
+  <%=h @student_course.grade %>
+</p>
+
+
+<%= link_to 'Edit', edit_student_course_path(@student_course) %> |
+<%= link_to 'Back', student_courses_path %>

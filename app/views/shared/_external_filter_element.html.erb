@@ -1,0 +1,38 @@
+
+<% class_name = external_filter_element.external_filter.class_name %>
+<% external_filter =  external_filter_element.external_filter %>
+<% filter_id =  external_filter_element.external_filter.id %>
+<% element_id =  external_filter_element.element_id %>
+<% argument_selection =  external_filter_element.MemberSelection() %>
+<% member_id = external_filter_element.member_id %>
+<% on_delete_string = "\"deleteExternalFilterElement('#{class_name}','#{filter_id}','#{element_id }');return false\"" %>
+<% Rails.logger.info("external_filter_element.html.erb argument_selection.length = #{argument_selection.length}, member_id = #{member_id}") %>
+<div id = <%= raw   "external_filter_argument_span_#{class_name}_#{filter_id}_#{element_id}" %> class = "external_filter_argument_span" style = "position:absolute; top:0; right:0; width:100%; height: 100%; background-color: #ffffff; display:flex; flex-directin: row-reverse; justify-content: flex-end" >
+    <div  class="remove_filter_element_field" style ="order: 3;  background: #AAAAAA;    border-left: 1px solid;    border-color: #000000;"  >
+        <a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_delete_string}"%> >X</a>
+    </div>
+    <% group_class = "" %>
+    <% if external_filter.argument_class == "Group" %>
+        <span class = <%= raw    "argument_selection_group_#{class_name}" %> ></span>
+        <%group_class = "Group_"+class_name+"_select"%>
+    <% end %>
+    <% if  argument_selection.length > 0 %>
+        <div style ="order: 2; text-align-last: right;" class= <%=  "external_filter_argument_selection_#{class_name}_#{filter_id}" %> >
+            <select id =<%= raw   "argument_selection_#{class_name}_#{filter_id}_#{element_id }"%> class= "external_filter_argument_selection <%=external_filter.argument_class%>_select  <%=group_class%> " name=<%= raw   "argument_selection_#{filter_id}_#{element_id }"%> style="border:none; background-color: #ffffff; overflow:hidden"  >
+                
+                <% for arg in argument_selection  %>
+                    
+                    <% if arg.id ==  member_id  %>
+                        <% Rails.logger.info("SELECTED external_filter_element.html.erb  arg.name = #{arg.name}") %>
+                        <option style="direction: rtl; " selected value = <%= arg.id %> > <%= arg.name %></option>
+                    <% else %>
+                        <% if arg.name !=nil  %>
+                            <% Rails.logger.info("external_filter_element.html.erb  arg.name = #{arg.name}") %>
+                            <option style="direction: rtl; " value = <%= arg.id %> > <%= arg.name %></option>
+                        <% end %>
+                    <%end%>
+                <% end %>
+            </select>
+        </div> 
+    <% end %>
+</div>

@@ -1,0 +1,87 @@
+
+
+<script type="text/javascript"> window.opener.location.reload(); </script>
+
+<div id="navigation">
+  &nbsp;&nbsp;<%= link_to("EDIT", edit_person_path(@person))%>
+</div>
+<h2><%=h @person.title %> <%=h @person.first_name %> <%=h @person.second_name %> <%=h @person.postnomials %></h2>
+  <div class="field" id="termaddress">
+    <p><span class="label">Term Address</span> | <a href="#" onClick="MM_showHideLayers('termaddress','','hide','otheraddress','','show')">Other Address</a></p>
+    <table width="490" border="0">
+      <tr>
+        <td class="label">Address:</td>
+        <td class="field"><%=h @person.term_address %></td>
+      </tr>
+      <tr>
+        <td class="label">City:</td>
+        <td class="field"><%=h @person.term_city %></td>
+      </tr>
+      <tr>
+        <td class="label">Postcode:</td>
+        <td class="field"><%=h @person.term_postcode %></td>
+      </tr>
+      <tr>
+        <td class="label">Home phone:</td>
+        <td class="field"><%=h @person.term_home_phone %></td>
+      </tr>
+      <tr>
+        <td class="label">Work Phone:</td>
+        <td class="field"><%=h @person.term_work_phone %></td>
+      </tr>
+      <tr>
+        <td class="label">Mobile:</td>
+        <td class="field"><%=h @person.mobile %></td>
+      </tr>
+      <tr>
+        <td class="label">Email: </td>
+        <td class="field"><a href="mailto:<%=h @person.email %>"><%=h @person.email %></a></td>
+      </tr>
+    </table>
+  </div>
+  <div class="field" id="otheraddress">
+    <p><a href="#" onClick="MM_showHideLayers('termaddress','','show','otheraddress','','hide')">Term Address</a> | <span class="label">Other Address</span></p>
+    <table width="490" border="0">
+      <tr>
+        <td class="label">Address:</td>
+        <td class="field"><%= @person.other_address %></td>
+      </tr>
+      <tr>
+        <td class="label">City:</td>
+        <td class="field"><%=h @person.other_city %></td>
+      </tr>
+      <tr>
+        <td class="label">Postcode:</td>
+        <td class="field"><%=h @person.other_postcode %></td>
+      </tr>
+      <tr>
+        <td class="label">Home phone:</td>
+        <td class="field"><%=h @person.other_home_phone %></td>
+      </tr>
+      <tr>
+        <td class="label">Fax:</td>
+        <td class="field"><%=h @person.fax %></td>
+      </tr>
+    </table>
+  </div>
+  <!-- <div class="field" id="homeinst">
+  	<span tal:condition="person/homeinst | nothing">
+    <p class="label">Home Institution </p>
+    <p>h @person.homeinst</p></span>
+	<span tal:condition="person/relhouse | nothing">
+    <p class="label">Religious House</p>
+    <p class="field">h @person.relhouse</p></span>
+  </div> -->
+  <div class="field" id="notes">
+    <p class="label">Notes</p>
+    <p><%=h @person.notes %></p>
+  </div>
+  <div class="field" id="statuses">
+    <p class="label">Statuses</p>
+    <p tal:repeat="stat person" tal:content="stat/status">Some statuses </p>
+  </div>
+  <div class="field" id="courses"><%= link_to "Study", {:action => :courses, :id => @person.id}, :target => "_blank" %></div>
+  
+</div>
+
+

@@ -1,0 +1,24 @@
+<h1>Listing attendees</h1>
+
+<table>
+  <tr>
+    <th>Lecture</th>
+    <th>Person</th>
+    <th>Examined</th>
+  </tr>
+
+<% for attendee in @attendees %>
+  <tr>
+    <td><%=h attendee.lecture_id %></td>
+    <td><%=h attendee.person_id %></td>
+    <td><%=h attendee.examined %></td>
+    <td><%= link_to 'Show', attendee %></td>
+    <td><%= link_to 'Edit', edit_attendee_path(attendee) %></td>
+    <td><%= link_to 'Destroy', attendee, :confirm => 'Are you sure?', :method => :destroy %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New attendee', new_attendee_path %>

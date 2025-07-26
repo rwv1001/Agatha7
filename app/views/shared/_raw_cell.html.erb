@@ -1,0 +1,62 @@
+
+<%  attribute = raw_cell.attribute %>
+<%  filter_controller =  raw_cell.filter_controller %>
+<%  table_name =  raw_cell.table_name %>
+
+
+<div id =<%="#{table_name}_#{attribute.name}"%> >
+
+
+   <% data_type = attribute.data_type %>
+
+    
+ 
+  
+  <% column_width = 10 %>
+  <% not_set_const = 1 %>
+  <% case data_type
+  when :text %>
+
+    <textarea   cols=<%="#{column_width}"%> rows="5" name =<%="mt_edit_#{attribute.name}"%> id=<%="edit_#{attribute.name}"%> class="edit_text"   > </textarea>
+
+  <% when :boolean %>
+
+      <input type="radio" name =<%="mi_edit_#{attribute.name}"%>  value=1   id=<%="edit_#{attribute.name}_1"%> class="radio"  ><label>True</label><br>
+      <input type="radio"  name =<%="mi_edit_#{attribute.name}"%> value=0  id=<%="edit_#{attribute.name}_0"%> class="radio"  ><label>False</label><br>
+      <input type="radio" name =<%="mi_edit_#{attribute.name}"%>  value=-1   checked id=<%="edit_#{attribute.name}_ignore"%> class="radio"  ><label>Ignore</label><br>
+  <% when :integer %>
+    <% if attribute.name == "collection_status" %>
+      <% check0="" %>
+      <% check1="" %>
+      <% check2="" %>
+      <input   type="radio" name =<%="mi_edit_#{attribute.name}"%>  value=0 id=<%="edit_#{attribute.name}_0"%> class="radio" ><label>Unnecessary</label><br>
+      <input  type="radio" name =<%="mi_edit_#{attribute.name}"%>   value=1 id=<%="edit_#{attribute.name}_1"%> class="radio" ><label>Needs to be taken</label><br>
+      <input  type="radio" name =<%="mi_edit_#{attribute.name}"%>   value=2 id=<%="edit_#{attribute.name}_2"%> class="radio" ><label>Has been taken</label><br>
+      <input type="radio" name =<%="mi_edit_#{attribute.name}"%>  value=-1 checked  id=<%="edit_#{attribute.name}_ignore"%> class="radio"  ><label>Ignore</label><br>
+     
+    <% else %>
+      <% if attribute.foreign_key.length == 0 %>
+        <input  type="text" name =<%="mi_edit_#{attribute.name}"%> id=<%="edit_#{attribute.name}"%> class="edit_text" size =<%="#{column_width}"%>  >
+
+        
+      <% elsif attribute.foreign_key.length != 0 %>
+        <% foreign_key = attribute.foreign_key %>
+        <% foreign_class = attribute.foreign_class %>
+        <% current_id = not_set_const  %>
+        <%  possible_options = filter_controller.GetOptions(foreign_key,foreign_class, current_id, false, false) %>
+        <select  name =<%="mi_edit_#{attribute.name}"%>  id=<%="edit_#{attribute.name}"%> class="select"   style="max-width: 125px">
+              <option  selected value = "-1">Ignore </option>
+          <% for p in  possible_options -%>
+              <% if p.name!=nil && p.name.length >0 %>
+              <option  value = "<%= p.id %>"><%= p.name %></option>
+              <% end %>
+            <% end  %>
+         
+        </select>
+      <% end %>
+    <% end %>  
+  <% else %>
+  <input  name =<%="mt_edit_#{attribute.name}"%>  type="text"  id=<%="edit_#{attribute.name}"%> class="edit_text" size =<%="#{column_width}"%>  >
+
+  <% end %>
+</div>

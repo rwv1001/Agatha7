@@ -1,0 +1,4 @@
+<% if edit_cell != nil %>
+jQuery('#<%="#{html_element_name}"%>').replaceWith("<%= j render(:partial => 'shared/edit_cell', :object => edit_cell) %>");
+<% end %>
+update_parent('#<%="#{edited_class_name}"%>', '#<%="#{attribute_name}"%>','#<%="#{id}"%>');

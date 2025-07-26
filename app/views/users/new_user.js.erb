@@ -1,0 +1,10 @@
+<% if(save_status) %>
+    <% if session[:administrator] %>
+        jQuery("#user").html("<%= j render(:partial => 'shared/create_user', :object => new_user) %>");
+    <% else %>
+        jQuery("#user").html("<%= j render(:partial => 'shared/user', :object => new_user) %>");  
+    <% end %>
+    alert('<%="Username #{new_user.name} has been successfully created"%>');
+<% else %>
+    alert('Unable to create new user');
+<% end %>

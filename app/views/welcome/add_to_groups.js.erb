@@ -1,0 +1,59 @@
+<% if(group_ids.length == 0) %>
+    alert('<%="Add Selected Failed: You did not select any groups."%>');
+<% elsif permissioned.length == 0 %>
+    alert('<%="You do not have permission to add members to any of the selected groups."%>');
+<% else %>
+    <% success_str = ""; %>
+    <% if unpresent.length ==1 %>
+        <% success_str << "#{class_name} was added to 1 group. " %>   
+    <% elsif unpresent.length >1 %>
+        <% success_str << "#{class_name} was added to #{unpresent.length} groups. " %>
+    <% end %>
+    <% if present.length == 1 %>
+        <% success_str << "#{class_name} was not added to 1 group because it was already in it. "%>
+    <% elsif present.length >1 %>
+        <% success_str << "#{class_name} was not added to #{present.length} groups because it was already in them. " %>    
+    <% end %>
+    <% if wrong_types.length == 1 %>
+        <% success_str << "#{class_name} was not added to 1 group because it was of the wrong type. "%>
+    <% elsif wrong_types.length > 1 %>
+        <% success_str << "#{class_name} was not added to #{wrong_types.length} groups because they were of the wrong type. " %>
+    <% end %>
+    <% if unpermissioned.length == 1 %>
+        <% success_str << "#{class_name} was not added to 1 group because you did not have permission to update this group. "%>
+    <% elsif unpermissioned.length >1 %>
+        <% success_str << "#{class_name} was not added to #{unpermissioned.length} groups because you did not have permission to update these groups. " %>
+    <% end %>
+                 
+    <% table_name = class_name %>
+
+    <% id_array = []; %>
+    <% id_array << class_id.to_i; %>
+    <% eval("#{table_name}.set_controller(search_ctl)"); %>
+    <% updated_objects = search_ctl.GetUpdateObjects(table_name, ["id"], id_array); %>
+
+    <% updated_objects.each do |row| %>
+        if (jQuery('#<%="#{row.id}_#{table_name}"%>') ){
+            jQuery('#<%="#{row.id}_#{table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
+        }
+    <% end %>
+    recolour('<%="#{table_name}"%>'); 
+    <% table_name = "Group" %>
+    <% eval("#{table_name}.set_controller(search_ctl_group)"); %>
+    <% updated_objects = search_ctl_group.GetUpdateObjects(table_name, ["id"], group_ids); %>
+    <% updated_objects.each do |row| %>
+        if (jQuery('#<%="#{row.id}_#{table_name}"%>') ){
+            jQuery('#<%="#{row.id}_#{table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
+            setcheck('#<%="#{table_name}_check_#{row.id.to_s}"%>',true)
+        }
+    <% end %>
+    recolour('Group'); 
+    action_select_no_js();     
+    alert('<%="#{success_str}"%>');
+<% end %>
+unwait();
+
+
+
+
+

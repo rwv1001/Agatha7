@@ -1,0 +1,13 @@
+  <% search_controller = possible_filters  %>
+  <% onchange_str = "AddField('#{search_controller.table_name}');return false" %>
+  <select id=<%= raw "possible_filters_#{search_controller.table_name}" %> onchange= <%= raw "#{onchange_str }"%> >
+        <option  value = "do_nothing">Add Display Field</option>
+        <% for i in search_controller.possible_filter_indices -%>
+            <% extended_filter = search_controller.extended_filters[i] %>
+            <%  if extended_filter.filter_object.class != ExternalFilter %>
+            <option  value = "<%=  extended_filter.filter_object.tag %>"><%= extended_filter.filter_object.header%></option>
+            <% end %>
+        <% end -%>
+    </select>
+
+    

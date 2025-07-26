@@ -1,0 +1,22 @@
+<%  table_name = multi_table.table_name; %>
+<% search_controller = multi_table.search_controller %>
+<p> <%= "#{table_name}" %> </p>
+<table>
+            <%  attribute_eval_str = "AttributeList.new(#{table_name})" %>
+            <%  attribute_list = eval(attribute_eval_str) %>
+            <%  for attribute in attribute_list.attribute_elements  %>
+
+
+                    <% if (attribute.name != "id" && (attribute.data_type == :integer || attribute.data_type == :boolean)) || attribute.name == "to_email" || attribute.name == "from_email"%>
+                      <tr class='row-even'><td><%=attribute.name%> </td> </tr>
+
+                      <tr class ='row-odd' >
+                      <% update_parent = false %>
+                      <% readonly_flag = false %>
+                      <% current_object = nil %>
+                      <%  raw_cell = EditCell.new(attribute,current_object, table_name, search_controller.filter_controller,  update_parent, readonly_flag ); %>
+                      <td><%= render(:partial => "shared/raw_cell", :object => raw_cell) %> </td>
+                      </tr>
+                    <% end %>
+            <% end %>
+</table>

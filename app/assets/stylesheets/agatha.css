@@ -1,0 +1,416 @@
+body {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+     background-color: #fff; 
+}
+
+
+td {
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size:   10px;
+  line-height: 12px;
+}
+option {
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size:   8px;
+  line-height: 12px;
+}
+select {
+   font-family: verdana, arial, helvetica, sans-serif;
+  font-size:   8px;
+        line-height: 12px;
+}
+
+input[type="button"]{
+      font-size:   9px;
+      line-height: 12px;
+
+}
+
+ol, ul {
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size:   13px;
+  line-height: 18px;
+}
+
+
+h1 {
+	text-transform: uppercase;
+     font-size: 20px;
+}
+h2 {
+    font-size: 17px;
+}
+h3 {
+    font-size: 14px;
+}
+h5 {
+    font-size: 12px;
+}
+
+p {
+	margin-top: 0;
+	margin-bottom: 6px;
+    font-size: 10px;
+}
+
+a {
+    color: #000;
+    
+	text-decoration: none;
+}
+.alabel {
+     color: #000;
+
+	text-decoration: none;
+
+}
+
+th {
+     font-size:   13px;
+
+}
+
+a img {
+	border: 0;
+}
+
+label {
+    font-size: 10px;
+}
+
+td img {display: block;}
+#menu_div { background: #666666; }
+#content_div, #content_div_1, #content_div_2,  .content_class {background: #ffffff;}
+
+.pad_class { padding: 3px 13px 3px 13px}
+.separator_class {background: #ffffff; width: 100%; height:10px}
+
+.label {
+	background-color: #663300;
+	color: #FFFFFF;
+
+}
+
+ .column-header {
+    background: #999999
+
+}
+ .row-even {
+    background: #CCCCCC
+
+}
+ .row-odd {
+    background: #EEEEEE
+
+}
+.edit_column {
+    background: #FFFFFF
+
+}
+.edit_text {
+    font-size: 10px;
+
+    }
+
+.attachment_links {
+    text-decoration: underline
+}
+
+.select-cell, .help-cell,.toadd-cell, .exam-cell,.compulsory-cell, .dummy-cell,.update-cell, .create-cell,.create-email-cell,
+.suggest-cell, .copy-cell, .delete-cell,.send-cell, .add-cell, .assign-cell, .remove-cell, .supplementary-cell, .willing-cell, .attach_to-cell, .attach-cell, .download-cell {
+     background: #DDDDDD;
+
+}
+supplementary-cell {
+    font-size: 10px;
+}
+
+.remove_header {
+    background: #AAAAAA;
+    border-left: 1px solid;
+    border-color: #000000;
+}
+.do_not_remove_column {
+    position:absolute;
+    float:right;
+    top:0;
+    right:0;
+    height: 100%;
+    background: #ffffff;
+    border-left: 1px solid;
+    border-color: #ffffff;
+}
+span.remove_column a {
+    color: #CCCCCC;
+
+}
+
+.remove_format_field{
+    background: #AAAAAA;
+    border-left: 1px solid;
+    border-color: #000000;
+    float:right;
+    
+
+}
+span.remove_format_field a {
+    color: #CCCCCC;
+}
+
+
+.add_format_field{
+    background: #AAAAAA;
+    border: 1px solid #000;
+    float:left;
+    
+}
+span.add_format_field a {
+    color: #CCCCCC;
+}
+
+.remove_filter_element_field{
+    background: #AAAAAA;
+    padding-top: 2px;
+    
+    border-left: 1px solid #000;
+    border-right: 1px solid #000;
+
+
+}
+.remove_filter_element_field a{
+    
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+.add_external_filter_element{
+    background: #AAAAAA;
+    border: 1px solid #000;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+
+span.add_external_filter_element a {
+    color: #000;
+}
+
+#search_results a {
+    color: #000000;
+
+}
+.hidden_div {
+ position:absolute;
+ top: 0px;
+ left: -1000px;
+
+}
+.shown_div {
+    position: static;
+    
+}
+#black_bar_separator_div {
+
+    cursor: move;
+}
+
+.drag {position: relative; }
+
+
+#search_results a:hover {
+    color: #FFFFFE;
+    background:  #000000;
+
+}
+
+#menu, #menu ul{
+	list-style: none;
+	padding: 0;
+	margin: 0;
+
+	}
+#menu a{
+    position:relative;
+	display: block;
+	text-indent: 10px;
+	left: 0px;
+	font-weight: bolder;
+}
+
+#menu a
+{
+	color:#FFFFFF;
+}
+
+#menu li {
+display: inline;
+float:left;
+width: 150px;
+}
+
+#menu li ul {
+	position: absolute;
+	width: 150px;
+	left: -999em;
+}
+body#people #menu li ul#people2,
+body#institutions #menu li ul#people2,
+body#users #menu li ul#people2,
+body#attendees #menu li ul#lectures2,
+body#lectures #menu li ul#lectures2,
+body#locations #menu li ul#lectures2,
+body#willing_lecturers #menu li ul#lectures2,
+body#tutorials #menu li ul#tutorials2,
+body#tutorial_schedules #menu li ul#tutorials2,
+body#willing_tutors #menu li ul#tutorials2,
+body#maximum_tutorials #menu li ul#tutorials2,
+body#agatha_emails #menu li ul#emails2,
+body#email_templates #menu li ul#emails2,
+body#agatha_files #menu li ul#emails2,
+body#email_attachments #menu li ul#emails2,
+body#groups #menu li ul#groups2,
+body#group_people #menu li ul#groups2,
+body#group_institutions #menu li ul#groups2,
+body#group_courses #menu li ul#groups2,
+body#group_lectures #menu li ul#groups2,
+body#group_attendees #menu li ul#groups2,
+body#group_tutorials #menu li ul#groups2,
+body#group_tutorial_schedules #menu li ul#groups2,
+body#group_agatha_emails #menu li ul#groups2,
+body#group_email_templates #menu li ul#groups2,
+body#group_willing_lecturers #menu li ul#groups2,
+body#group_willing_tutors #menu li ul#groups2,
+body#group_users #menu li ul#groups2,
+body#group_filterings #menu li ul#options2,
+body#field_display_formats #menu li ul#options2,
+body#courses #menu li ul#courses2,
+body#schedules #menu li ul#schedules2,
+body#email #menu li ul#email2
+{
+    position:relative;
+	left: 0px;
+}
+#menu li a:hover,  #menu li ul li a:hover{
+	background-color:#33CC00;
+	color:#FFFFFF;
+	font-weight: bolder;
+}
+
+
+#menu li ul li a {
+background-color:#333344;
+}
+
+
+body#people #menu li ul#people2 li a,
+body#institutions #menu li ul#people2 li a,
+body#users #menu li ul#people2 li a,
+body#attendees #menu li ul#lectures2 li a,
+body#lectures #menu li ul#lectures2 li a,
+body#locations #menu li ul#lectures2 li a,
+body#willing_lecturers #menu li ul#lectures2 li a,
+body#tutorials #menu li ul#tutorials2 li a,
+body#tutorial_schedules #menu li ul#tutorials2 li a,
+body#willing_tutors #menu li ul#tutorials2 li a,
+body#maximum_tutorials #menu li ul#tutorials2 li a,
+body#agatha_emails #menu li ul#emails2 li a,
+body#email_templates #menu li ul#emails2 li a,
+body#agatha_files #menu li ul#emails2 li a,
+body#email_attachments #menu li ul#emails2 li a,
+body#groups #menu li ul#groups2 li a,
+body#group_people #menu li ul#groups2 li a,
+body#group_institutions #menu li ul#groups2 li a,
+body#group_courses #menu li ul#groups2 li a,
+body#group_lectures #menu li ul#groups2 li a,
+body#group_attendees #menu li ul#groups2 li a,
+body#group_tutorials #menu li ul#groups2 li a,
+body#group_tutorial_schedules #menu li ul#groups2 li a,
+body#group_agatha_emails  #menu li ul#groups2 li a,
+body#group_email_templates #menu li ul#groups2 li a,
+body#group_willing_lecturers #menu li ul#groups2 li a,
+body#group_willing_tutors #menu li ul#groups2 li a,
+body#group_users #menu li ul#groups2 li a,
+body#group_filterings #menu li ul#options2 li a,
+body#field_display_formats #menu li ul#options2 li a{
+text-indent: 10px;
+width: 150px;
+font-size:smaller;
+font-weight:normal;
+}
+
+body#people ul#menu li a.people,
+body#institutions ul#menu li a.people,
+body#users ul#menu li a.people,
+body#groups ul#menu li a.groups,
+body#group_people  ul#menu li a.groups,
+body#group_institutions  ul#menu li a.groups,
+body#group_courses  ul#menu li a.groups,
+body#group_lectures  ul#menu li a.groups,
+body#group_attendees  ul#menu li a.groups,
+body#group_tutorials  ul#menu li a.groups,
+body#group_tutorial_schedules  ul#menu li a.groups,
+body#group_agatha_emails  ul#menu li a.groups,
+body#group_email_templates  ul#menu li a.groups,
+body#group_willing_lecturers  ul#menu li a.groups,
+body#group_willing_tutors  ul#menu li a.groups,
+body#group_users  ul#menu li a.groups,
+body#courses ul#menu li a.courses,
+body#lectures ul#menu li a.attendees,
+body#locations ul#menu li a.attendees,
+body#willing_lecturers ul#menu li a.attendees,
+body#attendees ul#menu li a.attendees,
+body#tutorials ul#menu li a.tutorials,
+body#tutorial_schedules ul#menu li a.tutorials,
+body#willing_tutors ul#menu li a.tutorials,
+body#maximum_tutorials ul#menu li a.tutorials,
+body#group_filterings ul#menu li a.options,
+body#field_display_formats ul#menu li a.options,
+body#agatha_emails ul#menu li a.agatha_emails,
+body#email_templates ul#menu li a.agatha_emails,
+body#agatha_files ul#menu li a.agatha_emails,
+body#email_attachments ul#menu li a.agatha_emails
+ {
+	background-color:#FF0000;
+	color:#FFFFFF;
+	font-weight: bolder;
+ }
+
+body#people ul#menu li ul li a.people2,
+body#institutions ul#menu li ul li a.institutions,
+body#users ul#menu li ul li a.users,
+body#attendees ul#menu li ul li a.attendees2,
+body#lectures ul#menu li ul li a.lectures,
+body#locations ul#menu li ul li a.locations,
+body#willing_lecturers ul#menu li ul li a.willing_lecturers,
+body#tutorials ul#menu li ul li a.tutorials2,
+body#tutorial_schedules ul#menu li ul li a.tutorial_schedules,
+body#willing_tutors ul#menu li ul li a.willing_tutors,
+body#maximum_tutorials ul#menu li ul li a.maximum_tutorials,
+body#agatha_emails ul#menu li ul li a.agatha_emails2,
+body#email_templates ul#menu li ul li a.email_templates,
+body#agatha_files ul#menu li ul li a.agatha_files,
+body#email_attachments ul#menu li ul li a.email_attachments,
+body#groups ul#menu li ul li a.groups2,
+body#group_people ul#menu li ul li a.group_people,
+body#group_institutions ul#menu li ul li a.group_institutions,
+body#group_courses ul#menu li ul li a.group_courses,
+body#group_lectures ul#menu li ul li a.group_lectures,
+body#group_attendees ul#menu li ul li a.group_attendees,
+body#group_tutorials ul#menu li ul li a.group_tutorials,
+body#group_tutorial_schedules ul#menu li ul li a.group_tutorial_schedules,
+body#group_agatha_emails ul#menu li ul li a.group_agatha_emails,
+body#group_email_templates ul#menu li ul li a.group_email_templates,
+body#group_willing_lecturers ul#menu li ul li a.group_willing_lecturers,
+body#group_willing_tutors ul#menu li ul li a.group_willing_tutors,
+body#group_users ul#menu li ul li a.group_users,
+body#group_filterings ul#menu li ul li a.group_filterings,
+body#field_display_formats ul#menu li ul li a.field_display_formats
+{
+	background-color:#FFAA00;
+	color:#000000;
+	
+}
+
+
+
+

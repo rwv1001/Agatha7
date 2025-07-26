@@ -1,0 +1,32 @@
+<h1>Listing lectures</h1>
+
+<table>
+  <tr>
+    <th>Course</th>
+    <th>Person</th>
+    <th>Term</th>
+    <th>Year</th>
+    <th>Day</th>
+    <th>Hour</th>
+    <th>Exam</th>
+  </tr>
+
+<% for lecture in @lectures %>
+  <tr>
+    <td><%=h lecture.course_id %></td>
+    <td><%=h lecture.person_id %></td>
+    <td><%=h lecture.term %></td>
+    <td><%=h lecture.year %></td>
+    <td><%=h lecture.day %></td>
+    <td><%=h lecture.hour %></td>
+    <td><%=h lecture.exam %></td>
+    <td><%= link_to 'Show', lecture %></td>
+    <td><%= link_to 'Edit', edit_lecture_path(lecture) %></td>
+    <td><%= link_to 'Destroy', lecture, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New lecture', new_lecture_path %>

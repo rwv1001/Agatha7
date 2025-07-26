@@ -1,0 +1,529 @@
+<html>
+  <head>
+    <title tal:content="template/title">Agatha Main Page</title>
+    <style type="text/css">
+      td img {display: block;}
+
+
+            #menu_div { background: #666666; }
+            #content_div, #content_div_1, #content_div_2,  .content_class {background: #DDDDDD;}
+
+            .pad_class { padding: 3px 13px 3px 13px}
+            .separator_class {background: #ffffff; width: 100%; height:10px; position: relative}
+    </style>
+  </head>
+  <body  bgcolor="#ffffff"  onUnload ="on_unload()" >
+  <% Rails.logger.debug("RWV index.html.erb body") %>  
+    <%=  render(:partial => "shared/template_header") %>
+    <div id ="main_div">
+      <div id="menu_div" style="position: fixed; top: 187px; left:0px; bottom: 7px; width:150px; ">
+        <div >
+          <ul id="menu">
+            <li> <a class="people" href="#" onclick="display_page1('Person');return false">People </a>
+              <ul id="people2">
+                <li> <a  class="people2" href="#" onclick="display_page2('Person','Person');return false">People </a></li>
+                <li> <a class="institutions" href="#" onclick="display_page2('Person','Institution');return false">Institutions</a></li>
+                <%  if session[:administrator] %>
+                  <li> <a class="users" href="#" onclick="display_page2('Person','User');return false">Users </a> </li>
+                <% end %>
+              </ul>
+            </li>
+            <li> <a class="courses"  href="#" onclick="display_page1('Course');return false">Courses </a></li>
+            <li> <a class="attendees"  href="#" onclick="display_page1('Lecture');return false">Lectures </a>
+              <ul id="lectures2">
+                <li> <a class="attendees2" href="#" onclick="display_page2('Lecture','Attendee');return false">Attendees </a> </li>
+                <li> <a class="lectures" href="#" onclick="display_page2('Lecture','Lecture');return false">Lecture Schedules </a> </li>
+                <li> <a class="willing_lecturers" href="#" onclick="display_page2('Lecture','WillingLecturer');return false">Willing Lecturers </a> </li>
+                <li> <a class="locations" href="#" onclick="display_page2('Lecture','Location');return false">Locations </a> </li>
+              </ul>
+            </li>
+            <li> <a class="tutorials"  href="#" onclick="display_page1('Tutorial');return false">Tutorials </a>
+              <ul id="tutorials2">
+                <li> <a class="tutorials2" href="#" onclick="display_page2('Tutorial','Tutorial');return false">Tutorials </a></li>
+                <li> <a class="tutorial_schedules" href="#" onclick="display_page2('Tutorial','TutorialSchedule');return false">Tutorial Schedules </a> </li>
+                <li> <a class="willing_tutors" href="#" onclick="display_page2('Tutorial','WillingTutor');return false">Willing Tutors </a> </li>
+                <li> <a class="maximum_tutorials" href="#" onclick="display_page2('Tutorial','MaximumTutorial');return false">Maximum Tutorials</a> </li>
+              </ul>
+            </li>
+            <%  if session[:administrator] %>
+              <li> <a class="agatha_emails" href="#" onclick="display_page1('Email');return false">Emails </a>
+                <ul id="emails2">
+                  <li> <a class="agatha_emails2" href="#" onclick="display_page2('Email','AgathaEmail');return false">Emails </a> </li>
+                  <li> <a class="email_templates"  href="#" onclick="display_page2('Email','EmailTemplate');return false">Email Templates </a> </li>
+                  <li> <a class="agatha_files"  href="#" onclick="display_page2('Email','AgathaFile');return false">Agatha Files </a> </li>
+                  <li> <a class="email_attachments"  href="#" onclick="display_page2('Email','EmailAttachment');return false">Email Attachments </a> </li>
+                </ul>
+              </li>
+            <%  end %>
+            <li> <a class="groups"  href="#" onclick="display_page1('Group');return false">Group </a>
+              <ul id="groups2">
+                <li> <a class="groups2" href="#" onclick="display_page2('Group','Group');return false">Group Names </a></li>
+                <li> <a class="group_people" href="#" onclick="display_page2('Group','GroupPerson');return false">Person </a></li>
+                <li> <a class="group_institutions" href="#" onclick="display_page2('Group','GroupInstitution');return false">Institution </a></li>
+                <li> <a class="group_courses" href="#" onclick="display_page2('Group','GroupCourse');return false">Course </a></li>
+                <li> <a class="group_lectures" href="#" onclick="display_page2('Group','GroupLecture');return false">Lecture </a></li>
+                <li> <a class="group_attendees" href="#" onclick="display_page2('Group','GroupAttendee');return false">Attendee </a></li>
+                <li> <a class="group_locations" href="#" onclick="display_page2('Group','GroupLocation');return false">Location </a></li>
+                <li> <a class="group_tutorials" href="#" onclick="display_page2('Group','GroupTutorial');return false">Tutorial </a></li>
+                <li> <a class="group_tutorial_schedules" href="#" onclick="display_page2('Group','GroupTutorialSchedule');return false">TutorialSchedule </a></li>
+                <li> <a class="group_agatha_emails" href="#" onclick="display_page2('Group','GroupAgathaEmail');return false">AgathaEmail </a></li>
+                <li> <a class="group_email_templates" href="#" onclick="display_page2('Group','GroupEmailTemplate');return false">EmailTemplate </a></li>
+                <li> <a class="group_willing_lecturers" href="#" onclick="display_page2('Group','GroupWillingLecturer');return false">WillingLecturer </a></li>
+                <li> <a class="group_willing_tutors" href="#" onclick="display_page2('Group','GroupWillingTutor');return false">WillingTutor </a></li>
+                <%  if session[:administrator] %>
+                  <li> <a class="group_users" href="#" onclick="display_page2('Group','GroupUser');return false">User </a></li>
+                <% end %>
+              </ul>
+            </li>
+            <li> <a class="options"  href="#"  onclick="display_page1('Option');return false">Options </a>
+              <ul id="options2">
+                <li> <a class="group_filterings" href="#"  onclick="display_page2('Option','GroupFiltering');return false">Group Filtering </a> </li>
+                <li> <a class="field_display_formats"  href="#"  onclick="display_page2('Option','FieldDisplayFormat');return false">Field Formatting </a> </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div style="clear:both; height: 20px"> &nbsp</div>
+        <div style="clear:both; background-color: #AAA; padding-left: 10px"> 
+          <p> You are logged in as user <%=User.where(:id => session[:user_id]).first.name %>. 
+            <%= link_to '(Logout)', :controller => :admin, :action => 'logout'%>
+          </p>
+        </div>
+        <div id="first_menu_div"> </div>
+        <div style ="width: 150px; position:  absolute;bottom:0;">
+          <p style="text-align: center; font-size: 25%;"> </p>
+          <%=  render(:partial => "shared/copyright") %>
+        </div>
+      </div>
+      <div style="position: absolute; left: -1000px">
+        <table>
+          <tr>
+            <th>
+              <div id="dummy_x" style ="min-width: 10em; overflow: hidden; background: #fff; border: 1px solid #000;">
+                <div style ="float:left; margin-top: 0.3ex">
+                  <input type=text style="border:none" size= 15 value ="%">
+                </div>
+                <div id="dummy_a" style="background: #AAAAAA;  border-left: 1px solid; border-color: #000000;  float: right "  > <a href ="#"  >X</a> </div>
+              </div>
+            </th>
+          </tr>
+        </table>
+        <table>
+          <tr>
+            <th> dummy format controller</th>
+            <th>
+              <div style="float:left" >
+                <div id ="dummy_select" style ="float:left; background:#fff;  border: 1px solid #000;">
+                  <select style="border:none; background-color: transparent; overflow:hidden" >
+                    <option value = "">Select Field</option>
+                  </select>
+                </div>
+                <div id ="dummy_format" style ="float:left;  overflow: hidden;  background: #fff; border: 1px solid #000; border-left: none;"  >
+                  <div class="display_format_string_div" style ="float:left; margin-top: 0.0ex"  >
+                    <input type=text style="border:none" value="%" size= 10 >
+                  </div>
+                  <div id ="dummy_fx"  class="remove_format_field" ><a href ="#"  >X</a> </div>
+                </div>
+                <div style ="float:left;"> &nbsp; </div>
+                <div id ="dummy_fp" class="add_format_field" ><a href ="#">+</a> </div>
+                <div style ="float:left"> &nbsp; </div>
+              </div>
+              <div id ="dummy_format_narrow" style ="float:left;  overflow: hidden;  background: #fff; border: 1px solid #000; "  >
+                <div class="display_format_string_div" style ="float:left; margin-top: 0.0ex"  >
+                  <input type=text style="border:none" value="%" size= 5 >
+                </div>
+                <div id ="dummy_fx"  class="remove_format_field" ><a href ="#"  >X</a> </div>
+              </div>
+            </th>
+          </tr>
+        </table>
+      </div>
+      <div id="content_div" class="content_div" style="position: fixed;  top: 187px; left: 166px; right:0px; bottom:7px; overflow: auto;">
+        <script language="javascript">
+          console.log("RWV commented out a");//on_load();
+        </script>
+        <div id="first_div">
+          <input type="button" style= "display: none" value="test button" onclick="div_test();return false" />
+        </div>
+        <form action=<%= raw   "/welcome/div_test" %> id=<%= raw "div_test"%> method="post" onsubmit="new Ajax.Request('<%="/welcome/div_test"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+          <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+        </form>
+        <form action=<%= raw   "/welcome/delete" %> id=<%= raw "form_delete"%> method="post" onsubmit="new Ajax.Request('<%="/welcome/delete"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+          <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+          <input name="id" id="delete_id" type="text" style="display:none" />
+          <input name="table_name" id ="delete_table_name" type="text" style="display:none"  />
+        </form>
+        <div>
+          <form action=<%= raw   "/welcome/select_action" %> id=<%= raw "action_form"%> method="post" onsubmit="new Ajax.Request('<%="/welcome/select_action"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+            <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+            <div style= "display: none" >
+              <input name="action_type" id ="action_type" type="text"   />
+              <input name="class_name" id ="action_class" type="text"   />
+              <input name="class_name2" id="action_class2" type="text" />
+              <div id="specific_action_variables">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div>
+          <form action=<%=  "/welcome/multi_table_create" %> id=<%="multi_table_create"%> data-remote="true" method="post" onsubmit="new Ajax.Request('<%="/welcome/multi_table_create"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+            <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= "#{form_authenticity_token}" %> /></div>
+            <div style= "display: none" >
+              <input type="text"  name ="multi_table_create" id="multi_table_create_table_name"   />
+            </div>
+          </form>
+        </div>
+        <div>
+          <form action=<%= raw   "/welcome/make_suggestion" %> id=<%= raw "make_suggestion"%> method="post" onsubmit="new Ajax.Request('<%="/welcome/make_suggestion"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+            <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+            <div  id="make_suggestion_div" style= "display: none" >
+              <input name="suggest_class" id ="suggest_class" type="text" />
+              <input name="suggest_type" id ="suggest_type" type="text"  />
+              <input name="suggest_id" id ="suggest_id" type ="text" />
+              <div id="specific_suggest_variables">
+              </div>
+            </div>
+          </form>
+        </div>
+        <%= form_with url: "/welcome/display_page", id: "display_page", method: :post, remote: true do |form| %>
+          <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+          <input name="page_name" id="display_page_name" type="text" style="display:none" />
+          <input name="option" id ="display_page_option" type="text" style="display:none"  />
+        <% end %>
+        <div style= "display: none">
+          <input name="opener_attribute_name" id ="stupid_update_opener_attribute_name" type="text" value="not_set" />
+          <input name="opener_id" id ="stupid_update_opener_id" type="text" value ="1" />
+          <input name="opener_attribute_name" id ="update_opener_attribute_name" type="text" value="not_set" />
+          <input name="opener_id" id ="update_opener_id" type="text" value ="1" />
+        </div>
+        <form action=<%= raw   "/welcome/update_main" %> id="update_main" method="post" onsubmit="new Ajax.Request('<%="/welcome/update_main"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+          <div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+          <div style="display:none">
+            <input name="id" id="update_main_id" type="text" />
+            <input name="table_name" id ="update_main_class_name" type="text"  />
+            <input name="attribute_name" id="update_main_attribute_name" type="text" />
+          </div>
+        </form>
+        <form action=<%= raw   "/welcome/child_unload" %> id="child_unload_main"  method="post" onsubmit="new Ajax.Request('<%="/welcome/child_unload"%>', {asynchronous:false, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+          <div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+          <div style="display:none">
+            <input name="id" id="child_unload_main_id" type="text" />
+            <input name="table_name" id ="child_unloade_main_table_name" type="text"  />
+            <input name="attribute_name" id ="child_unload_main_attribute_name" type="text"  />
+          </div>
+        </form>
+        <div style="display:none">
+          <input type="text" id= "x_height" /><label> dummy_x</label>
+          <input type="text" id= "a_height" /><label> dummy_a</label>
+          <input type="text" id= "select_height" /><label> dummy_select</label>
+          <input type="text" id= "format_height" /><label> dummy_format</label>
+          <input type="text" id= "fx_height" /><label> dummy_fx</label>
+          <input type="text" id= "fp_height" /><label> dummy_fp</label>
+          <input type="text" id= "format_narrow_width" /><label> dummy_narrow_width</label>
+          <input type="text" id= "format_width" /><label> dummy_width</label>
+        </div>
+        <script type="text/javascript">
+          jQuery('#select_height').val( jQuery('#dummy_select').height());
+             jQuery('#format_height').val( jQuery('#dummy_format').height());
+             jQuery('#format_width').val( jQuery('#dummy_format').width());
+             jQuery('#format_narrow_width').val( jQuery('#dummy_format_narrow').width());
+             jQuery('#fp_height').val( jQuery('#dummy_fp').height());
+             jQuery('#fx_height').val( jQuery('#dummy_fx').height());
+        </script>
+        <div>
+        </div>
+        <div id="hidden_div" style="display:none">
+          <% table_name = "Person" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <% Rails.logger.debug("RWV index.html.erb search_controller = #{table_name}") %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_Person" class ="separator_class">&nbsp</div>
+          <% table_name = "Group" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_Group" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupPerson" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupPerson" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupInstitution" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupInstitution" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupCourse" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupCourse" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupLecture" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupLecture" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupAttendee" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupAttendee" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupLocation" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupLocation" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupTutorial" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupTutorial" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupTutorialSchedule" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupTutorialSchedule" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupAgathaEmail" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupAgathaEmail" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupEmailTemplate" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupEmailTemplate" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupWillingLecturer" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupWillingLecturer" class ="separator_class">&nbsp</div>
+          <% table_name = "GroupWillingTutor" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_GroupWillingTutor" class ="separator_class">&nbsp</div>
+          <%  if session[:administrator] %>
+            <% table_name = "GroupUser" %>
+            <div id = <%= raw "welcome_#{table_name}"  %> >
+              <% search_controller =  @search_ctls[table_name] %>
+              <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+            </div>
+            <div id ="separator_GroupUser" class ="separator_class">&nbsp</div>
+          <%  end %>
+          <% table_name = "Attendee" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div  id ="separator_Attendee" class ="separator_class">&nbsp</div>
+          <% table_name = "Lecture" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div  id ="separator_Lecture" class ="separator_class">&nbsp</div>
+          <% table_name = "Location" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div  id ="separator_Location" class ="separator_class">&nbsp</div>
+          <% table_name = "WillingLecturer" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_WillingLecturer" class ="separator_class">&nbsp</div>
+          <% table_name = "Tutorial" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_Tutorial" class ="separator_class">&nbsp</div>
+          <% table_name = "TutorialSchedule" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_TutorialSchedule" class ="separator_class">&nbsp</div>
+          <% table_name = "WillingTutor" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_WillingTutor" class ="separator_class">&nbsp</div>
+          <% table_name = "MaximumTutorial" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_MaximumTutorial" class ="separator_class">&nbsp</div>
+          <% table_name = "Course" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_Course" class ="separator_class">&nbsp</div>
+          <% table_name = "Term" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_Term" class ="separator_class">&nbsp</div>
+          <% table_name = "Day" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_Day" class ="separator_class">&nbsp</div>
+          <%  if session[:administrator] %>
+            <% table_name = "User" %>
+            <div id = <%= raw "welcome_#{table_name}"  %> >
+              <% search_controller =  @search_ctls[table_name] %>
+              <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+            </div>
+            <div id ="separator_User" class ="separator_class">&nbsp</div>
+          <% end %>
+          <% table_name = "Institution" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_Institution" class ="separator_class">&nbsp</div>
+          <% table_name = "EmailTemplate" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_EmailTemplate" class ="separator_class">&nbsp</div>
+          <% table_name = "AgathaEmail" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_AgathaEmail" class ="separator_class">&nbsp</div>
+          <% table_name = "AgathaFile" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_AgathaFile" class ="separator_class">&nbsp</div>
+          <% table_name = "EmailAttachment" %>
+          <div id = <%= raw "welcome_#{table_name}"  %> >
+            <% search_controller =  @search_ctls[table_name] %>
+            <% Rails.logger.debug("RWV index.html.erb search_controller = #{table_name}") %>
+            <%= raw  render(:partial => "shared/search_table", :object => search_controller) %>
+          </div>
+          <div id ="separator_EmailAttachment" class ="separator_class">&nbsp</div>
+          <div class ="separator_class">&nbsp</div>
+          <div id="welcome_GroupFiltering">
+            <div class ="separator_class">&nbsp</div>
+            <div class ="content_class" style="width: 100%">
+              <div class ="pad_class">
+                <h2>Group Filtering</h2>
+                <p>Update these settings if you want to restrict which records can be selected on the edit pages. For example, you can update the attendee/student entry below
+                  so that on the attendee edit page, only current students are available for selection. </p>
+                <% Rails.logger.debug("RWV index.html.erb render all_group_filters") %>
+                <%= raw  render(:partial => "shared/all_group_filters", :object => @all_group_filters) %>
+              </div>
+            </div>
+          </div>
+          <div id="welcome_FieldDisplayFormat">
+            <div class ="separator_class">&nbsp</div>
+            <div class ="content_class" style="width: 100%">
+              <div class ="pad_class">
+                <h2>Field Display Format</h2>
+                <p>Update these settings to alter the way references to records are displayed in other tables </p>
+                <form action="/welcome/update_formats"  method="post" onsubmit="new Ajax.Request('/welcome/update_formats', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;">
+                  <div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+                  <% Rails.logger.debug("RWV index.html.erb update_formats rendering") %>
+                  <%= raw  render(:partial => "shared/format_controller", :object => @format_controller) %>
+                  <div>
+                    <input name="commit" type="submit" value="Update" />
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class ="separator_class">&nbsp</div>
+          <div class ="content_class" style="width: 100%"><br>
+            d<br>
+            d<br>
+          </div>
+          <div class ="separator_class">&nbsp</div>
+          <div class ="content_class" style="width: 100%"><br>
+            d<br>
+            d<br>
+          </div>
+        </div>
+      </div>
+      <% Rails.logger.debug("RWV index.html.erb content_end()") %>
+      <script language="javascript">
+        content_end()
+      </script>
+      <div id="two_column_div" style="position: fixed;  top: 187px; left: 166px; right:0px; bottom:7px; overflow: hidden;" >
+        <div id="content_div_1" class="content_div" style="position: fixed;  top: 187px; left: 166px; right:0px; bottom:7px; overflow: auto;">
+          <div id="first_div_1"> </div>
+        </div>
+        <div id="content_div_2" class="content_div" style="position: fixed;  top: 187px; left: 166px; right:0px; bottom:7px; overflow: auto;">
+          <div id="first_div_2"> </div>
+        </div>
+        <div id="black_bar_separator_div" style ="position: fixed;top:187px; left: 166px;  bottom:7px; width: 7px; background-color: #000000;">
+          &nbsp;
+        </div>
+      </div>
+      <div id="disable_id" style ="position:absolute; top:0; right:0; width:100%; height: 100%; background-color: #ffffff;  opacity:0.5">
+      </div>
+      <%  if session[:administrator] %>
+        <div id="administrator_div"></div>
+      <%  end %>
+    </div>
+    <% Rails.logger.debug("RWV index.html.erb some js") %>
+    <script type="text/JavaScript">
+      console.log("RWV commented out b");//on_load();
+      jQuery('#select_height').val( jQuery('#dummy_select').height());
+      jQuery('#format_height').val( jQuery('#dummy_format').height());
+      jQuery('#format_width').val( jQuery('#dummy_format').width());
+      jQuery('#format_narrow_width').val( jQuery('#dummy_format_narrow').width());
+      jQuery('#fp_height').val( jQuery('#dummy_fp').height());
+      jQuery('#fx_height').val( jQuery('#dummy_fx').height());
+      content_end();
+      jQuery('#content_div').hide();
+      //jQuery('#two_column_div').hide();
+      load_pages();
+      jQuery('#disable_id').hide();
+      jQuery(window).name = "main_window";
+      jQuery.fn.down = function() {
+           var el = this[0] && this[0].firstChild;
+           while (el && el.nodeType != 1)
+           el = el.nextSibling;
+       return jQuery(el);
+          };
+            jQuery( function() {
+            jQuery("#black_bar_separator_div").draggable({containment: two_column_div});
+           } );
+            jQuery("#black_bar_separator_div").on( "dragstop", function( event, ui ) { end_drag() } );
+    </script>
+
+
+
+
+<% Rails.logger.debug("RWV index.html.erb body end") %>
+  </body>
+</html>

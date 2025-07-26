@@ -1,0 +1,50 @@
+<% Rails.logger.info("external_filter.html.erb 01") %>
+<% class_name = external_filter.class_name %>
+<% filter_id  = external_filter.id  %>
+<% current_elts = external_filter.current_arguments %>
+<% num_elts = current_elts.length %>
+<% Rails.logger.info("external_filter.html.erb 02 class_name=#{class_name}, filter_id=#{filter_id} tag=#{external_filter.tag}, header = #{external_filter.header} ") %>
+
+<tr id =<%= raw  "external_filter_#{class_name}_#{filter_id}"%> style="background: #CCCCCC"  >
+<th id = <%= raw   "external_filter_header_#{class_name}_#{filter_id}" %> >
+  <%= external_filter.header %>
+</th>
+<% Rails.logger.info("external_filter.html.erb 03") %>
+<th>
+  <div  style="float: left;width:27em;" >
+    <% for elt_id in (0..(num_elts-1)) %>
+<% Rails.logger.info("external_filter.html.erb 04 external_filter.group_selector = #{external_filter.group_selector} #{class_name}_#{filter_id}_#{elt_id}, filter_tag = #{current_elts[elt_id].external_filter.tag}") %>
+      <div id =<%= raw "external_filter_selection_#{class_name}_#{filter_id}_#{elt_id}"%> class="external_filter_element" style ="position:relative; min-width: 120px; overflow: hidden; background: #fff; border: 1px solid #000; "  >
+        <% if external_filter.group_selector %>
+
+          <%= raw  render(:partial =>"shared/external_group_selection", :object => current_elts[elt_id]) %>
+
+        <% end %>  <!-- if external_filter.group_selector -->
+        <%= raw  render(:partial => "shared/external_filter_element", :object => current_elts[elt_id]) %>
+         
+        </div>
+      <% end %> <!-- for elt_id in (0..(num_elts-1)) -->
+      <% Rails.logger.info("external_filter.html.erb 05") %>
+  </div>
+</th>
+<th>
+  <% on_add_string = "\"addExternalFilterElement('#{class_name}','#{filter_id}');return false\"" %>
+  <% Rails.logger.info("external_filter.html.erb 06") %>
+  <% if external_filter.allow_multiple_arguments %>
+  <% Rails.logger.info("external_filter.html.erb 07") %>
+  <div class="add_external_filter_element" style="float: right; padding-top: 0px; height: 100px" ><a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_add_string }"%> >+</a></div>
+  <% end %>
+  <% Rails.logger.info("external_filter.html.erb 08") %>
+  <div  style="float: right;" > &nbsp;  </div>
+  <% Rails.logger.info("external_filter.html.erb 09") %>
+<input type="text" name= <%= raw "number_of_filter_elements_#{filter_id}" %> id= <%= raw  "number_of_filter_elements_#{class_name}_#{filter_id}" %> value = <%=  num_elts %> style="display:none" />
+<input type="text" id= <%= raw "max_filter_elements_#{class_name}_#{filter_id}" %> value = <%=  num_elts %> style="display:none" />
+
+
+<% Rails.logger.info("external_filter.html.erb 10") %>
+</th>
+
+</tr>
+
+
+

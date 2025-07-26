@@ -1,0 +1,66 @@
+<% Rails.logger.info("update_helper .js.erb #{@table_name}, #{attribute.name}, #{id}"); %>
+<% Rails.logger.info("update_helper .js.erb edit_cell.attribute.name =  #{edit_cell1.attribute.name}"); %>
+
+
+opener_window = window.opener;
+doc = opener_window.document;
+
+
+<% attribute_names = [attribute.name] %>
+<% edited_table_name = @table_name %>
+<% ids = [id] %>
+<% Rails.logger.info("update_main_remote.js.erb a"); %>
+
+    
+    <% search_ctls.each do |table_name, search_ctl|  %>
+        <% eval("#{table_name}.set_controller(search_ctl)");  %>
+        <% updated_objects = search_ctl.GetUpdateObjects(edited_table_name, attribute_names, ids); %>
+        <% for row in updated_objects  %>
+            <% Rails.logger.info("RWV _update_helper rwv #{row.id}") %>
+            if (jQuery('#<%="#{row.id}_#{table_name}"%>',doc)[0]!=null ){
+                jQuery('#<%="#{row.id}_#{table_name}"%>',doc).replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
+            opener_window.setcheck('#<%="#{table_name}_check_#{row.id.to_s}"%>',true)
+            }
+            <% Rails.logger.debug("RWV _update_helper row.id = #{row.id}") b%>
+            <% new_option_str = search_ctl.GetShortField(row.id); %>    
+            opener_window.select_update('<%="#{table_name}"%>',<%="#{row.id}"%>,'<%="#{new_option_str}"%>') 
+        <% end %>
+        <% if table_name == edited_table_name %>             
+            <% results_table_name = "search_results_table_#{table_name}" %>
+            <% current_filter_name = "current_filters_#{table_name}" %>          
+            
+            <% select_string = search_ctl.get_sql_id_string(ids); %>
+            <% eval_str = "#{table_name}.find_by_sql(\"#{select_string}\")" %>
+            <% Rails.logger.info("eval str = #{eval_str}"); %>
+            <% eval("#{table_name}.set_controller(search_ctl)"); %>
+            <% new_rows = eval(eval_str); %>
+            <% new_rows.each do |new_row| %>      
+                <% search_results = SearchResults.new([new_row] , :search_results, search_ctl); %>
+                <% search_results.table_type = :search_results; %>
+                jQuery('#<%="#{current_filter_name}"%>',doc).hide()
+                                
+                if (jQuery('#<%="#{new_row.id}_#{table_name}"%>',doc)[0]!=null){               
+                    jQuery('#<%="#{new_row.id}_#{table_name}"%>',doc).replaceWith('<%= j render(:partial => "shared/search_results_row_button", :object =>new_row )%>');
+                }else if (jQuery('#<%="#{results_table_name}"%>',doc)[0]!=null){ 
+                    jQuery('#<%="#{results_table_name}"%> tr:last',doc).after('<%= j render(:partial => "shared/search_results_row_button", :object =>new_row )%>');
+                }else{
+                    jQuery('#<%="search_results_#{table_name}"%>',doc).html('<%= j render(:partial => "shared/search_results" , :object => search_results)%>',doc);            
+                    opener_window.resizeX();              
+                }
+                <% Rails.logger.info("RWV _update_helper.js.erb new_row.id = #{new_row.id}") %>
+                <% new_option_str = search_ctl.GetShortField(new_row.id); %>
+                opener_window.select_update('<%="#{table_name}"%>',<%="#{new_row.id}"%>,'<%="#{new_option_str}"%>') 
+            <% end %>
+        <% end %>    
+        opener_window.recolour('<%="#{table_name}"%>')
+    <% end %>
+    opener_window.action_select_no_js();
+
+
+<% if edit_cell1.attribute %>
+jQuery('#<%="#{@table_name}_#{field_name}"%>').replaceWith("<%= j render(:partial => 'shared/edit_cell', :object => edit_cell1) %>");
+<% end %>
+<% if edit_cell2.attribute %>
+jQuery('#<%="#{@table_name}_updated_at"%>').replaceWith("<%= j render(:partial => 'shared/edit_cell', :object => edit_cell2) %>");
+<% end %>
+

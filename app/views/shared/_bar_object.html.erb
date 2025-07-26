@@ -1,0 +1,25 @@
+    <%  bar_table_name = bar_object.bar_table_name %>
+    <%  bar_class_name = bar_object.bar_class_name %>
+    <%  bar_id =  bar_object.bar_id %>
+    <%  bar_edit_message =  bar_object.bar_edit_message %>
+
+
+<div  style="display:none">
+           <input name="attribute" id="unload_attribute" type="text"   />
+           <input name="data_type" id="unload_data_type" type="text" value = -1  />
+</div>
+
+<form action=<%=  "\"#{bar_table_name}/win_unload\"" %> id="win_unload" method="post" onsubmit="new Ajax.Request('<%="/#{bar_table_name}/win_unload"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+      <div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= "\"#{form_authenticity_token}\"" %> /></div>
+        <div  style="display:none">
+   <input name="table_name" id="unload_table_name" type="text" value=<%="\"#{bar_class_name}\"" %> />
+    <input name="id" id="unload_id_value" type="text" value=<%="\"#{bar_id}\"" %>  />
+        </div>
+</form>
+
+<h2>
+  <%= bar_edit_message  %>
+  
+
+</h2>
+

@@ -1,0 +1,50 @@
+<script type ="text/javascript">
+document.title =   '<%= raw "#{@table_name}: #{@short_name}"%>'
+</script>
+
+
+
+  
+<% onblur_str = "\"file_change();return false\"" %>
+
+<div class ="content_class" style="width: 100%">
+  <div class ="pad_class">
+
+    <h1><%="#{@table_name}: #{@short_name}"%>  </h1>
+    <%= raw  render(:partial => "shared/edit_object", :object => @edit_object ) %>
+
+
+
+
+
+    <form action="/agatha_files/file_upload" enctype="multipart/form-data" class="edit_agatha_file" id="file_upload" method="post">
+      <div style="margin:0;padding:0">
+    <input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+  <p>
+    Upload new file <br />
+    <div style="display:none">
+    <input  name="id"  type="text"  size="40" value ="<%= @edit_object.current_object.id  %> "/>
+    <input  name="table_name" size="30" type="text" value="AgathaFile" />
+    </div>
+    <input id="agatha_file_agatha_data" name="agatha_file[agatha_data]" onchange= <%= raw "#{onblur_str}"%>  size="30" type="file" />
+
+  </p>
+  <p>
+
+  </p>
+  
+  </form>
+
+ 
+
+
+
+
+
+  </div>
+</div>
+
+
+
+
+

@@ -1,0 +1,14 @@
+<% if edit_cell1 != nil %>
+jQuery('#<%="#{table_name}_#{field_name}"%>').replaceWith("<%= j render(:partial => 'shared/edit_cell', :object => edit_cell1) %>");
+<% end %>
+
+<% if edit_cell2 != nil %>
+jQuery('#<%="#{table_name}_body"%>').replaceWith("<%= j render(:partial => 'shared/edit_cell', :object => edit_cell2) %>");
+yahoo_widget();
+<%else %>
+    add_blur_listener(); myEditor.saveHTML();editBlur(\"\",\"\", false)";
+<% end %>
+<% if edit_cell3 != nil %>
+jQuery('#<%="#{table_name}_updated_at"%>').replaceWith("<%= j render(:partial => 'shared/edit_cell', :object => edit_cell3) %>");
+<% end %>
+

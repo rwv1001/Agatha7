@@ -1,0 +1,141 @@
+<%  row = search_results_row_button %>
+
+
+
+<tr id= <%= raw "#{row.id}_#{row.class_name}" %> class=<%= raw "row_#{row.class_name}" %>  style ="<%= cycle('background: #CCCCCC','background: #EEEEEE')%> ">
+
+<% search_controller = row.search_controller %>
+<% table_name = search_controller.table_name %>
+<% all_display_indices = Array.new(search_controller.fixed_indices) %>
+<% all_display_indices.concat(search_controller.current_filter_indices)  %>
+
+<% for i in all_display_indices -%>
+    <% filter = search_controller.extended_filters[i].filter_object %>
+    <% filter_type = search_controller.extended_filters[i].filter_type %>
+    <% field_name = "#{filter.tag}" %>
+    <% class_id_name = "#{field_name}_#{table_name}" %>
+    <td class =<%="#{class_id_name}"%> >
+    <% begin %>
+      <% case filter_type 
+         when :subquery %>
+          <%  raw eval_str_2 = "\"#{eval(filter.eval_str)}\"" %>
+          <%= raw  eval(eval_str_2) %>
+        <% else %>
+          <%= raw  eval(filter.eval_str) %>       
+        <% end %>
+    <% rescue Exception => exc %>
+          <%=  "" %>
+    <% end %>
+    </td>
+<% end %>
+
+
+
+
+
+
+
+     <% if table_name == "Person" || table_name == "Lecture" %>
+    <%  click_str = "onclick=on_select_check_click(#{row.id},'#{table_name}')"  %>
+    <%  raw id_str=  "id = #{table_name}_check_#{row.id.to_s}" %>
+    <% else %>
+      <% click_str = ""  %>
+       <%  raw id_str = "id = #{table_name}_check_#{row.id.to_s}" %>
+    <% end %>
+
+      <td class ="select-cell"> <input type="checkbox" name ="row_in_list[]" class="check"  <%=id_str%> <%= click_str.html_safe  %> value= <%=row.id.to_s %>  ></td>
+      <td class="update-cell">      <% onclick_str = "\"on_edit('#{table_name.tableize}','#{table_name}','#{row.id.to_s}');return false;\"" %>
+      <span id=<%= raw "a_edit_#{table_name.tableize}_#{row.id.to_s}" %> >
+      <a href="/" data-remote="true" rel="nofollow"   onclick= <%= raw "#{onclick_str}"%>   >Edit </a> </span>
+      </td>
+      <% if table_name == "Course" %>
+      <td class="create-cell">      <% onclick_str = "\"on_create('#{row.id.to_s}');return false;\"" %>
+      <span id=<%= raw "a_create_#{table_name.tableize}_#{row.id.to_s}" %> >
+      <a href="/" data-remote="true" rel="nofollow"  onclick= <%= raw "#{onclick_str}"%>   >Create| </a> </span>
+      </td>
+      <% end %>
+  <% if table_name == "EmailTemplate" %>
+     <td class="create-email-cell">
+      <% onclick_str2 = "\"on_create('#{row.id.to_s}');return false;\"" %>
+       <% onclick_str3 = "\"on_create_send('#{row.id.to_s}');return false;\"" %>
+      <span > <a href='/' data-remote="true" rel="nofollow"  onclick= <%= raw "#{onclick_str2}"%>   >Create Emails </a>  <a href='/' data-remote="true" rel="nofollow"  onclick= <%= raw "#{onclick_str3}"%>   >| Create & Send  </a></span>
+      </td>
+     
+      <% end %>
+   
+
+      <% if table_name == "Person" || table_name == "Lecture" %>
+      <td class="exam-cell">
+      <% exam_check_str = "\"on_checkbox_click('#{row.id.to_s}','examcheck', '#{table_name}')\"" %>         
+      <input type="checkbox" name ="exam_in_list[]"  onclick= <%= raw "#{exam_check_str}"%> id= <%="#{table_name}_examcheck_#{row.id.to_s}"%> class="examcheck" value= <%=row.id.to_s %>  >
+      </td>
+      <td class="compulsory-cell">
+      <% comp_check_str = "\"on_checkbox_click('#{row.id.to_s}','compulsorycheck', '#{table_name}')\"" %>   
+      
+      <input  type="checkbox"  name= "compulsory_in_list[]"  onclick= <%= raw "#{comp_check_str}"%>  id= <%="#{table_name}_compulsorycheck_#{row.id.to_s}"%>  class= "compulsorycheck"  value= <%=row.id.to_s %>    >
+      </td>
+       <%  end %>
+
+      <% if table_name == "Course" %>
+      <td class="suggest-cell">      <% onclick_str = "\"on_suggest('#{row.id.to_s}');return false;\"" %>
+      <span id=<%= raw "a_suggest_#{table_name.tableize}_#{row.id.to_s}" %> >
+      <a href="/" data-remote="true" rel="nofollow"  onclick= <%= raw "#{onclick_str}"%>   >Suggest</a> </span>
+      </td>
+      <% end %>
+
+      <td class="delete-cell">
+      <% onclick_str2 = "\"on_delete('#{table_name}','#{row.id.to_s}');return false;\"" %>
+      <span > <a href='/' data-remote="true" rel="nofollow"  onclick= <%= raw "#{onclick_str2}"%>   >Delete </a> </span>
+      </td>
+      <% if table_name == "AgathaEmail" %>
+      <td class="send-cell">
+      <% onclick_str2 = "\"on_agatha_send('#{row.id.to_s}','0');return false;\"" %><% onclick_str3 = "on_agatha_send('#{row.id.to_s}','1');return false" %>
+      <span style="white-space: nowrap"> <a href='/' data-remote="true" rel="nofollow"  onclick= <%= raw "#{onclick_str2}"%>   >Send|</a><a href=# onclick= <%= raw "#{onclick_str3}"%> >Test</a> </span>
+      </td>
+       <td class="attach-cell">
+      <% onclick_str2 = "onclick= \"on_action('#{row.id.to_s}');return false\"" %>
+      <span > <a href='/' data-remote="true" rel="nofollow"  <%= raw "#{onclick_str2}"%>   >Attach Selected </a> </span>
+      </td>
+      <% end %>
+      <% if table_name == "AgathaFile" %>
+       <td class="attach_to-cell">
+      <% onclick_str2 = "onclick= \"on_action('#{row.id.to_s}');return false;\"" %>
+      <span > <a href='/' data-remote="true" rel="nofollow"  <%= raw "#{onclick_str2}"%>   >Attach to Selected </a> </span>
+      </td>
+      <td class="download-cell">
+    
+        <% if row.agatha_data_file_name !=nil %>
+          <% row_url = row.agatha_data.url %>
+      <span > <a href= <%= raw   "#{row_url}" %> target="_blank"  >Download </a> </span>
+      <% else %>
+      <span > Unavailable </span>
+      <% end %>
+      </td>
+      <% end %>
+      <td class="add-cell">
+      <% onclick_str2 = "onclick= \"on_action('#{row.id.to_s}');return false;\"" %>
+      <span > <a href='/' data-remote="true" rel="nofollow" <%= raw "#{onclick_str2}"%>   >Add Selected </a> </span>
+      </td>
+
+      <td class="remove-cell">
+      <% onclick_str2 = "onclick= \"on_action('#{row.id.to_s}');return false;\"" %>
+      <span > <a href='/' data-remote="true" rel="nofollow"   <%= raw "#{onclick_str2}"%>   >Remove Selected </a> </span>
+      </td>
+      <% if table_name == "Person" %>
+      <td class="assign-cell">
+          <% onclick_str = "\"on_assign('#{row.id.to_s}');return false;\"" %>
+      <span id=<%= raw "assign_#{table_name.tableize}_#{row.id.to_s}" %> >
+      <a href="/" data-remote="true" rel="nofollow"  onclick= <%= raw "#{onclick_str}"%>   >Assign</a> </span>
+      </td>
+
+      <td class ="willing-cell">
+      <% onclick_str = "\"on_willing('#{row.id.to_s}');return false;\"" %>
+      <span id=<%= raw "willing_#{table_name.tableize}_#{row.id.to_s}" %> >
+      <a href="/" data-remote="true" rel="nofollow"  onclick= <%= raw "#{onclick_str}"%>   >Make Willing </a> </span>
+      </td>
+      <% end %>
+
+      <td class="dummy-cell"> </td>
+
+
+</tr>

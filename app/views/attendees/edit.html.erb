@@ -1,0 +1,11 @@
+<script type ="text/javascript">
+document.title =   <%= raw "#{@table_name}: #{@short_name}"%>
+</script>
+
+<div class ="content_class" style="width: 100%">
+  <div class ="pad_class">
+
+    <h1><%="#{@table_name}: #{@short_name}"%>  </h1>
+    <%= raw  render(:partial => "shared/edit_object", :object => @edit_object ) %>
+  </div>
+</div>

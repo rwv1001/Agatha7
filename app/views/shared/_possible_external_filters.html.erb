@@ -1,0 +1,15 @@
+   <%  search_controller = possible_external_filters %>
+   <% table_name = search_controller.table_name %>
+   <% onchange_str2 = "AddFilter('#{search_controller.table_name}');return false" %>
+   <% ex_filters = search_controller.GetPossibleExternalFilters() %>
+   <% if ex_filters.length >0 %>
+    <select id=<%= raw "possible_external_filters_#{search_controller.table_name}" %> onchange= <%= raw "#{onchange_str2 }"%> >
+        <option  value = "do_nothing">Add Search Filter</option>
+        <% for ex_filter in ex_filters -%>
+       
+          <%  raw id_str = "id = possible_external_filters_#{table_name}_#{ex_filter.id}" %>
+            <option  <%= id_str%> value = "<%=  ex_filter.id %>"><%= ex_filter.header%></option>
+         
+        <% end -%>
+    </select>
+    <% end %>

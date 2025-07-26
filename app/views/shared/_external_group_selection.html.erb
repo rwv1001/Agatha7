@@ -1,0 +1,21 @@
+
+<% external_filter_element = external_group_selection %>
+<% external_filter = external_filter_element.external_filter %>
+<% class_name = external_filter.class_name %>
+<% filter_id  = external_filter.id  %>
+<% elt_id =  external_filter_element.element_id %>
+<% group_selection = external_filter.GroupSelection() %>
+<% current_elts = external_filter.current_arguments %>
+
+<% on_change_string = "\"onUpdateExternalFilterGroup('#{class_name}','#{filter_id}','#{elt_id}');return false;\"" %>
+      <% Rails.logger.info("group_selection length = #{group_selection.length}") %>
+ <select class= <%= raw "external_filter_group_selection_#{class_name} Group_select"%> id= <%= raw   "group_selection_#{class_name}_#{filter_id}_#{elt_id}" %> name= <%= raw "group_selection_#{filter_id}_#{elt_id}"%> style="width:20em;border:none; background-color: transparent; overflow:hidden" onchange = <%= raw "#{on_change_string}" %>   >
+              <option value = 0 class= <%= raw "group_class_0"%>  > <%=  "Group for #{external_filter.argument_class} selection" %> </option>
+                <% for group_option in group_selection  %>
+                  <% if group_option.id ==  current_elts[elt_id].group_id %>
+                    <option class= <%= raw "group_class_#{group_option.id}"%> selected value = <%=  group_option.id %> > <%=  group_option.name %></option>
+                  <% else %>
+                    <option value = <%= raw  group_option.id %>  class= <%="group_class_#{group_option.id}"%>  > <%=  group_option.name %></option>
+                  <%end%> <!-- if-->
+            <% end %> <!-- for group_option in group_selection  -->
+ </select>
