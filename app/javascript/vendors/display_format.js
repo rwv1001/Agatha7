@@ -1,7 +1,7 @@
 
 function deleteElement(table, count_str)
 {
-    const count = parseInt(count_str);
+    const count = parseInt(count);
     const current_elts_str = "display_format_count_"+ table;
 
     const current_elts_str14 = "#"+current_elts_str;
@@ -111,7 +111,7 @@ function addElement(table, count_str)
         const add_format = jQuery('#add_format_'+ table+"_"+i);
         const aref_add_format = add_format.find('a:first');
 
-        const new_count = i+1;
+        new_count = i+1;
 
         div_obj.attr('id',"display_format_" + table+"_"+new_count);
         display_format_string_div.attr('id',"display_format_string_div_"+ table+"_"+new_count);

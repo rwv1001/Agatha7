@@ -5,6 +5,10 @@ function copyright() {
 }
 
 
+
+
+
+
 function hideHeader() {
   jQuery('#logo_div').hide();
   jQuery('#title_div').hide();
@@ -37,18 +41,18 @@ function showHeader() {
 window.showHeader = showHeader;
 
 function snap_function(x, y) {
-  x_min = jQuery('#content_div_1').offset().left;
-  x_max = jQuery('#content_div_2').offset().left + jQuery('#content_div_2').outerWidth() - jQuery('#black_bar_separator_div').outerWidth();
-  y_snap = jQuery('#content_div_2').offset().top;
+  const x_min = jQuery('#content_div_1').offset().left;
+  const x_max = jQuery('#content_div_2').offset().left + jQuery('#content_div_2').outerWidth() - jQuery('#black_bar_separator_div').outerWidth();
+  const y_snap = jQuery('#content_div_2').offset().top;
   return [(x < x_max - 50) ? (x > x_min + 50 ? x : x_min) : x_max, y_snap];
 }
 window.snap_function = snap_function;
 
 function end_drag() {
-  frac_left_black_bar = jQuery('#black_bar_separator_div').offset().left;
-  left_1_pos = content_div_1.offset().left;
-  black_bar_width = black_bar_separator_div.outerWidth();
-  bar_position_scale = (frac_left_black_bar - left_1_pos) / (jQuery(window).innerWidth() - left_1_pos - black_bar_width);
+  const frac_left_black_bar = jQuery('#black_bar_separator_div').offset().left;
+  const left_1_pos = content_div_1.offset().left;
+  const black_bar_width = black_bar_separator_div.outerWidth();
+  const bar_position_scale = (frac_left_black_bar - left_1_pos) / (jQuery(window).innerWidth() - left_1_pos - black_bar_width);
 
   page_view.separator_pos = bar_position_scale;
   scrollHandler();
@@ -70,15 +74,16 @@ function scrollHandler() {
   //   {
   //        width_str = '100%'
   //    }
-  two_column_div = jQuery('#two_column_div')
+  const two_column_div = jQuery('#two_column_div')
   if (two_column_div.is(':visible')) {
     set_double_scroll();
   }
 
   jQuery('.separator_class').each(function () {
-    content_div = jQuery(this).closest('.content_div');
-    scroll_width = content_div[0].scrollWidth;
-    current_width = content_div.width();
+    const content_div = jQuery(this).closest('.content_div');
+    const scroll_width = content_div[0].scrollWidth;
+    const current_width = content_div.width();
+    let width_str;
     if (current_width < scroll_width) {
       width_str = scroll_width + 'px'
     }
@@ -97,9 +102,9 @@ window.scrollHandler = scrollHandler;
 
 function scrollHandler3() {
   //alert('event!');
-  var scroll_width = jQuery('#content_div')[0].scrollWidth;//getStyle('');
-  var current_width = jQuery('#content_div').width();//getStyle('');
-  var width_str;
+  const scroll_width = jQuery('#content_div')[0].scrollWidth;//getStyle('');
+  const current_width = jQuery('#content_div').width();//getStyle('');
+  let width_str;
   if (current_width < scroll_width) {
     width_str = 'width: ' + scroll_width + 'px'
   }
@@ -115,10 +120,10 @@ function scrollHandler3() {
   //  jQuery('#test_resize').replace('<p id ="test_resize"> scroll size is '+ scroll_width+' current = '+current_width +' width_str = ' + width_str+'</p>');
 
   jQuery('.separator_class').each(function () {
-    style_str = jQuery(this).attr("style");
+    const style_str = jQuery(this).attr("style");
     jQuery(this).attr('style', width_str);
-    style_str2 = jQuery(this).attr("style");
-    x = 1;
+    const style_str2 = jQuery(this).attr("style");
+    const x = 1;
   });
 
 }
@@ -176,18 +181,18 @@ window.content_end = content_end;
 function display_page(page_name, option_str) {
 
 
-  page_name_id = "display_page_name"
-  option_id = "display_page_option"
-  form_id = "display_page"
+  const page_name_id = "display_page_name"
+  const option_id = "display_page_option"
+  const form_id = "display_page"
 
-  page_name_id211 = "#" + page_name_id;
-  page_name_elt = jQuery(page_name_id211)
+  const page_name_id211 = "#" + page_name_id;
+  const page_name_elt = jQuery(page_name_id211)
 
-  option_id212 = "#" + option_id;
-  option_elt = jQuery(option_id212);
+  const option_id212 = "#" + option_id;
+  const option_elt = jQuery(option_id212);
 
-  form_id213 = "#" + form_id;
-  form_elt = jQuery(form_id213);
+  const form_id213 = "#" + form_id;
+  const form_elt = jQuery(form_id213);
   page_name_elt.attr("value", page_name);
   option_elt.attr("value", option_str);
   //form_elt.submit();
@@ -197,24 +202,25 @@ window.display_page = display_page;
 
 function hide_div(div_id) {
 
-  div_id220 = "#" + div_id;
-  div_elt = jQuery(div_id220)
+  const div_id220 = "#" + div_id;
+  const div_elt = jQuery(div_id220)
+  console.log("hide_div called for " + div_id);
   div_elt.style.display = 'none';
 }
 window.hide_div = hide_div;
 
 function show_div(div_id) {
 
-  div_id225 = "#" + div_id;
-  div_elt = jQuery(div_id225)
+  const div_id225 = "#" + div_id;
+  const div_elt = jQuery(div_id225)
   div_elt.style.display = '';
 }
 window.show_div = show_div;
 
 function hide_class(div_id, class_name) {
 
-  div_id230 = "#" + div_id;
-  div_elt = jQuery(div_id230)
+  const div_id230 = "#" + div_id;
+  const div_elt = jQuery(div_id230)
   div_elt.find(class_name).each(function () {
     jQuery(this).hide();
   });
@@ -223,8 +229,8 @@ window.hide_class = hide_class;
 
 function show_class(div_id, class_name) {
 
-  div_id237 = "#" + div_id;
-  div_elt = jQuery(div_id237)
+  const div_id237 = "#" + div_id;
+  const div_elt = jQuery(div_id237)
   div_elt.find(class_name).each(function () {
     jQuery(this).show();
   });
@@ -233,11 +239,11 @@ window.show_class = show_class;
 
 function insert_div(div_id, insert_id) {
 
-  div_id244 = "#" + div_id;
-  div_elt = jQuery(div_id244);
+  const div_id244 = "#" + div_id;
+  const div_elt = jQuery(div_id244);
 
-  insert_id245 = "#" + insert_id;
-  insert_elt = jQuery(insert_id245);
+  const insert_id245 = "#" + insert_id;
+  const insert_elt = jQuery(insert_id245);
   div_elt.insertAfter(insert_elt);
 }
 window.insert_div = insert_div;
@@ -249,11 +255,11 @@ function set_body_id(body_id_str) {
 }
 window.set_body_id = set_body_id;
 
-function set_option(table_name, option_id) {
-  option_id = "action_select_" + table_name + "_" + option_id;
+function set_option(table_name, option_id_input) {
+  const option_id = "action_select_" + table_name + "_" + option_id_input;
 
-  option_id258 = "#" + option_id;
-  option_elt = jQuery(option_id258)
+  const option_id258 = "#" + option_id;
+  const option_elt = jQuery(option_id258)
   if (option_elt[0] != null) {
     option_elt.prop('selected', true);
   }
@@ -261,7 +267,7 @@ function set_option(table_name, option_id) {
 }
 window.set_option = set_option;
 
-var all_invisible_classes = [
+const all_invisible_classes = [
   ".add_attendee_options",
   ".add-cell",
   ".add_to_group_title",
@@ -308,52 +314,47 @@ var all_invisible_classes = [
   ".update-cell",
   ".willing-cell"];
 
-var tmp_invisible_classes = [];
-
+// DisplayDiv constructor (improved to avoid global variable issues)
 function DisplayDiv(div_id_, insert_id_, visible_ids_, invisible_ids_, visible_classes_, post_javascript_) {
   this.div_id = div_id_;
   this.insert_id = insert_id_;
   this.visible_ids = visible_ids_;
   this.invisible_ids = invisible_ids_;
   this.visible_classes = visible_classes_;
-
   this.post_javascript = post_javascript_;
 
-  tmp_invisible_classes = [];
-
+  // Use a local variable instead of global tmp_invisible_classes
+  let tmp_invisible_classes = [];
   all_invisible_classes.forEach(function (inv_class) {
-    if (visible_classes_.indexOf(inv_class) == -1) {
+    if (visible_classes_.indexOf(inv_class) === -1) {
       tmp_invisible_classes.push(inv_class);
     }
   });
   this.invisible_classes = tmp_invisible_classes.map((x) => x);
 }
-window.DisplayDiv = DisplayDiv;
 
-var next_option_id = 0;
+// Global variable for unique option IDs
+let next_option_id = 0; // Assuming it starts at 0
 
-function PageView(body_id_, page_name_, page_option_str_, unrestricted_, display_divs_) {
-  this.body_id = body_id_;
-  this.page_name = page_name_;
-  this.page_option_str = page_option_str_;
-  this.unrestricted = unrestricted_;
-  this.display_divs = display_divs_;
-  this.separator_pos = 0.5;
-  this.option_id = next_option_id;
-  next_option_id = next_option_id + 1;
-  // initialize the member function references
-  // for the class prototype
-  if (typeof (_page_view_prototype_called) == 'undefined') {
-    _page_view_prototype_called = true;
-    PageView.prototype.RegisterClasses = RegisterClasses;
-
+// PageView class
+class PageView {
+  constructor(body_id_, page_name_, page_option_str_, unrestricted_, display_divs_) {
+    this.body_id = body_id_;
+    this.page_name = page_name_;
+    this.page_option_str = page_option_str_;
+    this.unrestricted = unrestricted_;
+    this.display_divs = display_divs_;
+    this.separator_pos = 0.5;
+    this.option_id = next_option_id;
+    next_option_id = next_option_id + 1;
   }
-  function RegisterClasses(div_ids_, visible_classes_) {
+
+  RegisterClasses(div_ids_, visible_classes_) {
     this.display_divs.forEach(function (display_div) {
       div_ids_.forEach(function (div_id) {
-        if (display_div.div_id == div_id) {
+        if (display_div.div_id === div_id) {
           visible_classes_.forEach(function (visible_class) {
-            if (display_div.visible_classes.indexOf(visible_class) == -1) {
+            if (display_div.visible_classes.indexOf(visible_class) === -1) {
               display_div.visible_classes.push(visible_class);
             }
           });
@@ -362,14 +363,28 @@ function PageView(body_id_, page_name_, page_option_str_, unrestricted_, display
     });
   }
 }
-window.PageView = PageView;
-
-var displayPageCl = new MyHash();
-var option_hash = new MyHash();
-var sub_menu_hash = new MyHash();
 
 
+
+
+  var page_view;
+  var old_option_id;
+
+  var old_page_name ;
+  var displayPageCl;
+  var option_hash;
+  var sub_menu_hash;
 function load_pages() {
+
+  var page_view = null;
+  var old_option_id = 0;
+
+  var old_page_name = "Person";
+  var displayPageCl = new MyHash();
+  var option_hash = new MyHash();
+  var sub_menu_hash = new MyHash();
+  console.log("RWV load_pages called");
+
 
   sub_menu_hash.set('Person', 'Person');
   sub_menu_hash.set('Course', 'Course');
@@ -422,7 +437,7 @@ function load_pages() {
   option_hash.set('Person', 0);
 
   next_option_id = 0;
-  institution_page_views = [];
+  const institution_page_views = [];
   institution_page_views.push(new PageView("institutions", "Institution", "Select action", true,
     [new DisplayDiv("welcome_Institution", "first_div", ["content_div"], ["two_column_div"], [".create_new_entry", ".dummy-cell"], ""),
     new DisplayDiv("Institution_action_div", "first_menu_div", [], [], [], "")]));
@@ -453,7 +468,7 @@ function load_pages() {
 
 
   next_option_id = 0;
-  course_page_views = [];
+  const course_page_views = [];
   course_page_views.push(new PageView("courses", "Course", "Select Action", true,
     [new DisplayDiv("welcome_Course", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("Course_action_div", "first_menu_div", [], [], [], "")]));
@@ -499,7 +514,7 @@ function load_pages() {
   option_hash.set('Course', 0);
 
   next_option_id = 0;
-  lecture_page_views = [];
+  const lecture_page_views = [];
   lecture_page_views.push(new PageView("lectures", "Lecture", "Select Action", true,
     [new DisplayDiv("welcome_Lecture", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("Lecture_action_div", "first_menu_div", [], [], [], "")]));
@@ -536,7 +551,7 @@ function load_pages() {
   option_hash.set('Lecture', 0);
 
   next_option_id = 0;
-  willing_lecturer_page_views = [];
+  const willing_lecturer_page_views = [];
   willing_lecturer_page_views.push(new PageView("willing_lecturers", "WillingLecturer", "Select Action", true,
     [new DisplayDiv("welcome_WillingLecturer", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("WillingLecturer_action_div", "first_menu_div", [], [], [], "")]));
@@ -569,7 +584,7 @@ function load_pages() {
   option_hash.set('WillingLecturer', 0);
 
   next_option_id = 0;
-  attendee_page_views = [];
+  const attendee_page_views = [];
   attendee_page_views.push(new PageView("attendees", "Attendee", "Select Action", true,
     [new DisplayDiv("welcome_Attendee", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("Attendee_action_div", "first_menu_div", [], [], [], "")]));
@@ -603,7 +618,7 @@ function load_pages() {
 
 
   next_option_id = 0;
-  location_page_views = [];
+  const location_page_views = [];
   location_page_views.push(new PageView("locations", "Location", "Select Action", true,
     [new DisplayDiv("welcome_Location", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("Location_action_div", "first_menu_div", [], [], [], "")]));
@@ -634,7 +649,7 @@ function load_pages() {
   option_hash.set('Location', 0);
 
   next_option_id = 0;
-  tutorial_schedule_page_views = [];
+  const tutorial_schedule_page_views = [];
   tutorial_schedule_page_views.push(new PageView("tutorial_schedules", "TutorialSchedule", "Select Action", true,
     [new DisplayDiv("welcome_TutorialSchedule", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("TutorialSchedule_action_div", "first_menu_div", [], [], [], "")]));
@@ -679,7 +694,7 @@ function load_pages() {
   option_hash.set('TutorialSchedule', 0);
 
   next_option_id = 0;
-  tutorial_page_views = [];
+  const tutorial_page_views = [];
   tutorial_page_views.push(new PageView("tutorials", "Tutorial", "Select Action", true,
     [new DisplayDiv("welcome_Tutorial", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("Tutorial_action_div", "first_menu_div", [], [], [], "")]));
@@ -715,7 +730,7 @@ function load_pages() {
   option_hash.set('Tutorial', 0);
 
   next_option_id = 0;
-  willing_tutor_page_views = [];
+  const willing_tutor_page_views = [];
   willing_tutor_page_views.push(new PageView("willing_tutors", "WillingTutor", "Select Action", true,
     [new DisplayDiv("welcome_WillingTutor", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("WillingTutor_action_div", "first_menu_div", [], [], [], "")]));
@@ -748,7 +763,7 @@ function load_pages() {
   option_hash.set('WillingTutor', 0);
 
   next_option_id = 0;
-  maximum_tutorial_page_views = [];
+  const maximum_tutorial_page_views = [];
   maximum_tutorial_page_views.push(new PageView("maximum_tutorials", "MaximumTutorial", "Select Action", true,
     [new DisplayDiv("welcome_MaximumTutorial", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("MaximumTutorial_action_div", "first_menu_div", [], [], [], "")]));
@@ -768,7 +783,7 @@ function load_pages() {
   option_hash.set('MaximumTutorial', 0);
 
   next_option_id = 0;
-  group_page_views = [];
+  const group_page_views = [];
   group_page_views.push(new PageView("groups", "Group", "Select Action", true,
     [new DisplayDiv("welcome_Group", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], "group_unrestriction()"),
     new DisplayDiv("Group_action_div", "first_menu_div", [], [], [], "")]));
@@ -898,7 +913,7 @@ function load_pages() {
 
 
   next_option_id = 0;
-  group_person_page_views = [];
+  const group_person_page_views = [];
   group_person_page_views.push(new PageView("group_people", "GroupPerson", "Select Action", true,
     [new DisplayDiv("welcome_GroupPerson", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupPerson_action_div", "first_menu_div", [], [], [], "")]));
@@ -914,7 +929,7 @@ function load_pages() {
   option_hash.set('GroupPerson', 0);
 
   next_option_id = 0;
-  group_institution_page_views = [];
+  const group_institution_page_views = [];
   group_institution_page_views.push(new PageView("group_institutions", "GroupInstitution", "Select Action", true,
     [new DisplayDiv("welcome_GroupInstitution", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupInstitution_action_div", "first_menu_div", [], [], [], "")]));
@@ -930,7 +945,7 @@ function load_pages() {
   option_hash.set('GroupInstitution', 0);
 
   next_option_id = 0;
-  group_course_page_views = [];
+  const group_course_page_views = [];
   group_course_page_views.push(new PageView("group_courses", "GroupCourse", "Select Action", true,
     [new DisplayDiv("welcome_GroupCourse", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupCourse_action_div", "first_menu_div", [], [], [], "")]));
@@ -946,7 +961,7 @@ function load_pages() {
   option_hash.set('GroupCourse', 0);
 
   next_option_id = 0;
-  group_lecture_page_views = [];
+  const group_lecture_page_views = [];
   group_lecture_page_views.push(new PageView("group_lectures", "GroupLecture", "Select Action", true,
     [new DisplayDiv("welcome_GroupLecture", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupLecture_action_div", "first_menu_div", [], [], [], "")]));
@@ -962,7 +977,7 @@ function load_pages() {
   option_hash.set('GroupLecture', 0);
 
   next_option_id = 0;
-  group_attendee_page_views = [];
+  const group_attendee_page_views = [];
   group_attendee_page_views.push(new PageView("group_attendees", "GroupAttendee", "Select Action", true,
     [new DisplayDiv("welcome_GroupAttendee", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupAttendee_action_div", "first_menu_div", [], [], [], "")]));
@@ -978,7 +993,7 @@ function load_pages() {
   option_hash.set('GroupAttendee', 0);
 
   next_option_id = 0;
-  group_location_page_views = [];
+  const group_location_page_views = [];
   group_location_page_views.push(new PageView("group_locations", "GroupLocation", "Select Action", true,
     [new DisplayDiv("welcome_GroupLocation", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupLocation_action_div", "first_menu_div", [], [], [], "")]));
@@ -994,7 +1009,7 @@ function load_pages() {
   option_hash.set('GroupLocation', 0);
 
   next_option_id = 0;
-  group_tutorial_page_views = [];
+  const group_tutorial_page_views = [];
   group_tutorial_page_views.push(new PageView("group_tutorials", "GroupTutorial", "Select Action", true,
     [new DisplayDiv("welcome_GroupTutorial", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupTutorial_action_div", "first_menu_div", [], [], [], "")]));
@@ -1010,7 +1025,7 @@ function load_pages() {
   option_hash.set('GroupTutorial', 0);
 
   next_option_id = 0;
-  group_tutorial_schedule_page_views = [];
+  const group_tutorial_schedule_page_views = [];
   group_tutorial_schedule_page_views.push(new PageView("group_tutorial_schedules", "GroupTutorialSchedule", "Select Action", true,
     [new DisplayDiv("welcome_GroupTutorialSchedule", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupTutorialSchedule_action_div", "first_menu_div", [], [], [], "")]));
@@ -1026,7 +1041,7 @@ function load_pages() {
   option_hash.set('GroupTutorialSchedule', 0);
 
   next_option_id = 0;
-  group_agatha_email_page_views = [];
+  const group_agatha_email_page_views = [];
   group_agatha_email_page_views.push(new PageView("group_agatha_emails", "GroupAgathaEmail", "Select Action", true,
     [new DisplayDiv("welcome_GroupAgathaEmail", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupAgathaEmail_action_div", "first_menu_div", [], [], [], "")]));
@@ -1042,7 +1057,7 @@ function load_pages() {
   option_hash.set('GroupAgathaEmail', 0);
 
   next_option_id = 0;
-  group_email_template_page_views = [];
+  const group_email_template_page_views = [];
   group_email_template_page_views.push(new PageView("group_email_templates", "GroupEmailTemplate", "Select Action", true,
     [new DisplayDiv("welcome_GroupEmailTemplate", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupEmailTemplate_action_div", "first_menu_div", [], [], [], "")]));
@@ -1058,7 +1073,7 @@ function load_pages() {
   option_hash.set('GroupEmailTemplate', 0);
 
   next_option_id = 0;
-  group_willing_lecturer_page_views = [];
+  const group_willing_lecturer_page_views = [];
   group_willing_lecturer_page_views.push(new PageView("group_willing_lecturers", "GroupWillingLecturer", "Select Action", true,
     [new DisplayDiv("welcome_GroupWillingLecturer", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupWillingLecturer_action_div", "first_menu_div", [], [], [], "")]));
@@ -1074,7 +1089,7 @@ function load_pages() {
   option_hash.set('GroupWillingLecturer', 0);
 
   next_option_id = 0;
-  group_willing_tutor_page_views = [];
+  const group_willing_tutor_page_views = [];
   group_willing_tutor_page_views.push(new PageView("group_willing_tutors", "GroupWillingTutor", "Select Action", true,
     [new DisplayDiv("welcome_GroupWillingTutor", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("GroupWillingTutor_action_div", "first_menu_div", [], [], [], "")]));
@@ -1090,7 +1105,7 @@ function load_pages() {
   option_hash.set('GroupWillingTutor', 0);
 
   next_option_id = 0;
-  group_user_page_views = [];
+  const group_user_page_views = [];
 
   group_user_page_views.push(new PageView("group_users", "GroupUser", "Select Action", true,
     [new DisplayDiv("welcome_GroupUser", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
@@ -1110,7 +1125,7 @@ function load_pages() {
   option_hash.set('GroupUser', 0);
 
   next_option_id = 0;
-  user_page_views = [];
+  const user_page_views = [];
   user_page_views.push(new PageView("users", "User", "Select Action", false,
     [new DisplayDiv("welcome_User", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("User_action_div", "first_menu_div", [], [], [], "")]));
@@ -1137,7 +1152,7 @@ function load_pages() {
   option_hash.set('User', 0);
 
   next_option_id = 0;
-  email_template_page_views = [];
+  const email_template_page_views = [];
   email_template_page_views.push(new PageView("email_templates", "EmailTemplate", "Select Action", true,
     [new DisplayDiv("welcome_EmailTemplate", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("EmailTemplate_action_div", "first_menu_div", [], [], [], "")]));
@@ -1171,7 +1186,7 @@ function load_pages() {
   option_hash.set('EmailTemplate', 0);
 
   next_option_id = 0;
-  agatha_email_page_views = [];
+  const agatha_email_page_views = [];
   agatha_email_page_views.push(new PageView("agatha_emails", "AgathaEmail", "Select Action", true,
     [new DisplayDiv("welcome_AgathaEmail", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("AgathaEmail_action_div", "first_menu_div", [], [], [], "")]));
@@ -1211,7 +1226,7 @@ function load_pages() {
   option_hash.set('AgathaEmail', 0);
 
   next_option_id = 0;
-  agatha_file_page_views = [];
+  const agatha_file_page_views = [];
   agatha_file_page_views.push(new PageView("agatha_files", "AgathaFile", "Select Action", true,
     [new DisplayDiv("welcome_AgathaFile", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("AgathaFile_action_div", "first_menu_div", [], [], [], "")]));
@@ -1238,7 +1253,7 @@ function load_pages() {
   option_hash.set('AgathaFile', 0);
 
   next_option_id = 0;
-  emal_attachment_page_views = [];
+  const emal_attachment_page_views = [];
   emal_attachment_page_views.push(new PageView("email_attachments", "EmailAttachment", "Select Action", true,
     [new DisplayDiv("welcome_EmailAttachment", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("EmailAttachment_action_div", "first_menu_div", [], [], [], "")]));
@@ -1260,7 +1275,7 @@ function load_pages() {
   option_hash.set('EmailAttachment', 0);
 
   next_option_id = 0;
-  group_filtering_page_views = [];
+  const group_filtering_page_views = [];
   group_filtering_page_views.push(new PageView("group_filterings", "GroupFiltering", "Select Action", true,
     [new DisplayDiv("welcome_GroupFiltering", "first_div", ["content_div"], ["two_column_div"], [], "")]));
   displayPageCl.set('GroupFiltering', group_filtering_page_views);
@@ -1268,7 +1283,7 @@ function load_pages() {
   option_hash.set('GroupFiltering', 0);
 
   next_option_id = 0;
-  field_display_format_page_views = [];
+  const field_display_format_page_views = [];
   field_display_format_page_views.push(new PageView("field_display_formats", "FieldDisplayFormat", "Select Action", true,
     [new DisplayDiv("welcome_FieldDisplayFormat", "first_div", ["content_div"], ["two_column_div"], [], "")]));
   displayPageCl.set('FieldDisplayFormat', field_display_format_page_views);
@@ -1279,10 +1294,10 @@ function load_pages() {
   action_select0();
 
 
-  form_id = "display_page"
+  const form_id = "display_page"
 
-  form_id1294 = "#" + form_id;
-  form_elt = jQuery(form_id1294);
+  const form_id1294 = "#" + form_id;
+  const form_elt = jQuery(form_id1294);
 
   //form_elt.submit();
 
@@ -1294,13 +1309,13 @@ window.load_pages = load_pages;
 function add_action_items(page_views) {
 
 
-  administrator_div = jQuery('#administrator_div');
+  const administrator_div = jQuery('#administrator_div');
 
-  table_name = page_views[0].page_name;
-  select_id = "action_select_" + table_name;
+  const table_name = page_views[0].page_name;
+  const select_id = "action_select_" + table_name;
 
-  select_id1308 = "#" + select_id;
-  select_obj = jQuery(select_id1308);
+  const select_id1308 = "#" + select_id;
+  const select_obj = jQuery(select_id1308);
 
 
 
@@ -1313,8 +1328,8 @@ function add_action_items(page_views) {
       if (page_view.unrestricted || administrator_div[0] != null) {
 
 
-        id_str = "action_select_" + table_name + "_" + page_view.option_id;
-        value_str = "" + page_view.option_id;
+        const id_str = "action_select_" + table_name + "_" + page_view.option_id;
+        const value_str = "" + page_view.option_id;
         var new_option = jQuery("<option></option>").attr({ 'id': id_str, 'value': value_str })
         new_option.html(page_view.page_option_str);
 
@@ -1332,18 +1347,18 @@ function add_action_items(page_views) {
 }
 window.add_action_items = add_action_items;
 
-var old_page_name = "Person";
-var page_view = null;
-var old_option_id = 0;
+
 function action_select0() {
 
-  select_str = "action_select_" + old_page_name;
+  var old_option_id = 0;
 
-  select_str1350 = "#" + select_str;
-  select_elt = jQuery(select_str1350);
+  const select_str = "action_select_" + old_page_name;
+
+  const select_str1350 = "#" + select_str;
+  const select_elt = jQuery(select_str1350);
   if (select_elt[0] != null) {
-    option_id = parseInt(select_elt.val());
-    do_js = true;
+    const option_id = parseInt(select_elt.val());
+    const do_js = true;
     display_select_action(old_page_name, option_id, do_js);
   }
 
@@ -1351,13 +1366,13 @@ function action_select0() {
 window.action_select0 = action_select0;
 
 function action_select_no_js() {
-  select_str = "action_select_" + old_page_name;
+  const select_str = "action_select_" + old_page_name;
 
-  select_str1362 = "#" + select_str;
-  select_elt = jQuery(select_str1362);
+  const select_str1362 = "#" + select_str;
+  const select_elt = jQuery(select_str1362);
   if (select_elt[0] != null) {
-    option_id = parseInt(select_elt.val());
-    do_js = false;
+    const option_id = parseInt(select_elt.val());
+    const do_js = false;
     display_select_action(old_page_name, option_id, do_js);
   }
 }
@@ -1365,42 +1380,47 @@ window.action_select_no_js = action_select_no_js;
 
 
 function action_select2(table_name) {
-  select_str = "action_select_" + table_name;
+  const select_str = "action_select_" + table_name;
 
-  select_str1374 = "#" + select_str;
-  select_elt = jQuery(select_str1374);
+  const select_str1374 = "#" + select_str;
+  const select_elt = jQuery(select_str1374);
   if (select_elt[0] != null) {
-    option_id = parseInt(select_elt.val());
-    do_js = true;
+    const option_id = parseInt(select_elt.val());
+    const do_js = true;
     display_select_action(table_name, option_id, do_js);
   }
 }
 window.action_select2 = action_select2;
 
 function display_page1(menu_name) {
-  table_name = sub_menu_hash.get(menu_name);
-  option_id = option_hash.get(table_name);
-  do_js = true;
+  const table_name = sub_menu_hash.get(menu_name);
+  const option_id = option_hash.get(table_name);
+  const do_js = true;
   display_select_action(table_name, option_id, do_js);
 }
 window.display_page1 = display_page1;
 
 function display_page2(menu_name, table_name) {
   sub_menu_hash.set(menu_name, table_name);
-  option_id = option_hash.get(table_name);
-  do_js = true;
+  const option_id = option_hash.get(table_name);
+  const do_js = true;
   display_select_action(table_name, option_id, do_js);
 }
 window.display_page2 = display_page2;
 
 function display_select_action(table_name, option_id, do_js) {
   option_hash.set(table_name, option_id);
-  old_pages = displayPageCl.get(old_page_name);
-  old_page = old_pages[old_option_id];
+  if (old_page_name == null) {
+    console.log("RWV old_page_name is null");
+    old_page_name = "Person";
+    old_option_id = 0;
+  }
+  const old_pages = displayPageCl.get(old_page_name);
+  const old_page = old_pages[old_option_id];
 
 
-  page_views = displayPageCl.get(table_name);
-  page_view = page_views[option_id];
+  let page_views = displayPageCl.get(table_name);
+  let page_view = page_views[option_id];
   var visible_divs = [];
   page_view.display_divs.forEach(function (display_div) {
     visible_divs.push(display_div.div_id);
@@ -1464,24 +1484,24 @@ window.separate_resizing = separate_resizing;
 
 function action_select(table_name) {
   wait();
-  select_str = "action_select_" + table_name;
+  const select_str = "action_select_" + table_name;
 
-  select_str1459 = "#" + select_str;
-  select_elt = jQuery(select_str1459);
+  const select_str1459 = "#" + select_str;
+  const select_elt = jQuery(select_str1459);
   if (select_elt[0] != null) {
-    option_name = select_elt.val();
-    page_name_id = "display_page_name"
-    option_id = "display_page_option"
-    form_id = "display_page"
+    const option_name = select_elt.val();
+    const page_name_id = "display_page_name"
+    const option_id = "display_page_option"
+    const form_id = "display_page"
 
-    page_name_id1466 = "#" + page_name_id;
-    page_name_elt = jQuery(page_name_id1466)
+    const page_name_id1466 = "#" + page_name_id;
+    const page_name_elt = jQuery(page_name_id1466)
 
-    option_id1467 = "#" + option_id;
-    option_elt = jQuery(option_id1467);
+    const option_id1467 = "#" + option_id;
+    const option_elt = jQuery(option_id1467);
 
-    form_id1468 = "#" + form_id;
-    form_elt = jQuery(form_id1468);
+    const form_id1468 = "#" + form_id;
+    const form_elt = jQuery(form_id1468);
     page_name_elt.attr("value", table_name);
     option_elt.attr("value", option_name);
 
@@ -1494,36 +1514,36 @@ function action_select(table_name) {
 window.action_select = action_select;
 
 function set_double_scroll() {
-  content_div_1 = jQuery('#content_div_1');
-  content_div_2 = jQuery('#content_div_2');
-  div_1_style = content_div_1.attr("style");
-  div_2_style = content_div_2.attr("style");
+  const content_div_1 = jQuery('#content_div_1');
+  const content_div_2 = jQuery('#content_div_2');
+  const div_1_style = content_div_1.attr("style");
+  const div_2_style = content_div_2.attr("style");
 
-  black_bar_separator_div = jQuery('#black_bar_separator_div');
-  black_bar_style = black_bar_separator_div.attr("style");
-  left_1_pos = content_div_1.offset().left;
-  black_bar_width = black_bar_separator_div.outerWidth();
+  const black_bar_separator_div = jQuery('#black_bar_separator_div');
+  const black_bar_style = black_bar_separator_div.attr("style");
+  const left_1_pos = content_div_1.offset().left;
+  const black_bar_width = black_bar_separator_div.outerWidth();
 
-  frac_width = (jQuery(window).innerWidth() - left_1_pos - black_bar_width) / 2
-  div_width = Math.floor(frac_width);
+  const frac_width = (jQuery(window).innerWidth() - left_1_pos - black_bar_width) / 2
+  const div_width = Math.floor(frac_width);
   //    bar_position_scale = 0.3;
-  bar_position_scale = page_view.separator_pos;
-  frac_left_black_bar = (jQuery(window).innerWidth() - left_1_pos - black_bar_width) * bar_position_scale + left_1_pos;
-  left_black_bar = Math.floor(frac_left_black_bar + 0.5);
+  const bar_position_scale = page_view.separator_pos;
+  const frac_left_black_bar = (jQuery(window).innerWidth() - left_1_pos - black_bar_width) * bar_position_scale + left_1_pos;
+  const left_black_bar = Math.floor(frac_left_black_bar + 0.5);
 
-  right_1_pos = left_black_bar - 1;
-  from_right_1_pos_str = "" + (jQuery(window).innerWidth() - right_1_pos - 1);
-  left_black_bar_str = "" + left_black_bar;
+  const right_1_pos = left_black_bar - 1;
+  const from_right_1_pos_str = "" + (jQuery(window).innerWidth() - right_1_pos - 1);
+  const left_black_bar_str = "" + left_black_bar;
 
-  left_2_pos = right_1_pos + black_bar_width;
-  right_2_pos = 0;
-  left_2_pos_str = "" + left_2_pos;
+  const left_2_pos = right_1_pos + black_bar_width;
+  const right_2_pos = 0;
+  const left_2_pos_str = "" + left_2_pos;
 
 
 
   //div_1_new_style =  div_1_style.replace(/right:\s*\d+/, from_right_1_pos_str);
   //div_2_new_style =  div_2_style.replace(/left:\s*\d+/, left_2_pos_str);
-  black_bar_new_style = black_bar_style.replace(/left:\s*\d+/, left_black_bar_str);
+  const black_bar_new_style = black_bar_style.replace(/left:\s*\d+/, left_black_bar_str);
 
   content_div_1.css("right", from_right_1_pos_str + "px");
   content_div_2.css("left", left_black_bar_str + "px");
@@ -1531,4 +1551,5 @@ function set_double_scroll() {
 
 }
 window.set_double_scroll = set_double_scroll;
+
 

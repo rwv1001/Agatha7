@@ -12,7 +12,7 @@
             .separator_class {background: #ffffff; width: 100%; height:10px; position: relative}
     </style>
   </head>
-  <body  bgcolor="#ffffff"  onUnload ="on_unload()" >
+  <body data-controller="<%= controller_name %>" data-action="<%= action_name %>" bgcolor="#ffffff"  onUnload ="on_unload()" >
   <% Rails.logger.debug("RWV index.html.erb body") %>  
     <%=  render(:partial => "shared/template_header") %>
     <div id ="main_div">
@@ -222,7 +222,7 @@
           <input type="text" id= "format_narrow_width" /><label> dummy_narrow_width</label>
           <input type="text" id= "format_width" /><label> dummy_width</label>
         </div>
-        <script type="text/javascript">
+        <script type="text/javascript" defer>
           jQuery('#select_height').val( jQuery('#dummy_select').height());
              jQuery('#format_height').val( jQuery('#dummy_format').height());
              jQuery('#format_width').val( jQuery('#dummy_format').width());
@@ -495,30 +495,7 @@
       <%  end %>
     </div>
     <% Rails.logger.debug("RWV index.html.erb some js") %>
-    <script type="text/JavaScript">
-      console.log("RWV commented out b");//on_load();
-      jQuery('#select_height').val( jQuery('#dummy_select').height());
-      jQuery('#format_height').val( jQuery('#dummy_format').height());
-      jQuery('#format_width').val( jQuery('#dummy_format').width());
-      jQuery('#format_narrow_width').val( jQuery('#dummy_format_narrow').width());
-      jQuery('#fp_height').val( jQuery('#dummy_fp').height());
-      jQuery('#fx_height').val( jQuery('#dummy_fx').height());
-      content_end();
-      jQuery('#content_div').hide();
-      //jQuery('#two_column_div').hide();
-      load_pages();
-      jQuery('#disable_id').hide();
-      jQuery(window).name = "main_window";
-      jQuery.fn.down = function() {
-           var el = this[0] && this[0].firstChild;
-           while (el && el.nodeType != 1)
-           el = el.nextSibling;
-       return jQuery(el);
-          };
-            jQuery( function() {
-            jQuery("#black_bar_separator_div").draggable({containment: two_column_div});
-           } );
-            jQuery("#black_bar_separator_div").on( "dragstop", function( event, ui ) { end_drag() } );
+    <script type="text/JavaScript" defer>
     </script>
 
 

@@ -33,7 +33,7 @@ function div_test()
 
     
     //jQuery('#div_test').submit();
-    elem = document.getElementById('div_test');
+    const elem = document.getElementById('div_test');
     Rails.fire(elem, 'submit');    
 
 }
@@ -60,13 +60,13 @@ var open_windows = new window.MyHash();
 function file_change()
 {
 
-    disable_div = jQuery("<div></div>").attr({style: "position:absolute; top:0; right:0; width:100%; height: 100%; background-color: #ff0000;  opacity:0.0" });
-    main_div = jQuery('#main_div');
+    const disable_div = jQuery("<div></div>").attr({style: "position:absolute; top:0; right:0; width:100%; height: 100%; background-color: #ff0000;  opacity:0.0" });
+    const main_div = jQuery('#main_div');
     disable_div.insertAfter( main_div);
      disable_div.css('cursor','wait');
-    submit_upload_obj = jQuery('#file_upload');
+    const submit_upload_obj = jQuery('#file_upload');
    // submit_upload_obj.submit();
-    elem = document.getElementById('file_upload');
+    const elem = document.getElementById('file_upload');
     Rails.fire(elem, 'submit');
  
 }
@@ -74,18 +74,18 @@ window.file_change = file_change;
 
 function file_change2()
 {
-    submit_upload_obj = jQuery('#edit_agatha_file');
-    elem = document.getElementById('edit_agatha_file');
+    const submit_upload_obj = jQuery('#edit_agatha_file');
+    const elem = document.getElementById('edit_agatha_file');
     Rails.fire(elem, 'submit');
   //  submit_upload_obj.submit();
-    x = 1;
+    const x = 1;
 }
 window.file_change2 = file_change2;
 function myBlur()
 {
- x =1;
- y = 2;
- z = x+y;
+ const x = 1;
+ const y = 2;
+ const z = x+y;
 }
 window.myBlur = myBlur;
 
@@ -93,28 +93,28 @@ window.myBlur = myBlur;
 
 function on_unload()
 {
-    unload_attribute_obj = jQuery("#unload_attribute");
-    unload_data_type_obj = jQuery("#unload_data_type");
-    attribute_name = unload_attribute_obj.val();
-    data_type = unload_data_type_obj.val(); 
-    unloading = true;
+    const unload_attribute_obj = jQuery("#unload_attribute");
+    const unload_data_type_obj = jQuery("#unload_data_type");
+    const attribute_name = unload_attribute_obj.val();
+    const data_type = unload_data_type_obj.val(); 
+    const unloading = true;
     editBlur(attribute_name, data_type, unloading);
-    parent_win=window.opener;
-    unload_table_obj = jQuery('#unload_table_name');
-    table = unload_table_obj.val(); 
+    const parent_win = window.opener;
+    const unload_table_obj = jQuery('#unload_table_name');
+    const table = unload_table_obj.val(); 
    parent_win.alert("" +table +" edit window has been closed and the database has been updated. Click search to see changes.");
   /*  if(parent_win!=null)
         {
             
-            id_obj = jQuery(parent_win.document.getElementById('child_unload_main_id'));
+            const id_obj = jQuery(parent_win.document.getElementById('child_unload_main_id'));
             parent_win.alert("unload a");
-            table_obj = jQuery(parent_win.document.getElementById('child_unloade_main_table_name'));
+            const table_obj = jQuery(parent_win.document.getElementById('child_unloade_main_table_name'));
             parent_win.alert("unload b");
-            attribute_obj = jQuery(parent_win.document.getElementById('child_unload_main_attribute_name'));
+            const attribute_obj = jQuery(parent_win.document.getElementById('child_unload_main_attribute_name'));
 parent_win.alert("unload c");
-            unload_id_obj = jQuery('#unload_id_value');
+            const unload_id_obj = jQuery('#unload_id_value');
             parent_win.alert("unload d");
-            unload_table_obj = jQuery('#unload_table_name');
+            const unload_table_obj = jQuery('#unload_table_name');
             parent_win.alert("unload e");
             id_obj.val(  unload_id_obj.val());
             parent_win.alert("unload f id="+unload_id_obj.val());
@@ -133,29 +133,30 @@ window.onunload = on_unload;
 
 function open_win()
 {
-my_window = window.open("http://localhost:3000/people/13/edit?table_name=Person");
+const my_window = window.open("http://localhost:3000/people/13/edit?table_name=Person");
 }
 window.open_win = open_win;
 
 
 function update_parent(table_name, attribute_name, id)
 {
-    parent_win=window.opener;
+    let parent_win = window.opener;
+    let first_parent;
     if(parent_win == null)
         {
-            first_parent = window.open('','main_window');
+            const first_parent = window.open('','main_window');
             if(first_parent != jQuery(window))
             {
-                    parent_win = first_parent
+                    const parent_win = first_parent
             }
         }
     if(parent_win!=null)
         {
-            id_obj = parent_win.document.getElementById('update_main_id');
-            table_obj = parent_win.document.getElementById('update_main_class_name');
-            attribute_obj = parent_win.document.getElementById('update_main_attribute_name');
-            update_opener_attribute_name_obj = parent_win.document.getElementById('update_opener_attribute_name');
-            update_opener_id_obj = parent_win.document.getElementById('update_opener_id');
+            const id_obj = parent_win.document.getElementById('update_main_id');
+            const table_obj = parent_win.document.getElementById('update_main_class_name');
+            const attribute_obj = parent_win.document.getElementById('update_main_attribute_name');
+            const update_opener_attribute_name_obj = parent_win.document.getElementById('update_opener_attribute_name');
+            const update_opener_id_obj = parent_win.document.getElementById('update_opener_id');
             jQuery(id_obj).val( id);
             jQuery(table_obj).val( table_name);
             jQuery(attribute_obj).val( attribute_name);
@@ -163,7 +164,7 @@ function update_parent(table_name, attribute_name, id)
             if(update_opener_id_obj!=null){
                 jQuery(update_opener_id_obj).val( jQuery('#sensible_update_opener_id').val());
             }
-            submit_obj = parent_win.document.getElementById('update_main');
+            const submit_obj = parent_win.document.getElementById('update_main');
             //submit_obj.submit();
             Rails.fire(submit_obj, 'submit');
         }
@@ -172,23 +173,23 @@ window.update_parent = update_parent;
 
 function on_edit( table_name,class_name,id)
 {
-    span_aref_obj_str = "a_edit_"+table_name +"_" + id;
+    const span_aref_obj_str = "a_edit_"+table_name +"_" + id;
 
-    span_aref_obj_str120 = "#"+span_aref_obj_str;
-    span_aref_obj  = jQuery(span_aref_obj_str120 );
-    aref_obj = span_aref_obj.find('a').first();
+    const span_aref_obj_str120 = "#"+span_aref_obj_str;
+    const span_aref_obj = jQuery(span_aref_obj_str120 );
+    const aref_obj = span_aref_obj.find('a').first();
     //var  disabled_a = jQuery("<label></label>").attr({'class': 'alabel'});
     //disabled_a.html('Edit ')
     //aref_obj.remove();
     //span_aref_obj.replaceWith(disabled_a);
 
-    attribute_opener =''
-    opener_id = 1;
+    const attribute_opener = ''
+    const opener_id = 1;
     open_windows.set('main', jQuery(window));
     open_edit_window(attribute_opener,  opener_id, table_name, class_name, id);
 
 
-    y= 2;
+    const y = 2;
    
   
 }
@@ -197,24 +198,24 @@ window.on_edit = on_edit;
 function open_edit_window(attribute_opener, opener_id, table_name,class_name,id)
 {
 
-      new_name = class_name + '_' + id;
-   url = '/'+table_name +'/' + id +'/edit?table_name='+ class_name;
-   new_height = screen.height-20;
+      const new_name = class_name + '_' + id;
+   const url = '/'+table_name +'/' + id +'/edit?table_name='+ class_name;
+   const new_height = screen.height-20;
 
     var config_window = 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=1,width='+ (screen.width/2 - 16)+ ', height=' + new_height  +',left='+(screen.width/2 +17)+',top=20'
 
-    stupid_update_opener_attribute_name_obj = jQuery('#stupid_update_opener_attribute_name');
+    const stupid_update_opener_attribute_name_obj = jQuery('#stupid_update_opener_attribute_name');
     stupid_update_opener_attribute_name_obj.val(attribute_opener);
-    stupid_update_opener_id_obj = jQuery('#stupid_update_opener_id');
+    const stupid_update_opener_id_obj = jQuery('#stupid_update_opener_id');
     stupid_update_opener_id_obj.val( opener_id);
     
-    win_ref = window.open(url,new_name, config_window);
-    update_opener_attribute_name_obj = win_ref.document.getElementById('update_opener_attribute_name');
+    const win_ref = window.open(url,new_name, config_window);
+    const update_opener_attribute_name_obj = win_ref.document.getElementById('update_opener_attribute_name');
     if(update_opener_attribute_name_obj!=null){
         jQuery(update_opener_attribute_name_obj).val( attribute_opener);
     }
 
-    update_opener_id_obj = win_ref.document.getElementById('update_opener_id');
+    const update_opener_id_obj = win_ref.document.getElementById('update_opener_id');
     if(update_opener_id_obj!=null){
         jQuery(update_opener_id_obj).val( opener_id);
     }
@@ -226,12 +227,12 @@ window.open_edit_window = open_edit_window;
 function silly_update()
 {
  
-    parent_win=window.opener;
+    const parent_win = window.opener;
     if(parent_win!=null)
     {
           
-         stupid_update_opener_attribute_name_obj = parent_win.document.getElementById('stupid_update_opener_attribute_name');
-         stupid_update_opener_id_obj = parent_win.document.getElementById('stupid_update_opener_id');
+         const stupid_update_opener_attribute_name_obj = parent_win.document.getElementById('stupid_update_opener_attribute_name');
+         const stupid_update_opener_id_obj = parent_win.document.getElementById('stupid_update_opener_id');
          jQuery('#sensible_update_opener_attribute_name').val( jQuery(stupid_update_opener_attribute_name_obj).val());
         
          jQuery('#sensible_update_opener_id').val( stupid_update_opener_id_obj.val());
@@ -244,16 +245,16 @@ window.silly_update = silly_update;
 
 function OnChangeNewGroup(class_name)
 {
-    button_id = "create_group_button_"+class_name;
+    const button_id = "create_group_button_"+class_name;
 
-    button_id181 = "#"+button_id;
-    button_elt  = jQuery(button_id181 );
-    group_name_id = "new_group_name_" + class_name;
+    const button_id181 = "#"+button_id;
+    const button_elt = jQuery(button_id181 );
+    const group_name_id = "new_group_name_" + class_name;
 
-    group_name_id183 = "#"+group_name_id;
-    group_name_elt  = jQuery(group_name_id183);
-    current_str = group_name_elt.val();
-    new_str = current_str.replace(/^\s+/,'').replace(/\s+$/,'');
+    const group_name_id183 = "#"+group_name_id;
+    const group_name_elt = jQuery(group_name_id183);
+    const current_str = group_name_elt.val();
+    const new_str = current_str.replace(/^\s+/,'').replace(/\s+$/,'');
     if(new_str.length!=0)
         {
             button_elt.disabled = false;
@@ -270,31 +271,31 @@ function setcheck(check_id, value)
 {
     
 
-    check_id199 = "#"+check_id;
-    check_obj  = jQuery(check_id);
+    const check_id199 = "#"+check_id;
+    const check_obj = jQuery(check_id);
     check_obj.prop( 'checked', value);
 }
 window.setcheck = setcheck;
 
 function setcheckremote(check_id, value,doc)
 {
-     check_id199 = "#"+check_id;
-    check_obj  = jQuery(check_id,doc);
+     const check_id199 = "#"+check_id;
+    const check_obj = jQuery(check_id,doc);
     check_obj.prop( 'checked', value);  
 }
 window.setcheckremote = setcheckremote;
 
 function on_checkbox_click(row_id, type_name, class_name)
 {
-    check_str = class_name +'_'+ type_name +'_'+  row_id
+    const check_str = class_name +'_'+ type_name +'_'+  row_id
 
-     check_str206 = "#"+check_str;
-     check_obj  = jQuery(check_str206)
+     const check_str206 = "#"+check_str;
+     const check_obj = jQuery(check_str206)
     if( check_obj[0] != null && check_obj.is(':checked'))
         {
 
-            class_name209 = "#"+class_name;
-            select_box  = jQuery(class_name209 + "_check_"+row_id);
+            const class_name209 = "#"+class_name;
+            const select_box = jQuery(class_name209 + "_check_"+row_id);
             select_box.prop( 'checked', true);
         }
         return check_obj.is(':checked')
@@ -304,18 +305,18 @@ window.on_checkbox_click = on_checkbox_click;
 function on_select_check_click(row_id, class_name)
 {
 
-    class_name217 = "#"+class_name;
-    select_box  = jQuery(class_name217 +"_check_"+row_id);
+    const class_name217 = "#"+class_name;
+    const select_box = jQuery(class_name217 +"_check_"+row_id);
     
     if(select_box && !select_box.is(':checked'))
         {
 
-            class_name221 = "#"+class_name;
-            compulosry_box  = jQuery(class_name221 + "_compulsorycheck_"+row_id);
+            const class_name221 = "#"+class_name;
+            const compulosry_box = jQuery(class_name221 + "_compulsorycheck_"+row_id);
             compulosry_box.prop( 'checked',false);
 
-            class_name223 = "#"+class_name;
-            exam_box  = jQuery(class_name223 + "_examcheck_"+row_id);
+            const class_name223 = "#"+class_name;
+            const exam_box = jQuery(class_name223 + "_examcheck_"+row_id);
             exam_box.prop( 'checked',false);
         }
         return select_box.is(':checked')
@@ -325,26 +326,26 @@ window.on_select_check_click = on_select_check_click;
 function on_assign(id)
 {
     wait();
-    specific_div = jQuery('#specific_action_variables');
+    const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){
         jQuery(this).remove()
         });
-     sent_tutor = jQuery("<input></input>").attr({ type: 'text', name: 'id',  value: id  });
+     const sent_tutor = jQuery("<input></input>").attr({ type: 'text', name: 'id',  value: id  });
      specific_div.append(sent_tutor  );
-     class_name = jQuery('#action_class').val();
-     search_results_div_str = "search_results_" + class_name;
+     const class_name = jQuery('#action_class').val();
+     const search_results_div_str = "search_results_" + class_name;
 
-     search_results_div_str239 = "#"+search_results_div_str;
-     search_results_div  = jQuery(search_results_div_str239)
+     const search_results_div_str239 = "#"+search_results_div_str;
+     const search_results_div = jQuery(search_results_div_str239)
      search_results_div.find('.check').each(function()
      {
-            new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
+            const new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
             specific_div.append(new_elt  )
       });
 
-    form_obj = jQuery('#action_form');
+    const form_obj = jQuery('#action_form');
    // form_obj.submit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');;
 
 }
@@ -353,26 +354,26 @@ window.on_assign = on_assign;
 function on_willing(id)
 {
     wait();
-    specific_div = jQuery('#specific_action_variables');
+    const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){
         jQuery(this).remove()
         });
-     sent_willing = jQuery("<input></input>").attr({ type: 'text', name: 'willing_id',  value: id  });
+     const sent_willing = jQuery("<input></input>").attr({ type: 'text', name: 'willing_id',  value: id  });
      specific_div.append(sent_willing   );
-     class_name = jQuery('#action_class').val();
-     search_results_div_str = "search_results_" + class_name;
+     const class_name = jQuery('#action_class').val();
+     const search_results_div_str = "search_results_" + class_name;
 
-     search_results_div_str261 = "#"+search_results_div_str;
-     search_results_div  = jQuery(search_results_div_str261)
+     const search_results_div_str261 = "#"+search_results_div_str;
+     const search_results_div = jQuery(search_results_div_str261)
      search_results_div.find('.check').each(function()
      {
-            new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
+            const new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
             specific_div.append(new_elt  )
       });
 
-    form_obj = jQuery('#action_form');
+    const form_obj = jQuery('#action_form');
     //form_obj.submit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');;
 
 }
@@ -381,19 +382,19 @@ window.on_willing = on_willing;
 function on_agatha_send(id,test_flag)
 {
     wait();
-    specific_div = jQuery('#specific_action_variables');
+    const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){
         jQuery(this).remove()
         });
 
-    sent_email = jQuery("<input></input>").attr({ type: 'text', name: 'email_id',  value: id  })
-    sent_test_flag = jQuery("<input></input>").attr({ type: 'text', name: 'test_flag',  value: test_flag  })
+    const sent_email = jQuery("<input></input>").attr({ type: 'text', name: 'email_id',  value: id  })
+    const sent_test_flag = jQuery("<input></input>").attr({ type: 'text', name: 'test_flag',  value: test_flag  })
     specific_div.append( sent_email );
      specific_div.append( sent_test_flag  );
     jQuery('#action_type').val( "send_email")
-    form_obj = jQuery('#action_form');
+    const form_obj = jQuery('#action_form');
    // form_obj.submit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');
 }
 window.on_agatha_send = on_agatha_send;
@@ -401,27 +402,27 @@ window.on_agatha_send = on_agatha_send;
 function on_sends(test_flag)
 {
     wait();
-    specific_div = jQuery('#specific_action_variables');
+    const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){
         jQuery(this).remove()
         });
 
    
-     search_results_div_str = "search_results_AgathaEmail" ;
+     const search_results_div_str = "search_results_AgathaEmail" ;
 
-     search_results_div_str299 = "#"+search_results_div_str;
-     search_results_div  = jQuery(search_results_div_str299)
+     const search_results_div_str299 = "#"+search_results_div_str;
+     const search_results_div = jQuery(search_results_div_str299)
      search_results_div.find('.check').each(function()
      {
-            new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
+            const new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
             specific_div.append(new_elt  )
       });
-     sent_test_flag = jQuery("<input></input>").attr({ type: 'text', name: 'test_flag',  value: test_flag  })
+     const sent_test_flag = jQuery("<input></input>").attr({ type: 'text', name: 'test_flag',  value: test_flag  })
      specific_div.append( sent_test_flag  );
     jQuery('#action_type').val( "send_emails")
-    form_obj = jQuery('#action_form');
+    const form_obj = jQuery('#action_form');
    // form_obj.submit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');;
     
 }
@@ -430,41 +431,41 @@ window.on_sends = on_sends;
 function on_create_send(id)
 {
     wait();
-    specific_div = jQuery('#specific_action_variables');
+    const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){
         jQuery(this).remove()
         });
     jQuery('#action_type').val(  "create_send_email_from_template");
-             class_name = jQuery('#action_class').val();
+             const class_name = jQuery('#action_class').val();
 
-            class_name320 = "#"+class_name;
-            action_div  = jQuery(class_name320 +'_action_div');
-            email_template_div = action_div.find('email_template_div:first');
+            const class_name320 = "#"+class_name;
+            const action_div = jQuery(class_name320 +'_action_div');
+            const email_template_div = action_div.find('email_template_div:first');
 
-            term_elt = jQuery('#email_template_term');
-            term_id = term_elt.val();
-            course_elt = jQuery('#email_template_course');
-            course_id = course_elt.val();
-            sent_template = jQuery("<input></input>").attr({ type: 'text', name: 'email_template_id',  value: id  })
-            sent_term = jQuery("<input></input>").attr({ type: 'text',  name: 'term_id', value: term_id });
-            sent_course = jQuery("<input></input>").attr({ type: 'text',  name: 'course_id', value: course_id });
+            const term_elt = jQuery('#email_template_term');
+            const term_id = term_elt.val();
+            const course_elt = jQuery('#email_template_course');
+            const course_id = course_elt.val();
+            const sent_template = jQuery("<input></input>").attr({ type: 'text', name: 'email_template_id',  value: id  })
+            const sent_term = jQuery("<input></input>").attr({ type: 'text',  name: 'term_id', value: term_id });
+            const sent_course = jQuery("<input></input>").attr({ type: 'text',  name: 'course_id', value: course_id });
             specific_div.append( sent_template);
             specific_div.append(  sent_term);
             specific_div.append(  sent_course);
-            class_name2 = jQuery('#action_class2').val();
-            search_results_div_str = "search_results_" + class_name2;
+            const class_name2 = jQuery('#action_class2').val();
+            const search_results_div_str = "search_results_" + class_name2;
 
-            search_results_div_str335 = "#"+search_results_div_str;
-            search_results_div  = jQuery(search_results_div_str335)
+            const search_results_div_str335 = "#"+search_results_div_str;
+            const search_results_div = jQuery(search_results_div_str335)
             search_results_div.find('.check').each(function()
             {
-                new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
+                const new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
                 specific_div.append(new_elt  )
             });
 
-        form_obj = jQuery('#action_form');
+        const form_obj = jQuery('#action_form');
       //  form_obj.submit();
-        elem = document.getElementById('action_form');
+        const elem = document.getElementById('action_form');
         Rails.fire(elem, 'submit');;
       
 }
@@ -472,45 +473,58 @@ window.on_create_send = on_create_send;
 
 function on_create(id)
 {
+    let class_name;
+    let action_div;
+    let term_elt;
+    let term_id;
+    let previous_suggestion_elt;
+    let previous_suggestions;
+    let sent_course;
+    let sent_term;
+    let sent_previous_suggestions;
+    let class_name2;
+    let search_results_div_str;
+    let search_results_div;
+
     wait();
-    specific_div = jQuery('#specific_action_variables');
+    const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){
         jQuery(this).remove()
         });
-    action_type = jQuery('#action_type').val();
+    const action_type = jQuery('#action_type').val();
     switch (action_type)
     {
         case 'create_lecture_from_course':
             
             class_name = jQuery('#action_class').val();
 
-            class_name359 = "#"+class_name;
-            action_div  = jQuery(class_name359 +'_action_div');
-            schedule_div = action_div.find('schedule_div:first');
-            lecturer_elt = jQuery('#new_lecturer');
-            person_id = lecturer_elt .val();
+            const class_name359 = "#"+class_name;
+            action_div = jQuery(class_name359 +'_action_div');
+            const schedule_div = action_div.find('schedule_div:first');
+            const lecturer_elt = jQuery('#new_lecturer');
+            const person_id = lecturer_elt .val();
             term_elt = jQuery('#lecture_term')
             term_id = term_elt.val();
-            day_elt = jQuery('#lecture_day')
-            day_id = day_elt.val();
-            time_elt = jQuery('#lecture_time')
-            lecture_time = time_elt.val();
-            num_lectures_elt = jQuery('#number_of_lectures');
-            number_of_lectures = num_lectures_elt.val();
-            num_classes_elt = jQuery('#number_of_classes');
-            number_of_classes = num_classes_elt.val();
+            const day_elt = jQuery('#lecture_day')
+            const day_id = day_elt.val();
+            const time_elt = jQuery('#lecture_time')
+            const lecture_time = time_elt.val();
+            const num_lectures_elt = jQuery('#number_of_lectures');
+            const number_of_lectures = num_lectures_elt.val();
+            const num_classes_elt = jQuery('#number_of_classes');
+            const number_of_classes = num_classes_elt.val();
 
             previous_suggestion_elt = jQuery('#previous_lecture_suggestions')
             previous_suggestions = previous_suggestion_elt.val();
 
             sent_course = jQuery("<input></input>").attr({ type: 'text', name: 'course_id',  value: id  })
-            sent_lecturer = jQuery("<input></input>").attr({type: 'text',name: 'person_id',  value: person_id })
+            const sent_lecturer = jQuery("<input></input>").attr({type: 'text',name: 'person_id',  value: person_id })
             sent_term = jQuery("<input></input>").attr({ type: 'text',  name: 'term_id', value: term_id })
-            sent_day = jQuery("<input></input>").attr({ type: 'text', name: 'day_id', value: day_id  })
-            sent_time = jQuery("<input></input>").attr({ type: 'text', name: 'lecture_time', value: lecture_time });
-            sent_num_lectures = jQuery("<input></input>").attr({ type: 'text',   name: 'number_of_lectures',  value: number_of_lectures   })
-            sent_num_classes = jQuery("<input></input>").attr({  type: 'text',  name: 'number_of_classes',  value: number_of_classes })
-            sent_previous_suggestions =  jQuery("<input></input>").attr({ type: 'text',  name: 'previous_suggestions', value: previous_suggestions  })
+            const sent_day = jQuery("<input></input>").attr({ type: 'text', name: 'day_id', value: day_id  })
+            const sent_time = jQuery("<input></input>").attr({ type: 'text', name: 'lecture_time', value: lecture_time });
+            const sent_num_lectures = jQuery("<input></input>").attr({ type: 'text',   name: 'number_of_lectures',  value: number_of_lectures   })
+            const sent_num_classes = jQuery("<input></input>").attr({  type: 'text',  name: 'number_of_classes',  value: number_of_classes })
+            sent_previous_suggestions = jQuery("<input></input>").attr({ type: 'text',  name: 'previous_suggestions', value: previous_suggestions  })
 
             specific_div.append(sent_course  );
             specific_div.append( sent_lecturer   );
@@ -524,37 +538,37 @@ function on_create(id)
         case 'create_tutorials_from_course':
             class_name = jQuery('#action_class').val();
 
-            class_name397 = "#"+class_name;
-            action_div  = jQuery(class_name397 +'_action_div');
-            tutorial_schedule_div = action_div.find('tutorial_schedule_div:first');
-            tutor_elt = jQuery('#new_tutor');
-            tutor_id = tutor_elt .val();
+            const class_name397 = "#"+class_name;
+            action_div = jQuery(class_name397 +'_action_div');
+            const tutorial_schedule_div = action_div.find('tutorial_schedule_div:first');
+            const tutor_elt = jQuery('#new_tutor');
+            const tutor_id = tutor_elt .val();
             term_elt = jQuery('#tutorial_schedule_term')
             term_id = term_elt.val();
 
-            num_tutorials_elt = jQuery('#number_of_tutorials');
-            number_of_tutorials = num_tutorials_elt.val();
-            tutorial_class_size_elt = jQuery("#tutorial_class_size");
-            tutorial_class_size = tutorial_class_size_elt.val();
-            collection_required_elt = jQuery('#collection_required');
+            const num_tutorials_elt = jQuery('#number_of_tutorials');
+            const number_of_tutorials = num_tutorials_elt.val();
+            const tutorial_class_size_elt = jQuery("#tutorial_class_size");
+            const tutorial_class_size = tutorial_class_size_elt.val();
+            const collection_required_elt = jQuery('#collection_required');
             if(collection_required_elt.is(':checked'))
             {
-                collection_required = "1"
+                const collection_required = "1"
             }
             else
             {
-                collection_required = "0";
+                const collection_required = "0";
             }
-            previous_suggestion_elt = jQuery('#previous_tutorial_schedule_suggestions')
-            previous_suggestions = previous_suggestion_elt.val();
+            const previous_suggestion_elt = jQuery('#previous_tutorial_schedule_suggestions')
+            const previous_suggestions = previous_suggestion_elt.val();
 
             sent_course = jQuery("<input></input>").attr({ type: 'text', name: 'course_id',  value: id  })
-            sent_tutor = jQuery("<input></input>").attr({type: 'text',name: 'tutor_id',  value: tutor_id })
+            const sent_tutor = jQuery("<input></input>").attr({type: 'text',name: 'tutor_id',  value: tutor_id })
             sent_term = jQuery("<input></input>").attr({ type: 'text',  name: 'term_id', value: term_id })
-            sent_num_tutorials = jQuery("<input></input>").attr({ type: 'text',   name: 'number_of_tutorials',  value: number_of_tutorials   })
-            sent_tutorial_class_size = jQuery("<input></input>").attr({ type: 'text',   name: 'tutorial_class_size',  value: tutorial_class_size   })
-            sent_collection_required =  jQuery("<input></input>").attr({ type: 'text',   name: 'collection_required',  value: collection_required   })
-            sent_previous_suggestions =  jQuery("<input></input>").attr({ type: 'text',  name: 'previous_suggestions', value: previous_suggestions  })
+            const sent_num_tutorials = jQuery("<input></input>").attr({ type: 'text',   name: 'number_of_tutorials',  value: number_of_tutorials   })
+            const sent_tutorial_class_size = jQuery("<input></input>").attr({ type: 'text',   name: 'tutorial_class_size',  value: tutorial_class_size   })
+            const sent_collection_required = jQuery("<input></input>").attr({ type: 'text',   name: 'collection_required',  value: collection_required   })
+            const sent_previous_suggestions = jQuery("<input></input>").attr({ type: 'text',  name: 'previous_suggestions', value: previous_suggestions  })
 
             specific_div.append(sent_course  );
             specific_div.append( sent_tutor   );
@@ -567,46 +581,46 @@ function on_create(id)
             class_name2 = jQuery('#action_class2').val();
             search_results_div_str = "search_results_" + class_name2;
 
-            search_results_div_str435 = "#"+search_results_div_str;
-            search_results_div  = jQuery(search_results_div_str435)
+            const search_results_div_str435 = "#"+search_results_div_str;
+            search_results_div = jQuery(search_results_div_str435)
             search_results_div.find('.check').each(function()
             {
-                new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
+                const new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
                 specific_div.append(new_elt  )
             });
             break;
           case 'create_email_from_template':
-             class_name = jQuery('#action_class').val();
+            const class_name = jQuery('#action_class').val();
 
-            class_name444 = "#"+class_name;
-            action_div  = jQuery(class_name444 +'_action_div');
-            email_template_div = action_div.find('email_template_div:first');
+            const class_name444 = "#"+class_name;
+            const action_div = jQuery(class_name444 +'_action_div');
+            const email_template_div = action_div.find('email_template_div:first');
 
-            term_elt = jQuery('#email_template_term');
-            term_id = term_elt.val();
-            course_elt = jQuery('#email_template_course');
-            course_id = course_elt.val();
-            sent_template = jQuery("<input></input>").attr({ type: 'text', name: 'email_template_id',  value: id  })
-            sent_term = jQuery("<input></input>").attr({ type: 'text',  name: 'term_id', value: term_id });
-            sent_course = jQuery("<input></input>").attr({ type: 'text',  name: 'course_id', value: course_id });
+            const term_elt = jQuery('#email_template_term');
+            const term_id = term_elt.val();
+            const course_elt = jQuery('#email_template_course');
+            const course_id = course_elt.val();
+            const sent_template = jQuery("<input></input>").attr({ type: 'text', name: 'email_template_id',  value: id  })
+            const sent_term = jQuery("<input></input>").attr({ type: 'text',  name: 'term_id', value: term_id });
+            const sent_course = jQuery("<input></input>").attr({ type: 'text',  name: 'course_id', value: course_id });
             specific_div.append(  sent_template);
             specific_div.append(  sent_term);
             specific_div.append( sent_course);
-            class_name2 = jQuery('#action_class2').val();
-            search_results_div_str = "search_results_" + class_name2;
+            const class_name2 = jQuery('#action_class2').val();
+            const search_results_div_str = "search_results_" + class_name2;
 
-            search_results_div_str459 = "#"+search_results_div_str;
-            search_results_div  = jQuery(search_results_div_str459)
+            const search_results_div_str459 = "#"+search_results_div_str;
+            const search_results_div = jQuery(search_results_div_str459)
             search_results_div.find('.check').each(function()
             {
-                new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
+                const new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
                 specific_div.append(new_elt  )
             });
             break;
         }
-        form_obj = jQuery('#action_form');
+        const form_obj = jQuery('#action_form');
         //form_obj.submit();
-        elem = document.getElementById('action_form');
+        const elem = document.getElementById('action_form');
         Rails.fire(elem, 'submit');;
         
 
@@ -626,7 +640,7 @@ function insert_specific_div_checks(specific_div, search_results_div, check_clas
     
 
     search_results_div.find(check_class).each(function(){
-    new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
+    const new_elt = jQuery(this).clone(true); new_elt.removeAttr('id');
                 specific_div.append(new_elt)
             });
 }
@@ -641,16 +655,16 @@ window.insert_specific_div_multi_values = insert_specific_div_multi_values;
 function on_action( id)
 {
     wait();
-    action_type = jQuery('#action_type').val();
-    specific_div = jQuery('#specific_action_variables');
+    const action_type = jQuery('#action_type').val();
+    const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){
         jQuery(this).remove()
     });
-    class_name2 = jQuery("#action_class2").val();
-    search_results_div_str = "#search_results_" + class_name2;
-    search_results_div = jQuery(search_results_div_str)
+    const class_name2 = jQuery("#action_class2").val();
+    const search_results_div_str = "#search_results_" + class_name2;
+    const search_results_div = jQuery(search_results_div_str)
 
-    id_elt = new Element('input',{
+    const id_elt = new Element('input',{
         type: 'text',
         name: 'id',
         value: id
@@ -669,28 +683,28 @@ function on_action( id)
             break;
 
     }
-    form_obj = jQuery('#action_form');
+    const form_obj = jQuery('#action_form');
  //   form_obj.submit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');;
      
 }
 window.on_action = on_action;
 function set_suggestion_class(suggest_type_str, suggestion_class)
 {
-    suggest_obj = jQuery('#suggest_type')
+    const suggest_obj = jQuery('#suggest_type')
     suggest_obj.val( suggest_type_str);
-    suggest_class_obj = jQuery('#suggest_class')
+    const suggest_class_obj = jQuery('#suggest_class')
     suggest_class_obj.val( suggestion_class);
 
 }
 window.set_suggestion_class = set_suggestion_class;
 function set_action_class(class_name, class_name2, action_type)
 {
-    action_obj = jQuery('#action_type');
+    const action_obj = jQuery('#action_type');
 
-    action_table = jQuery('#action_class');
-    action_class2= jQuery('#action_class2');
+    const action_table = jQuery('#action_class');
+    const action_class2 = jQuery('#action_class2');
     action_class2.val( class_name2);
     action_table.val( class_name);
 
@@ -699,18 +713,18 @@ function set_action_class(class_name, class_name2, action_type)
 window.set_action_class = set_action_class;
 function create_multi_change_table(table_name)
 {
-    multi_change_present_obj = jQuery("#multi_change_present_"+table_name);
+    const multi_change_present_obj = jQuery("#multi_change_present_"+table_name);
     
 
 
     if(!multi_change_present_obj.checked)
     {
         multi_change_present_obj.prop('checked', true);
-        multi_table_create_table_name_obj = jQuery("#multi_table_create_table_name");
+        const multi_table_create_table_name_obj = jQuery("#multi_table_create_table_name");
         multi_table_create_table_name_obj.val( table_name);
-        multi_table_create_obj = jQuery("#multi_table_create");
+        const multi_table_create_obj = jQuery("#multi_table_create");
         //multi_table_create.onsubmit();
-        elem = document.getElementById('multi_table_create');
+        const elem = document.getElementById('multi_table_create');
         Rails.fire(elem, 'submit');;
 
     }
@@ -732,50 +746,58 @@ window.on_add = on_add;
 function on_suggest(course_id)
 {
     wait();
-    action_type = jQuery('#action_type').val();
-    suggest_div = jQuery('#specific_suggest_variables');
+    const action_type = jQuery('#action_type').val();
+    let suggest_div = jQuery('#specific_suggest_variables');
     suggest_div.remove();
-    new_suggest_div = jQuery("<div></div>").attr({id: 'specific_suggest_variables'});
+    const new_suggest_div = jQuery("<div></div>").attr({id: 'specific_suggest_variables'});
     jQuery('#make_suggestion_div').append(new_suggest_div);
     suggest_div = jQuery('#specific_suggest_variables'); 
     //suggest_div.children().each(function()
     //{
       //  jQuery(this).remove()
     //});
-    suggest_id = jQuery('#suggest_id');
+    const suggest_id = jQuery('#suggest_id');
     suggest_id.val( course_id)
-    class_name = jQuery('#action_class').val();
+    const class_name = jQuery('#action_class').val();
 
-    class_name578 = "#"+class_name;
-    action_div  = jQuery(class_name578 +'_action_div');
+    const class_name578 = "#"+class_name;
+    const action_div = jQuery(class_name578 +'_action_div');
+
+    let term_elt;
+    let term_id;
+    let previous_suggestion_elt;
+    let previous_suggestions;
+    let sent_term;
+    let sent_previous_suggestions;  
+
     switch(action_type)
     {
         case 'create_lecture_from_course':
-            schedule_div = action_div.find('schedule_div:first');
-            lecturer_elt = jQuery('#new_lecturer');
-            person_id = lecturer_elt .val();
+            const schedule_div = action_div.find('schedule_div:first');
+            const lecturer_elt = jQuery('#new_lecturer');
+            const person_id = lecturer_elt .val();
             term_elt = jQuery('#lecture_term')
             term_id = term_elt.val();
-            day_elt = jQuery('#lecture_day')
-            day_id = day_elt.val();
-            time_elt = jQuery('#lecture_time')
-            lecture_time = time_elt.val();
-            num_lectures_elt = jQuery('#number_of_lectures');
-            number_of_lectures = num_lectures_elt.val();
-            num_classes_elt = jQuery('#number_of_classes');
-            number_of_classes = num_classes_elt.val();
+            const day_elt = jQuery('#lecture_day')
+            const day_id = day_elt.val();
+            const time_elt = jQuery('#lecture_time')
+            const lecture_time = time_elt.val();
+            const num_lectures_elt = jQuery('#number_of_lectures');
+            const number_of_lectures = num_lectures_elt.val();
+            const num_classes_elt = jQuery('#number_of_classes');
+            const number_of_classes = num_classes_elt.val();
 
             previous_suggestion_elt = jQuery('#previous_lecture_suggestions')
             previous_suggestions = previous_suggestion_elt.val();
 
 
-            sent_lecturer = jQuery("<input></input>").attr({type: 'text', name: 'person_id', value: person_id})
+            const sent_lecturer = jQuery("<input></input>").attr({type: 'text', name: 'person_id', value: person_id})
             sent_term = jQuery("<input></input>").attr({type: 'text', name: 'term_id', value: term_id})
-            sent_day = jQuery("<input></input>").attr({type: 'text', name: 'day_id', value: day_id})
-             sent_time = jQuery("<input></input>").attr({ type: 'text', name: 'lecture_time', value: lecture_time });
-            sent_num_lectures = jQuery("<input></input>").attr({type: 'text', name: 'number_of_lectures', value: number_of_lectures})
-            sent_num_classes = jQuery("<input></input>").attr({type: 'text', name: 'number_of_classes', value: number_of_classes})
-            sent_previous_suggestions =  jQuery("<input></input>").attr({type: 'text', name: 'previous_suggestions', value: previous_suggestions})
+            const sent_day = jQuery("<input></input>").attr({type: 'text', name: 'day_id', value: day_id})
+             const sent_time = jQuery("<input></input>").attr({ type: 'text', name: 'lecture_time', value: lecture_time });
+            const sent_num_lectures = jQuery("<input></input>").attr({type: 'text', name: 'number_of_lectures', value: number_of_lectures})
+            const sent_num_classes = jQuery("<input></input>").attr({type: 'text', name: 'number_of_classes', value: number_of_classes})
+            sent_previous_suggestions = jQuery("<input></input>").attr({type: 'text', name: 'previous_suggestions', value: previous_suggestions})
             suggest_div.append(sent_lecturer);
             suggest_div.append(sent_term);
             suggest_div.append(sent_day);
@@ -785,20 +807,20 @@ function on_suggest(course_id)
             suggest_div.append(sent_previous_suggestions);
             break;
      case 'create_tutorials_from_course':
-            tutorial_schedule_div = action_div.find('tutorial_schedule_div:first');
-            tutor_elt = jQuery('#new_tutor');
-            tutor_id = tutor_elt .val();
-            term_elt = jQuery('#tutorial_schedule_term')
-            term_id = term_elt.val();
-            num_tutorials_elt = jQuery('#number_of_tutorials');
-            number_of_tutorials = num_tutorials_elt.val();
-            previous_suggestion_elt = jQuery('#previous_tutorial_schedule_suggestions')
-            previous_suggestions = previous_suggestion_elt.val();
+            const tutorial_schedule_div = action_div.find('tutorial_schedule_div:first');
+            const tutor_elt = jQuery('#new_tutor');
+            const tutor_id = tutor_elt .val();
+            const term_elt = jQuery('#tutorial_schedule_term')
+            const term_id = term_elt.val();
+            const num_tutorials_elt = jQuery('#number_of_tutorials');
+            const number_of_tutorials = num_tutorials_elt.val();
+            const previous_suggestion_elt = jQuery('#previous_tutorial_schedule_suggestions')
+            const previous_suggestions = previous_suggestion_elt.val();
             
-            sent_tutor = jQuery("<input></input>").attr({type: 'text', name: 'person_id', value: tutor_id})
-            sent_term = jQuery("<input></input>").attr({type: 'text', name: 'term_id', value: term_id})
-            sent_num_tutorials = jQuery("<input></input>").attr({type: 'text', name: 'number_of_lectures', value: number_of_tutorials})
-            sent_previous_suggestions =  jQuery("<input></input>").attr({type: 'text', name: 'previous_suggestions', value: previous_suggestions})
+            const sent_tutor = jQuery("<input></input>").attr({type: 'text', name: 'person_id', value: tutor_id})
+            const sent_term = jQuery("<input></input>").attr({type: 'text', name: 'term_id', value: term_id})
+            const sent_num_tutorials = jQuery("<input></input>").attr({type: 'text', name: 'number_of_lectures', value: number_of_tutorials})
+            const sent_previous_suggestions = jQuery("<input></input>").attr({type: 'text', name: 'previous_suggestions', value: previous_suggestions})
             suggest_div.append(sent_tutor);
             suggest_div.append(sent_term);
             suggest_div.append(sent_num_tutorials);
@@ -813,9 +835,9 @@ function on_suggest(course_id)
  ///           suggest_div.append(insert_elt );
   //          descended_elt = descended_elt.next();
   //      }
-        make_suggestion_form = jQuery('#make_suggestion')
+        const make_suggestion_form = jQuery('#make_suggestion')
         //make_suggestion_form.submit();    
-        elem = document.getElementById('make_suggestion');
+        const elem = document.getElementById('make_suggestion');
         Rails.fire(elem, 'submit');        
 }
 window.on_suggest = on_suggest;
@@ -825,34 +847,34 @@ window.on_suggest = on_suggest;
 function SetMaxTutorials()
 {
     wait();
-    specific_div = jQuery('#specific_action_variables');
+    const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){jQuery(this).remove()});
-    term_elt = jQuery('#max_tutorials_term')
-    term_id = term_elt.val();
-    sent_term = jQuery("<input></input>").attr({type: 'text', name: 'term_id', value: term_id})
+    const term_elt = jQuery('#max_tutorials_term')
+    const term_id = term_elt.val();
+    const sent_term = jQuery("<input></input>").attr({type: 'text', name: 'term_id', value: term_id})
     specific_div.append(sent_term);
 
-    max_tutorials_elt = jQuery('#max_tutorials')
-    max_tutorials = max_tutorials_elt.val();
-    sent_max_tutorials = jQuery("<input></input>").attr({type: 'text', name: 'max_tutorials', value: max_tutorials})
+    const max_tutorials_elt = jQuery('#max_tutorials')
+    const max_tutorials = max_tutorials_elt.val();
+    const sent_max_tutorials = jQuery("<input></input>").attr({type: 'text', name: 'max_tutorials', value: max_tutorials})
     specific_div.append(sent_max_tutorials);
 
-    search_results_div_str = "search_results_Person";
+    const search_results_div_str = "search_results_Person";
 
-    search_results_div_str666 = "#"+search_results_div_str;
-    search_results_div  = jQuery(search_results_div_str666)
+    const search_results_div_str666 = "#"+search_results_div_str;
+    const search_results_div = jQuery(search_results_div_str666)
     search_results_div.find('.check').each(function(){new_elt = jQuery(this).clone(true); specific_div.append(new_elt)});
 
   
 
-    action_obj = jQuery('#action_type')
+    const action_obj = jQuery('#action_type')
     action_obj.val( "max_tutorials")
-    action_table = jQuery('#action_class');
+    const action_table = jQuery('#action_class');
     action_table.val( "Person");
 
     //form_obj = jQuery('#action_form');
   //  form_obj.submit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');  
 
 }
@@ -861,26 +883,26 @@ window.SetMaxTutorials = SetMaxTutorials;
 function MultiUpdate(class_name)
 {
     wait();
-    specific_div = jQuery("#specific_action_variables");
+    const specific_div = jQuery("#specific_action_variables");
     specific_div.children().each(function(){jQuery(this).remove()});
-    action_obj = jQuery("#action_type")
+    const action_obj = jQuery("#action_type")
     action_obj.val( "multi_update")
-    action_table = jQuery("#action_class");
+    const action_table = jQuery("#action_class");
     action_table.val( class_name);
     
-    search_results_div_str = "#search_results_" + class_name;
-    search_results_div = jQuery(search_results_div_str);
+    const search_results_div_str = "#search_results_" + class_name;
+    const search_results_div = jQuery(search_results_div_str);
 
     insert_specific_div_checks(specific_div, search_results_div, '.check');
 
-    multi_change_table_div = jQuery("#multi_change_table_div_"+class_name);
+    const multi_change_table_div = jQuery("#multi_change_table_div_"+class_name);
     multi_change_table_div.find('.radio').each(function(){new_elt = jQuery(this).clone(true); specific_div.append(new_elt)});
     multi_change_table_div.find('.edit_text').each(function(){new_elt = jQuery(this).clone(true); specific_div.append( new_elt)});
     multi_change_table_div.find('.select').each(function(){new_elt =  jQuery("<input></input>").attr({ type: 'text',   name: jQuery(this).prop("name"),  value: jQuery(this).val()   }); specific_div.append( new_elt)});
 
     //form_obj = document.getElementById('action_form');
     //form_obj.onsubmit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');  
 }
 window.MultiUpdate = MultiUpdate;
@@ -889,35 +911,35 @@ function CreateGroup(class_name)
 {
  //   add_group('Person', '11', 204)
     wait();
-    specific_div = jQuery('#specific_action_variables');
+    const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){jQuery(this).remove()});
-    group_name_id = "new_group_name_" + class_name;
+    const group_name_id = "new_group_name_" + class_name;
 
-    group_name_id687 = "#"+group_name_id;
-    group_name_elt  = jQuery(group_name_id687);
-    cloned_group_name_elt = jQuery("<input></input>").attr({type: 'text', name: 'new_group_name', value: group_name_elt.val()})
+    const group_name_id687 = "#"+group_name_id;
+    const group_name_elt = jQuery(group_name_id687);
+    const cloned_group_name_elt = jQuery("<input></input>").attr({type: 'text', name: 'new_group_name', value: group_name_elt.val()})
     group_name_elt.val( "");
     specific_div.append(cloned_group_name_elt);
-    search_results_div_str = "search_results_" + class_name;
+    const search_results_div_str = "search_results_" + class_name;
 
-    search_results_div_str692 = "#"+search_results_div_str;
-    search_results_div  = jQuery(search_results_div_str692)
+    const search_results_div_str692 = "#"+search_results_div_str;
+    const search_results_div = jQuery(search_results_div_str692)
     search_results_div.find('.check').each(function(){new_elt = jQuery(this).clone(true); specific_div.append(new_elt)});
 
 
-    class_name695 = "#"+class_name;
-    action_div  = jQuery(class_name695 +'_action_div');
+    const class_name695 = "#"+class_name;
+    const action_div = jQuery(class_name695 +'_action_div');
     action_div.find('.group_privacy').each(function(){new_elt = jQuery(this).clone(true); specific_div.append(new_elt)});
 
 
-    action_obj = jQuery('#action_type')
+    const action_obj = jQuery('#action_type')
     action_obj.val( "group")
-    action_table = jQuery('#action_class');
+    const action_table = jQuery('#action_class');
     action_table.val( class_name);
 
-    form_obj = jQuery('#action_form');
+    const form_obj = jQuery('#action_form');
  //   form_obj.submit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');;
 }
 window.CreateGroup = CreateGroup;
@@ -926,8 +948,8 @@ function SetChecks(ids, check_type)
 {
      
      ids.forEach(function(id){
-        check_id = check_type + '_'+id;
-        check_obj = jQuery(check_id);
+        const check_id = check_type + '_'+id;
+        const check_obj = jQuery(check_id);
         if(check_obj[0]!=null)
         {
             check_obj.prop('checked', true);
@@ -939,35 +961,35 @@ window.SetChecks = SetChecks;
 function SetTutorialNumber()
 {
     wait();
-    specific_div = jQuery("#specific_action_variables");
+    const specific_div = jQuery("#specific_action_variables");
     specific_div.children().each(function(){jQuery(this).remove()});
-    tutorial_number_id = "#tutorial_number";
-    tutorial_number_elt = jQuery(tutorial_number_id);
-    cloned_tutorial_number_elt = jQuery("<input></input>").attr({type: 'text', name: 'tutorial_number', value: tutorial_number_elt.val()})
+    const tutorial_number_id = "#tutorial_number";
+    const tutorial_number_elt = jQuery(tutorial_number_id);
+    const cloned_tutorial_number_elt = jQuery("<input></input>").attr({type: 'text', name: 'tutorial_number', value: tutorial_number_elt.val()})
     
     specific_div.append( cloned_tutorial_number_elt);
-    search_results_div_str = "#search_results_TutorialSchedule";
-    search_results_div = jQuery(search_results_div_str);
+    const search_results_div_str = "#search_results_TutorialSchedule";
+    const search_results_div = jQuery(search_results_div_str);
     search_results_div.find('.check').each(function(){new_elt = jQuery(this).clone(true); specific_div.append( new_elt)});
 
-    action_div = jQuery('#TutorialSchedule_action_div');
+    const action_div = jQuery('#TutorialSchedule_action_div');
   
-    action_obj = jQuery("#action_type");
+    const action_obj = jQuery("#action_type");
     action_obj.val( "set_tutorial_number");
-    action_table = jQuery("action_class");
+    const action_table = jQuery("action_class");
     action_table.val( "TutorialSchedule");
 
-    form_obj = document.getElementById('action_form');
+    const form_obj = document.getElementById('action_form');
    // form_obj.onsubmit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');;
 }
 window.SetTutorialNumber = SetTutorialNumber;
 
 function GetRadioValue(radio_list)
 {
-    default_ret_val = jQuery(radio_list[0]).val();
-    length = radio_list.length;
+    const default_ret_val = jQuery(radio_list[0]).val();
+    const length = radio_list.length;
     for(i=0;i<length; i++)
     {
         if(jQuery(radio_list[i]).is(':checked') == true)
@@ -981,34 +1003,34 @@ window.GetRadioValue = GetRadioValue;
 function UpdateCollectionStatus()
 {
     wait();
-    class_name = "Tutorial"
-    specific_div = jQuery('#specific_action_variables');
+    const class_name = "Tutorial"
+    const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){jQuery(this).remove()});
 
-    search_results_div_str = "search_results_" + class_name;
+    const search_results_div_str = "search_results_" + class_name;
 
-    search_results_div_str729 = "#"+search_results_div_str;
-    search_results_div  = jQuery(search_results_div_str729)
+    const search_results_div_str729 = "#"+search_results_div_str;
+    const search_results_div = jQuery(search_results_div_str729)
     search_results_div.find('.check').each(function(){new_elt = jQuery(this).clone(true); specific_div.append(new_elt)});
 
 
 
-    class_name733 = "#"+class_name;
-    action_div  = jQuery(class_name733 +'_action_div');
-    radio_list = action_div.find('.collection_status');
-    collection_status = GetRadioValue(radio_list);
-    cloned_collection_status_elt = jQuery("<input></input>").attr({type: 'text', name: 'collection_status', value: collection_status});
+    const class_name733 = "#"+class_name;
+    const action_div = jQuery(class_name733 +'_action_div');
+    const radio_list = action_div.find('.collection_status');
+    const collection_status = GetRadioValue(radio_list);
+    const cloned_collection_status_elt = jQuery("<input></input>").attr({type: 'text', name: 'collection_status', value: collection_status});
     specific_div.append(cloned_collection_status_elt);
 
 
-    action_obj = jQuery('#action_type')
+    const action_obj = jQuery('#action_type')
     action_obj.val( "update_collection_status")
-    action_table = jQuery('#action_class');
+    const action_table = jQuery('#action_class');
     action_table.val( class_name);
 
-    form_obj = jQuery('#action_form');
+    const form_obj = jQuery('#action_form');
  //   form_obj.submit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');
 
 
@@ -1018,17 +1040,17 @@ window.UpdateCollectionStatus = UpdateCollectionStatus;
 
 function add_group(class_name, group_name, new_group_id)
 {
-   external_filter_group_selection_class =  ".external_filter_group_selection_"+class_name;
-   external_filter_group_selection_classes = jQuery(external_filter_group_selection_class)
+   const external_filter_group_selection_class = ".external_filter_group_selection_"+class_name;
+   const external_filter_group_selection_classes = jQuery(external_filter_group_selection_class)
    external_filter_group_selection_classes.each(function()
    {
        insert_option(jQuery(this), group_name, new_group_id);
    });
-   argument_selection_group_span_class = ".argument_selection_group_" + class_name;
+   const argument_selection_group_span_class = ".argument_selection_group_" + class_name;
    jQuery(argument_selection_group_span_class).each(function()
    {
-       span_sibling = jQuery(this);
-       select_elt = span_sibling.next('select');
+       const span_sibling = jQuery(this);
+       const select_elt = span_sibling.next('select');
        if(select_elt[0] !=null)
            {
        insert_option(select_elt, group_name, new_group_id);
@@ -1039,7 +1061,7 @@ window.add_group = add_group;
 
 function select_remove(table_name,id)
 {
-   select_class = "."+ table_name + "_select > option[value="+id+"]";
+   const select_class = "."+ table_name + "_select > option[value="+id+"]";
    jQuery(select_class).each(function()
    { 
        jQuery(this).remove();
@@ -1051,12 +1073,12 @@ window.select_remove = select_remove;
 function select_update(table_name,id,new_option_str)
 {
    
-   count = 0;
+   const count = 0;
  
-   select_class = "."+ table_name + "_select > option[value="+id+"]";
+   const select_class = "."+ table_name + "_select > option[value="+id+"]";
    jQuery(select_class).each(function()
    {
-       count = count + 1;
+       const count = count + 1;
        jQuery(this).text(new_option_str);
    });
    
@@ -1077,20 +1099,20 @@ window.edit_alert = edit_alert;
 function update_edit_link(table_name, class_name,id)
 {
     
-    parent_win=window.opener;
+    const parent_win = window.opener;
     if(parent_win == null)
         {
-            first_parent = window.open('','main_window');
+            const first_parent = window.open('','main_window');
             if(first_parent != window)
             {
-                    parent_win = first_parent
+                    const parent_win = first_parent
             }
         }
     if(parent_win!=null)
         {
-            span_aref_obj_str = "a_edit_"+table_name +"_" + id;
-            span_aref_obj = parent_win.document.getElementById(span_aref_obj_str);
-            aref_obj = jQuery(span_aref_obj).find('label:first');
+            const span_aref_obj_str = "a_edit_"+table_name +"_" + id;
+            const span_aref_obj = parent_win.document.getElementById(span_aref_obj_str);
+            const aref_obj = jQuery(span_aref_obj).find('label:first');
             var new_a = jQuery("<a></a>").attr({ href: '#', onclick: "on_edit('"+table_name+"','"+class_name+"','"+id+"');return false" });
 
             new_a.html('Edit ')          
@@ -1102,14 +1124,14 @@ function update_edit_link(table_name, class_name,id)
 window.update_edit_link = update_edit_link;
 function insert_option(select_elt, group_name, new_group_id)
 {
-    first_option = select_elt.find('option:first');
+    const first_option = select_elt.find('option:first');
 
-    current_option = first_option;
-    next_option = first_option.next('option');
+    const current_option = first_option;
+    const next_option = first_option.next('option');
     while(next_option[0] != null && next_option.text().trim().toLowerCase() < group_name.toLowerCase().trim())
         {
-            current_option = next_option;
-            next_option = current_option.next('option');
+            const current_option = next_option;
+            const next_option = current_option.next('option');
         }
         //var new_option = jQuery("<option></option>").attr({'value': new_group_id, 'class': 'group_class_' + new_group_id }) I'm not sure why I'm setting class to group_class_.
         var new_option = jQuery("<option></option>").attr({'value': new_group_id}) 
@@ -1122,52 +1144,52 @@ function insert_new_obj(class_name, new_obj_name, new_obj_id)
 {
     
     
-    select_class = "."+ class_name + "_select:first";
-    done = false;
+    const select_class = "."+ class_name + "_select:first";
+    const done = false;
 
     jQuery(select_class).each(function()
     {
-        select_elt = jQuery(this);
+        const select_elt = jQuery(this);
        if(done)
        {
                return false;
        }
 
-       select_length = Math.round(select_elt.children().length);
-       n = Math.round(select_elt.children().length/2);
-       offset = n;
-       n_shift = Math.floor(n/2);
+       const select_length = Math.round(select_elt.children().length);
+       const n = Math.round(select_elt.children().length/2);
+       const offset = n;
+       const n_shift = Math.floor(n/2);
        
 
        
        while(n_shift>0)
        {
-          comp_done = false
-          select_class_n = "."+ class_name + "_select > option:nth-child("+offset+")";
+          const comp_done = false
+          const select_class_n = "."+ class_name + "_select > option:nth-child("+offset+")";
           jQuery(select_class_n).each(function()
           {
-              option_elt = jQuery(this)
+              const option_elt = jQuery(this)
               if(comp_done == false)
               {
                   if(option_elt.text().trim().toLowerCase()<new_obj_name.trim().toLowerCase())
                   {
-                      offset = offset + n_shift;
+                      const offset = offset + n_shift;
                   }
                   else
                   {
-                      offset = offset - n_shift;
+                      const offset = offset - n_shift;
                   }
-                  n_shift = Math.floor(n_shift/2);
+                  const n_shift = Math.floor(n_shift/2);
               }
               if(offset>=select_length)
               {
           //        offset = select_length -1;
               }
               
-              comp_done = true;
+              const comp_done = true;
            });
         }
-        select_class_n = "."+ class_name + "_select > option:nth-child("+offset+")";
+        const select_class_n = "."+ class_name + "_select > option:nth-child("+offset+")";
         jQuery(select_class_n).each(function()
         {
             var option_elt = jQuery(this)
@@ -1186,10 +1208,10 @@ function insert_new_obj(class_name, new_obj_name, new_obj_id)
         });
 
 
-        done = true;
+        const done = true;
       // insert_option(select_elt, new_group_name, new_group_id);
     });
-    y = 2;
+    const y = 2;
     
 }
 window.insert_new_obj = insert_new_obj;
@@ -1198,19 +1220,19 @@ function any_selected(class_name)
 {
     var ret_val = false
 
-    search_results_div_str = "search_results_" + class_name;
+    const search_results_div_str = "search_results_" + class_name;
 
-    search_results_div_str792 = "#"+search_results_div_str;
-    search_results_div  = jQuery(search_results_div_str792)
+    const search_results_div_str792 = "#"+search_results_div_str;
+    const search_results_div = jQuery(search_results_div_str792)
     search_results_div.find('.check').each(function(){
         if(jQuery(this).is(':checked'))
         {
-            ret_val = true;
+            const ret_val = true;
             return ret_val;
         }
         else
             {
-                x = 1;
+                const x = 1;
             }
     });
     return ret_val;
@@ -1227,7 +1249,7 @@ function DeleteMembers(class_name)
         }
         wait();
 
-        confirm_str = "Are you sure you want to delete selected members from " + class_name + " table?";
+        const confirm_str = "Are you sure you want to delete selected members from " + class_name + " table?";
     var answer = confirm (confirm_str)
 if (!answer)
     {
@@ -1236,23 +1258,23 @@ if (!answer)
  return;
     }
 
-    specific_action_variables825 = "#"+"specific_action_variables";
-    specific_div  = jQuery(specific_action_variables825);
+    const specific_action_variables825 = "#"+"specific_action_variables";
+    const specific_div = jQuery(specific_action_variables825);
     specific_div.children().each(function(){jQuery(this).remove()});
-    search_results_div_str = "search_results_" + class_name;
+    const search_results_div_str = "search_results_" + class_name;
 
-    search_results_div_str828 = "#"+search_results_div_str;
-    search_results_div  = jQuery(search_results_div_str828)
+    const search_results_div_str828 = "#"+search_results_div_str;
+    const search_results_div = jQuery(search_results_div_str828)
     search_results_div.find('.check').each(function(){new_elt = jQuery(this).clone(true); jQuery(this).removeAttr('id'); specific_div.append(new_elt)});
 
-    action_obj = jQuery('#action_type')
+    const action_obj = jQuery('#action_type')
     action_obj.val( "delete")
-    action_table = jQuery('#action_class');
+    const action_table = jQuery('#action_class');
     action_table.val( class_name);
    
-    form_obj = jQuery('#action_form');
+    const form_obj = jQuery('#action_form');
 //    form_obj.submit();
-    elem = document.getElementById('action_form');
+    const elem = document.getElementById('action_form');
     Rails.fire(elem, 'submit');
    
 }
@@ -1261,7 +1283,7 @@ window.DeleteMembers = DeleteMembers;
 
 function on_delete(table_name,id)
 {
-    confirm_str = "Are you sure you want to delete " + table_name + " with id = " + id +"?";
+    const confirm_str = "Are you sure you want to delete " + table_name + " with id = " + id +"?";
     var answer = confirm (confirm_str)
     wait();
 if (!answer)
@@ -1272,25 +1294,25 @@ if (!answer)
     }
 
 
-   table_obj_str = "delete_table_name"
+   const table_obj_str = "delete_table_name"
 
-   table_obj_str857 = "#"+table_obj_str;
-   table_obj  = jQuery(table_obj_str857);
-   id_obj_str = "delete_id"
+   const table_obj_str857 = "#"+table_obj_str;
+   const table_obj = jQuery(table_obj_str857);
+   const id_obj_str = "delete_id"
 
-   id_obj_str859 = "#"+id_obj_str;
-   id_obj  = jQuery(id_obj_str859);
-   form_obj_str = "form_delete";
+   const id_obj_str859 = "#"+id_obj_str;
+   const id_obj = jQuery(id_obj_str859);
+   const form_obj_str = "form_delete";
 
-   form_obj_str861 = "#"+form_obj_str;
-   form_obj  = jQuery(form_obj_str861);
+   const form_obj_str861 = "#"+form_obj_str;
+   const form_obj = jQuery(form_obj_str861);
    table_obj.val( table_name);
    id_obj.val( id);
-   ids = new Array;
+   const ids = new Array;
    ids[0] = id;
    
    //form_obj.submit();
-   elem = document.getElementById(form_obj_str);
+   const elem = document.getElementById(form_obj_str);
    Rails.fire(elem, 'submit');;  
    
 }
@@ -1300,10 +1322,10 @@ var row_count = 0;
 
 function recolour(table_name)
 {
-    row_objs_str = ".row_" + table_name
-    row_count = 0;
+    const row_objs_str = ".row_" + table_name
+    const row_count = 0;
     jQuery(row_objs_str).each(function(){
-        row = jQuery(this)
+        const row = jQuery(this)
         if( row_count  % 2 == 0)
         {
             row.css({
@@ -1316,7 +1338,7 @@ function recolour(table_name)
                 background:'#EEEEEE'
             });
         }
-        row_count  = row_count +1;
+        const row_count = row_count +1;
     });
 
 }
@@ -1328,8 +1350,8 @@ function on_del(table_name, ids)
 //    alert(alert_str);
     ids.forEach(function(id){ 
         
-        name = table_name + '_' + id;
-        win_ref = open_windows.get(name);
+        const name = table_name + '_' + id;
+        const win_ref = open_windows.get(name);
         
         if(win_ref!=null && !win_ref.closed)
         {
@@ -1337,10 +1359,10 @@ function on_del(table_name, ids)
         }
         
         open_windows.unset(name);
-        row_obj_str = ""+ id +"_"+ table_name;
+        const row_obj_str = ""+ id +"_"+ table_name;
 
-        row_obj_str907 = "#"+row_obj_str;
-        row_obj  = jQuery(row_obj_str907);
+        const row_obj_str907 = "#"+row_obj_str;
+        const row_obj = jQuery(row_obj_str907);
         
         if(row_obj[0] != null)
         {
@@ -1348,10 +1370,10 @@ function on_del(table_name, ids)
         }
         
     });
-    row_objs_str = ".row_" + table_name
-    row_count = 0;
+    const row_objs_str = ".row_" + table_name
+    const row_count = 0;
     jQuery(row_objs_str).each(function(){
-        row = jQuery(this);
+        const row = jQuery(this);
         
         if( row_count  % 2 == 0)
         {
@@ -1361,7 +1383,7 @@ function on_del(table_name, ids)
         {
             row.css({background:'#EEEEEE'});
         }
-        row_count  = row_count +1;
+        const row_count = row_count +1;
     });
 
 
@@ -1388,7 +1410,7 @@ function updateRecord(class_name)
 {
 
 // alert('updateRecord!');
-x = 1;
+const x = 1;
 
 }
 window.updateRecord = updateRecord;
@@ -1411,10 +1433,10 @@ window.editClick = editClick;
 function editBlur(attribute_name, data_type, unloading)
 {
     
-    field_name_obj = jQuery('#field_name');
-    field_value_obj = jQuery('#field_value');
-    field_data_type_obj = jQuery('#field_data_type');
-    closing_flag_obj = jQuery('#closing_flag');
+    const field_name_obj = jQuery('#field_name');
+    const field_value_obj = jQuery('#field_value');
+    const field_data_type_obj = jQuery('#field_data_type');
+    const closing_flag_obj = jQuery('#closing_flag');
     field_name_obj.val( attribute_name);
     field_data_type_obj.val( data_type);
     if (unloading){
@@ -1422,19 +1444,19 @@ function editBlur(attribute_name, data_type, unloading)
     } else {
         closing_flag_obj.val('0');
     }
-    current_attribute_obj_str ="edit_"+ attribute_name;
+    const current_attribute_obj_str = "edit_"+ attribute_name;
     if(attribute_name=="collection_status")
     {
-        radio_elts = jQuery("input.collection_status");
-        found = false;
-        found_val = 0;
-        num_elts=radio_elts.length;
+        const radio_elts = jQuery("input.collection_status");
+        const found = false;
+        const found_val = 0;
+        const num_elts = radio_elts.length;
         for(i=0;i<num_elts && !found; i++)
         {
             if(radio_elts[i].is(':checked'))
             {
-               found=true;
-               found_val = radio_elts[i].val();
+               const found = true;
+               const found_val = radio_elts[i].val();
             }
         }
         field_value_obj.val( found_val);
@@ -1444,13 +1466,13 @@ function editBlur(attribute_name, data_type, unloading)
     {
     if(data_type== "boolean")
         {
-            current_attribute_obj_str=  current_attribute_obj_str + "_1"
+            const current_attribute_obj_str = current_attribute_obj_str + "_1"
         }
 
 
 
-    current_attribute_obj_str1001 = "#"+current_attribute_obj_str;
-    current_attribute_obj  = jQuery(current_attribute_obj_str1001);
+    const current_attribute_obj_str1001 = "#"+current_attribute_obj_str;
+    const current_attribute_obj = jQuery(current_attribute_obj_str1001);
     if(data_type != "boolean")
         {
         field_value_obj.val( current_attribute_obj.val());
@@ -1461,8 +1483,8 @@ function editBlur(attribute_name, data_type, unloading)
         }
     }
 
-    form_obj = jQuery('#update_form');
-    elem = document.getElementById('update_form');
+    const form_obj = jQuery('#update_form');
+    const elem = document.getElementById('update_form');
     Rails.fire(elem, 'submit');
     //form_obj.submit();
 }
@@ -1478,44 +1500,44 @@ window.editFocus = editFocus;
 
 function emailBlur()
 {
-    table_name = jQuery('#unload_table_name');
-    body_id = table_name.val()+"_body";
+    const table_name = jQuery('#unload_table_name');
+    const body_id = table_name.val()+"_body";
 
-    body_id1027 = "#"+body_id;
-    body_obj  = jQuery(body_id1027);
+    const body_id1027 = "#"+body_id;
+    const body_obj = jQuery(body_id1027);
     if(body_obj.get(0) == null)
      {
          return;
     }
 
-    body_id1032 = "#"+body_id;
-    my_iframes  = jQuery(body_id1032).find('iframe');
+    const body_id1032 = "#"+body_id;
+    const my_iframes = jQuery(body_id1032).find('iframe');
 
 
-     my_iframe =  my_iframes[0];
-     iframe_ind =1;
+     const my_iframe = my_iframes[0];
+     const iframe_ind = 1;
      while (my_iframe.className!= "yui-editor-editable" && iframe_ind < my_iframes.length)
          {
-             my_iframe = my_iframes[iframe_ind];
-             iframe_ind = iframe_ind + 1;
+             const my_iframe = my_iframes[iframe_ind];
+             const iframe_ind = iframe_ind + 1;
 
              }
 
 
-  my_body = my_iframe._document().body;
-  text_content = my_body.html();
+  const my_body = my_iframe._document().body;
+  const text_content = my_body.html();
   if(/&lt;/.test(text_content))
       {
-          text_content = text_content.replace(/&lt;/g,'<');
+          const text_content = text_content.replace(/&lt;/g,'<');
 
           }
             if(/&gt;/.test(text_content))
       {
-          text_content = text_content.replace(/&gt;/g,'>');
+          const text_content = text_content.replace(/&gt;/g,'>');
 
           }
       
-    body_value_obj = jQuery('#body_value');
+    const body_value_obj = jQuery('#body_value');
    
  
    
@@ -1553,10 +1575,10 @@ myEditor2._defaultToolbar.titlebar = false
 myEditor2._defaultToolbar.buttonType = 'advanced';
 myEditor2.render();
 
- myEditor =myEditor2;
+ const myEditor = myEditor2;
 add_blur_listener();
 
-x=1;
+const x = 1;
 
 
 

@@ -1019,6 +1019,7 @@ class SearchController
 
     eval_str = "#{@table_name}.find_by_sql(\"#{@sql_str}\")";
     Rails.logger.info("GetAllShortFieldsWhere rwv ret_str = #{eval_str}")
+    
     begin
       ret_val =[]
       results = eval(eval_str);

@@ -5507,7 +5507,7 @@ class MorphingPageRenderer extends PageRenderer {
 }
 
 class SnapshotCache {
-  keys = []
+  const keys = []
   snapshots = {}
 
   constructor(size) {
