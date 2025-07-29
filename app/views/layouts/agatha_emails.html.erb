@@ -20,10 +20,10 @@ var black_bar_height = 7;
 var white_bar_height = 7;
 jQuery(window).onbeforeunload = unloadMess;
 function unloadMess(){
-  attribute = jQuery('#unload_attribute').val();
-  data_type = jQuery('#unload_data_type').val();
+  attribute = document.getElementById('unload_attribute').value;
+  data_type = document.getElementById('unload_data_type').value;
 
-  jQuery('#closing_flag').val( "1");
+  document.getElementById('closing_flag').value =  "1";
  
   editBlur(attribute,data_type,true);
 

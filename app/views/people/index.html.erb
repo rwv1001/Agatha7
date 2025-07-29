@@ -1,6 +1,6 @@
 <div>
 
-   <form action="/people/test" id ="test_form" method="post" onsubmit="new Ajax.Request('/people/test', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;"><div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value="b64e4bc55a64a27f97774b03dee69691e625e707" /></div>
+   <form action="/people/test" id ="test_form" method="post" data-remote="true"><input name="authenticity_token" type="hidden" value="b64e4bc55a64a27f97774b03dee69691e625e707" /></div>
           <input type="button" class ="check" id ="test_button" value="Test button2" >
 <input type="button" class ="check"  value="display test"
               onClick="displaySearchResults();return false;">

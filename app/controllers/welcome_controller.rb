@@ -194,31 +194,7 @@ skip_before_action :authorize, only: [:index]
     @search_ctls = session[:search_ctls][edited_table_name]
     respond_to do |format|
       format.js  { render "child_unload", :locals => {:search_ctl => session[:search_ctls][edited_table_name], :edited_table_name => edited_table_name, :ids => ids, :id => id, :attribute_name => attribute_name  } }
-=begin      
-      do
-        render :update do |page|
-          search_ctl = @search_ctls = session[:search_ctls][edited_table_name];
-          eval("#{edited_table_name}.set_controller(search_ctl)");
-          updated_objects = search_ctl.GetUpdateObjects(edited_table_name, "id", ids);
-          if updated_objects.length>0
-            row = updated_objects[0];
-            
-
-
-               
-            page << "if (document.getElementById('#{row.id}_#{ edited_table_name}')) {"
-            page["#{row.id}_#{ edited_table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );
-            page << "}"
-                
-            page << "open_windows.unset('#{edited_table_name}_#{row.id}')"
-            page << "recolour('#{edited_table_name}');";
-  
-            page << "action_select_no_js();";
-            
-          end
-        end
-      end
-=end      
+   
     end
     Rails.logger.debug("child_unload_end");
     Rails.logger.flush
@@ -232,27 +208,7 @@ skip_before_action :authorize, only: [:index]
     #@search_ctls.each {|key, value| puts "#{key} is #{value}" }
     respond_to do |format|
       format.js { render "shared/update_main", :locals => {:search_ctls => @search_ctls, :edited_table_name => edited_table_name, :attribute_names => attribute_names, :ids => ids, :success_str => success_str, :fail_str => fail_str , :unwait_flag => unwait_flag } }  
-=begin      
-      do
-        render :update do |page|
-          @search_ctls.each do |table_name, search_ctl|
-            eval("#{table_name}.set_controller(search_ctl)");
-            updated_objects = search_ctl.GetUpdateObjects(edited_table_name, attribute_name, ids);
-            for row in updated_objects
-
-              page << "if (document.getElementById('#{row.id}_#{table_name}')) {"
-              page["#{row.id}_#{table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );
-              page << "}"
-
-            end
-            page << "recolour('#{table_name}');";
-          end
-
-
-            page << "action_select_no_js();";
-        end
-      end
-=end      
+    
     end
     Rails.logger.debug("update_main end");
   end
@@ -497,25 +453,7 @@ skip_before_action :authorize, only: [:index]
     search_ctl.UpdateFiltersFromDB();
     respond_to do |format|
       format.js { render "table_search", :locals => {:search_ctl => search_ctl, :params => params, :table_name => table_name, :search_results=> search_results} } 
-=begin
-      do
-        render :update do |page|
-          page.replace_html("possible_filters_div_"  + table_name, :partial => "shared/possible_filters", :object => search_ctl);
-          page.replace_html("current_filters_"  + table_name, :partial => "shared/current_filters", :object => search_ctl);
-          if(params.has_key?("do_search"))
-            page.replace_html("search_results_" + table_name, :partial => "shared/search_results" , :object => search_results);
-            
-            page << "resizeX();"
-            
-          end            
 
-        
-          page << "action_select_no_js();"
-          page << "resizeFilters();"
-          page << "unwait();"
-        end
-      end
-=end
     end
 
 #    result = RubyProf.stop
@@ -1097,33 +1035,7 @@ skip_before_action :authorize, only: [:index]
     @search_ctls = session[:search_ctls]
     respond_to do |format|
       format.js { render "attach_to_emails", :locals => {:error_str => error_str, :search_ctls => session[:search_ctls], :ids => ids, :success_str => success_str } }
-=begin      
-       do
-        render :update do |page|
-          if error_str.length >0
-            page << "alert('#{error_str}')";
-          else
-            @search_ctls = session[:search_ctls];
-            if ids.length > 0
-              table_name = "AgathaEmail"
-              search_ctl = @search_ctls[table_name];
-              eval("#{table_name}.set_controller(search_ctl)");
-              updated_objects = search_ctl.GetUpdateObjects(table_name, "id", ids);
-              updated_objects.each do |row|
-                page << "if (document.getElementById('#{row.id}_#{ table_name}')) {"
-                page["#{row.id}_#{table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );
-                page << "setcheck('#{table_name}_check_#{row.id.to_s}',true)"
-                page << "}"
-              end
-              page << "recolour('AgathaEmail');";
-              page << "action_select_no_js();";
-            end
-            page << "alert('#{success_str}')";
-          end
-          page << "unwait();"
-        end
-      end
-=end
+
     end
   end
 
@@ -1177,35 +1089,7 @@ skip_before_action :authorize, only: [:index]
     @search_ctls = session[:search_ctls];
     respond_to do |format|
       format.js {render  "attach_files", :locals => {:error_str => error_str, :search_ctls => session[:search_ctls], :agatha_email_id => agatha_email_id, :success_str => success_str } }
-=begin      
-        do
-        render :update do |page|
-          if error_str.length >0
-            page << "alert('#{error_str}')";
-          else
-            @search_ctls = session[:search_ctls];
-            table_name = "AgathaEmail"
-            search_ctl = @search_ctls[table_name];
-            id_array = [];
-            id_array << agatha_email_id.to_i;
-            eval("#{table_name}.set_controller(search_ctl)");
-            updated_objects = search_ctl.GetUpdateObjects(table_name, "id", id_array);
-            updated_objects.each do |row|
-               page << "if (document.getElementById('#{row.id}_#{ table_name}')) {"
-              page["#{row.id}_#{table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );  
-              page << "}"              
-            end
-    
 
-                                   
-            page << "recolour('AgathaEmail');";
-            page << "action_select_no_js();";
-            page << "alert('#{success_str}')";
-          end
-          page << "unwait();"
-        end
-      end
-=end
     end
   end
 
@@ -1737,32 +1621,7 @@ do
     @search_ctls = session[:search_ctls];
     respond_to do |format|
       format.js  {render "create_tutorial_schedules", :locals => {:ids => ids, :search_ctls => @search_ctls, :alert_str => alert_str} }
-=begin      
-      do
-        render :update do |page|
-
-            if ids.length >0
-            @search_ctls = session[:search_ctls];
-            table_name = "Person"
-            search_ctl = @search_ctls[table_name];
-            eval("#{table_name}.set_controller(search_ctl)");
-            updated_objects = search_ctl.GetUpdateObjects(table_name, "id", ids);
-            updated_objects.each do |row|
-               page << "if (document.getElementById('#{row.id}_#{ table_name}')) {"
-              page["#{row.id}_#{table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );
-              page << "setcheck('#{table_name}_check_#{row.id.to_s}',true)"
-              page << "}"
-            end
-
-            page << "recolour('Person');";
-            page << "action_select_no_js();";
-            end
-            page << "alert('#{alert_str}')"
-            page << "unwait();"
-          end
-          
-      end
-=end      
+      
     end
   end
   
@@ -1893,52 +1752,7 @@ do
         @search_ctls = session[:search_ctls];
         respond_to do |format|
       format.js { render "make_attendee", :locals => { :error_str => error_str, :search_ctls => @search_ctls, :person_id => person_id, :lecture_ids => lecture_ids, :compulsory_ids => compulsory_ids, :exam_ids => exam_ids, :success_str => success_str } }
-=begin      
-       do
-        render :update do |page|
-          if error_str.length >0
-            page << "alert('#{error_str}')";
-          else
-
-            @search_ctls = session[:search_ctls];
-            table_name = "Person"
-            search_ctl = @search_ctls[table_name];
-            id_array = [];
-            id_array << person_id.to_i;
-            eval("#{table_name}.set_controller(search_ctl)");
-            updated_objects = search_ctl.GetUpdateObjects(table_name, "id", id_array);
-            updated_objects.each do |row|
-               page << "if (document.getElementById('#{row.id}_#{ table_name}')) {"
-              page["#{row.id}_#{table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );
-              page << "}"
-            end
-            table_name = "Lecture"
-            search_ctl = @search_ctls[table_name];
-            eval("#{table_name}.set_controller(search_ctl)");
-            updated_objects = search_ctl.GetUpdateObjects(table_name, "id", lecture_ids);
-            updated_objects.each do |row|
-               page << "if (document.getElementById('#{row.id}_#{ table_name}')) {"
-              page["#{row.id}_#{table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );
-              if compulsory_ids.index(row.id.to_s);
-                page << "setcheck('#{table_name}_compulsorycheck_#{row.id.to_s}',true)"
-              end
-              if exam_ids.index(row.id.to_s);
-                page << "setcheck('#{table_name}_examcheck_#{row.id.to_s}',true)"
-              end
-              page << "setcheck('#{table_name}_check_#{row.id.to_s}',true)"
-              page << "}"
-            end
-
-
-            page << "recolour('Lecture');";
-            page << "recolour('Person');";
-            page << "action_select_no_js();";
-            page << "alert('#{success_str}')";
-          end
-          page << "unwait();"
-        end
-      end
-=end      
+      
     end
   end
 
@@ -2037,52 +1851,7 @@ do
     @search_ctls = session[:search_ctls];
     respond_to do |format|
       format.js { render "add_to_lectures", :locals => { :error_str => error_str, :search_ctls => @search_ctls, :people_ids => people_ids, :lecture_id => lecture_id, :compulsory_ids => compulsory_ids, :exam_ids => exam_ids, :success_str => success_str } }
-=begin      
-       do
-        render :update do |page|
-          if error_str.length >0
-            page << "alert('#{error_str}')";
-          else
-            
-            @search_ctls = session[:search_ctls];
-            table_name = "Lecture"
-            search_ctl = @search_ctls[table_name];
-            id_array = [];
-            id_array << lecture_id.to_i;
-            eval("#{table_name}.set_controller(search_ctl)");
-            updated_objects = search_ctl.GetUpdateObjects(table_name, "id", id_array);
-            updated_objects.each do |row|
-               page << "if (document.getElementById('#{row.id}_#{ table_name}')) {"
-              page["#{row.id}_#{table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );
-              page << "}"
-            end
-            table_name = "Person"
-            search_ctl = @search_ctls[table_name];
-            eval("#{table_name}.set_controller(search_ctl)");
-            updated_objects = search_ctl.GetUpdateObjects(table_name, "id", people_ids);
-            updated_objects.each do |row|
-               page << "if (document.getElementById('#{row.id}_#{ table_name}')) {"
-              page["#{row.id}_#{table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );
-              if compulsory_ids.index(row.id.to_s);
-                page << "setcheck('#{table_name}_compulsorycheck_#{row.id.to_s}',true)"
-              end
-              if exam_ids.index(row.id.to_s);
-                page << "setcheck('#{table_name}_examcheck_#{row.id.to_s}',true)"
-              end
-              page << "setcheck('#{table_name}_check_#{row.id.to_s}',true)"
-              page << "}"
-            end
-
-
-            page << "recolour('Lecture');";
-            page << "recolour('Person');";
-            page << "action_select_no_js();";
-            page << "alert('#{success_str}')";
-          end
-          page << "unwait();"
-        end
-      end
-=end      
+      
     end
   end
 
@@ -2577,26 +2346,7 @@ do
         format.js { render "shared/update_main", :locals => {:search_ctls => @search_ctls, :edited_table_name => table_name, :attribute_names => ["number_of_tutorials"], :ids => ids, :success_str => success_str, :fail_str => "" , :unwait_flag => true } }  
           
  
-=begin        
-        do
-          render :update do |page|
 
-            eval("#{table_name}.set_controller(search_ctl)");
-            updated_objects = search_ctl.GetUpdateObjects(table_name, ["id"], ids);
-            updated_objects.each do |row|
-               page << "if (document.getElementById('#{row.id}_#{ table_name}')) {"
-              page["#{row.id}_#{table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );
-              page << "setcheck('#{table_name}_check_#{row.id.to_s}',true)"
-              page << "}"
-            end
-
-            page << "recolour('TutorialSchedule');"
-            page << "action_select_no_js();";
-            page << "alert(\"#{success_str}\")"
-            page << "unwait();"
-          end
-        end
-=end
       end
 
   end
@@ -2634,27 +2384,7 @@ do
       @search_ctls = session[:search_ctls];
       respond_to do |format|
         format.js  { render "update_collection_status", :locals => {:search_ctls => @search_ctls, :ids => ids, :success_str => success_str } }
-=begin        
-        do
-          render :update do |page|
-            table_name = "Tutorial"
-            @search_ctls = session[:search_ctls];
-            search_ctl = @search_ctls[table_name];
-            eval("#{table_name}.set_controller(search_ctl)");
-            updated_objects = search_ctl.GetUpdateObjects(table_name, "id", ids);
-            updated_objects.each do |row|
-               page << "if (document.getElementById('#{row.id}_#{ table_name}')) {"
-              page["#{row.id}_#{table_name}"].replace( :partial => "shared/search_results_row_button", :object =>row );
-              page << "setcheck('#{table_name}_check_#{row.id.to_s}',true)"
-              page << "}"
-            end
-
-            page << "action_select_no_js();";
-            page << "alert(\"#{success_str}\")"
-            page << "unwait();"
-          end
-        end
-=end        
+      
       end
     end
 

@@ -12,7 +12,7 @@ unwait();
     <%  new_emails = eval(eval_str); %>
     <%  search_results = SearchResults.new(new_emails , :search_results, search_ctl); %>
     <%  search_results.table_type = :search_results; %>
-    jQuery('#<%="#{current_filter_name}"%>').hide()
+    document.getElementById('<%="#{current_filter_name}"%>').style.display = 'none'
     if  (jQuery('#<%="#{results_table_name}"%>')[0]!=null){  
         <%  new_emails.each do |new_row| %>
             jQuery('#<%="#{results_table_name}"%> tr:last').after('<%= j render(:partial => "shared/search_results_row_button", :object =>new_row )%>');

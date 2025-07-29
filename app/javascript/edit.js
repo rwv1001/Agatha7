@@ -1,5 +1,5 @@
 import Rails from "@rails/ujs";
-Rails.start();
+
 console.log("🍪 edit.js loaded!");
 
 window.MyHash = function(){
@@ -103,33 +103,9 @@ function on_unload()
     const unload_table_obj = jQuery('#unload_table_name');
     const table = unload_table_obj.val(); 
    parent_win.alert("" +table +" edit window has been closed and the database has been updated. Click search to see changes.");
-  /*  if(parent_win!=null)
-        {
-            
-            const id_obj = jQuery(parent_win.document.getElementById('child_unload_main_id'));
-            parent_win.alert("unload a");
-            const table_obj = jQuery(parent_win.document.getElementById('child_unloade_main_table_name'));
-            parent_win.alert("unload b");
-            const attribute_obj = jQuery(parent_win.document.getElementById('child_unload_main_attribute_name'));
-parent_win.alert("unload c");
-            const unload_id_obj = jQuery('#unload_id_value');
-            parent_win.alert("unload d");
-            const unload_table_obj = jQuery('#unload_table_name');
-            parent_win.alert("unload e");
-            id_obj.val(  unload_id_obj.val());
-            parent_win.alert("unload f id="+unload_id_obj.val());
-            table_obj.val(  unload_table_obj.val());
-            parent_win.alert("unload g table = "+ unload_table_obj.val());
 
-            //update_parent(unload_table_obj.val(), attribute_name, unload_id_obj.val() );
-          //  submit_obj = parent_win.document.getElementById('child_unload_main');
-           // parent_win.alert("unload h");
-           // Rails.fire(submit_obj, 'submit');
-            parent_win.alert("unload i");
-           
-        }*/
 }
-window.onunload = on_unload;
+
 
 function open_win()
 {
@@ -160,9 +136,9 @@ function update_parent(table_name, attribute_name, id)
             jQuery(id_obj).val( id);
             jQuery(table_obj).val( table_name);
             jQuery(attribute_obj).val( attribute_name);
-            jQuery(update_opener_attribute_name_obj).val( jQuery('#sensible_update_opener_attribute_name').val());
+            jQuery(update_opener_attribute_name_obj).val( document.getElementById('sensible_update_opener_attribute_name').value);
             if(update_opener_id_obj!=null){
-                jQuery(update_opener_id_obj).val( jQuery('#sensible_update_opener_id').val());
+                jQuery(update_opener_id_obj).val( document.getElementById('sensible_update_opener_id').value);
             }
             const submit_obj = parent_win.document.getElementById('update_main');
             //submit_obj.submit();
@@ -233,9 +209,9 @@ function silly_update()
           
          const stupid_update_opener_attribute_name_obj = parent_win.document.getElementById('stupid_update_opener_attribute_name');
          const stupid_update_opener_id_obj = parent_win.document.getElementById('stupid_update_opener_id');
-         jQuery('#sensible_update_opener_attribute_name').val( jQuery(stupid_update_opener_attribute_name_obj).val());
+         document.getElementById('sensible_update_opener_attribute_name').value =  stupid_update_opener_attribute_name_obj.value;
         
-         jQuery('#sensible_update_opener_id').val( stupid_update_opener_id_obj.val());
+         document.getElementById('sensible_update_opener_id').value =  stupid_update_opener_id_obj.value;
          
        //   
     }
@@ -332,7 +308,7 @@ function on_assign(id)
         });
      const sent_tutor = jQuery("<input></input>").attr({ type: 'text', name: 'id',  value: id  });
      specific_div.append(sent_tutor  );
-     const class_name = jQuery('#action_class').val();
+     const class_name = document.getElementById('action_class').value;
      const search_results_div_str = "search_results_" + class_name;
 
      const search_results_div_str239 = "#"+search_results_div_str;
@@ -360,7 +336,7 @@ function on_willing(id)
         });
      const sent_willing = jQuery("<input></input>").attr({ type: 'text', name: 'willing_id',  value: id  });
      specific_div.append(sent_willing   );
-     const class_name = jQuery('#action_class').val();
+     const class_name = document.getElementById('action_class').value;
      const search_results_div_str = "search_results_" + class_name;
 
      const search_results_div_str261 = "#"+search_results_div_str;
@@ -391,7 +367,7 @@ function on_agatha_send(id,test_flag)
     const sent_test_flag = jQuery("<input></input>").attr({ type: 'text', name: 'test_flag',  value: test_flag  })
     specific_div.append( sent_email );
      specific_div.append( sent_test_flag  );
-    jQuery('#action_type').val( "send_email")
+    document.getElementById('action_type').value =  "send_email"
     const form_obj = jQuery('#action_form');
    // form_obj.submit();
     const elem = document.getElementById('action_form');
@@ -419,7 +395,7 @@ function on_sends(test_flag)
       });
      const sent_test_flag = jQuery("<input></input>").attr({ type: 'text', name: 'test_flag',  value: test_flag  })
      specific_div.append( sent_test_flag  );
-    jQuery('#action_type').val( "send_emails")
+    document.getElementById('action_type').value =  "send_emails"
     const form_obj = jQuery('#action_form');
    // form_obj.submit();
     const elem = document.getElementById('action_form');
@@ -435,8 +411,8 @@ function on_create_send(id)
     specific_div.children().each(function(){
         jQuery(this).remove()
         });
-    jQuery('#action_type').val(  "create_send_email_from_template");
-             const class_name = jQuery('#action_class').val();
+    document.getElementById('action_type').value =   "create_send_email_from_template";
+             const class_name = document.getElementById('action_class').value;
 
             const class_name320 = "#"+class_name;
             const action_div = jQuery(class_name320 +'_action_div');
@@ -452,7 +428,7 @@ function on_create_send(id)
             specific_div.append( sent_template);
             specific_div.append(  sent_term);
             specific_div.append(  sent_course);
-            const class_name2 = jQuery('#action_class2').val();
+            const class_name2 = document.getElementById('action_class2').value;
             const search_results_div_str = "search_results_" + class_name2;
 
             const search_results_div_str335 = "#"+search_results_div_str;
@@ -491,12 +467,12 @@ function on_create(id)
     specific_div.children().each(function(){
         jQuery(this).remove()
         });
-    const action_type = jQuery('#action_type').val();
+    const action_type = document.getElementById('action_type').value;
     switch (action_type)
     {
         case 'create_lecture_from_course':
             
-            class_name = jQuery('#action_class').val();
+            class_name = document.getElementById('action_class').value;
 
             const class_name359 = "#"+class_name;
             action_div = jQuery(class_name359 +'_action_div');
@@ -536,7 +512,7 @@ function on_create(id)
             specific_div.append( sent_previous_suggestions );
             break;
         case 'create_tutorials_from_course':
-            class_name = jQuery('#action_class').val();
+            class_name = document.getElementById('action_class').value;
 
             const class_name397 = "#"+class_name;
             action_div = jQuery(class_name397 +'_action_div');
@@ -578,7 +554,7 @@ function on_create(id)
             specific_div.append( sent_collection_required );
             specific_div.append( sent_previous_suggestions );
 
-            class_name2 = jQuery('#action_class2').val();
+            class_name2 = document.getElementById('action_class2').value;
             search_results_div_str = "search_results_" + class_name2;
 
             const search_results_div_str435 = "#"+search_results_div_str;
@@ -590,7 +566,7 @@ function on_create(id)
             });
             break;
           case 'create_email_from_template':
-            const class_name = jQuery('#action_class').val();
+            const class_name = document.getElementById('action_class').value;
 
             const class_name444 = "#"+class_name;
             const action_div = jQuery(class_name444 +'_action_div');
@@ -606,7 +582,7 @@ function on_create(id)
             specific_div.append(  sent_template);
             specific_div.append(  sent_term);
             specific_div.append( sent_course);
-            const class_name2 = jQuery('#action_class2').val();
+            const class_name2 = document.getElementById('action_class2').value;
             const search_results_div_str = "search_results_" + class_name2;
 
             const search_results_div_str459 = "#"+search_results_div_str;
@@ -655,7 +631,7 @@ window.insert_specific_div_multi_values = insert_specific_div_multi_values;
 function on_action( id)
 {
     wait();
-    const action_type = jQuery('#action_type').val();
+    const action_type = document.getElementById('action_type').value;
     const specific_div = jQuery('#specific_action_variables');
     specific_div.children().each(function(){
         jQuery(this).remove()
@@ -746,7 +722,7 @@ window.on_add = on_add;
 function on_suggest(course_id)
 {
     wait();
-    const action_type = jQuery('#action_type').val();
+    const action_type = document.getElementById('action_type').value;
     let suggest_div = jQuery('#specific_suggest_variables');
     suggest_div.remove();
     const new_suggest_div = jQuery("<div></div>").attr({id: 'specific_suggest_variables'});
@@ -758,7 +734,7 @@ function on_suggest(course_id)
     //});
     const suggest_id = jQuery('#suggest_id');
     suggest_id.val( course_id)
-    const class_name = jQuery('#action_class').val();
+    const class_name = document.getElementById('action_class').value;
 
     const class_name578 = "#"+class_name;
     const action_div = jQuery(class_name578 +'_action_div');
@@ -1492,8 +1468,8 @@ window.editBlur = editBlur;
 
 function editFocus(attribute_name, data_type)
 {
-    jQuery('#unload_attribute').val( attribute_name);
-    jQuery('#unload_data_type').val( data_type);
+    document.getElementById('unload_attribute').value =  attribute_name;
+    document.getElementById('unload_data_type').value =  data_type;
 
 }
 window.editFocus = editFocus;

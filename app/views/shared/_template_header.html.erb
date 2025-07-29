@@ -9,8 +9,7 @@
 <div id="expand_button_div" class="remove_header" style ="position: fixed;top:0px;height:17px;width:10px; right:0px;">
   <a href ="/" data-remote="true" rel="nofollow" onclick="showHeader();return false" >+</a></div>
   <script  type="text/JavaScript">
-document.addEventListener('DOMContentLoaded', function() {
-      jQuery('#expand_button_div').hide();
-    });
+document.dispatchEvent(new Event("hide_expand_button")); 
+
 
 </script>

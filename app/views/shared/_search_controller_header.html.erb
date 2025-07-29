@@ -32,8 +32,8 @@
 </tr>
 <script type="text/javascript">
 
-  jQuery('#x_height').val( jQuery('#dummy_x').height());
-   jQuery('#a_height').val( jQuery('#dummy_a').height());
+  document.getElementById('x_height').value =  getElementHeight('dummy_x');
+   document.getElementById('a_height').value =  getElementHeight('dummy_a');
   resizeX();
 </script>
 

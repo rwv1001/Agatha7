@@ -1,11 +1,11 @@
 <% Rails.logger.debug("RWV _search_controller.html.erb begin #{search_controller.table_name}") %>
-<form action="/welcome/add_external_filter" id =  <%= raw "add_external_filter_#{search_controller.table_name}"%> method="post" onsubmit="new Ajax.Request('/welcome/add_external_filter', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;"><div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+<form action="/welcome/add_external_filter" id =  <%= raw "add_external_filter_#{search_controller.table_name}"%> method="post" data-remote="true"><div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
  <div style="display:none">
    <input type="text" name="table_name" value="<%=search_controller.table_name%>" /> <label> add external filter table name</label>
    <input type="text" id = <%= raw "add_external_filter_id_#{search_controller.table_name}"%> name="filter_id" /> <label>add external filter filter id </label>
  </div>
 </form>
-<form action="/welcome/update_external_filter" id =  <%= raw "update_external_filter_#{search_controller.table_name}"%> method="post" onsubmit="new Ajax.Request('/welcome/update_external_filter', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;"><div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+<form action="/welcome/update_external_filter" id =  <%= raw "update_external_filter_#{search_controller.table_name}"%> method="post" data-remote="true"><div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
  <div style="display:none">
    <input type="text" name="class_name" value="<%= search_controller.table_name%>" /> <label> update external filter class name</label>
    <input type="text" id = <%= raw "update_external_filter_id_#{search_controller.table_name}"%> name="filter_id" /> <label>update external filter filter id </label>
@@ -15,7 +15,7 @@
  </div>
 </form>
 
-<form action="/welcome/table_search" id =  <%= raw "search_form_#{search_controller.table_name}"%> method="post" onsubmit="new Ajax.Request('/welcome/table_search', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;"><div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
+<form action="/welcome/table_search" id =  <%= raw "search_form_#{search_controller.table_name}"%> method="post" data-remote="true"><div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
 
   <div style="display:none" >
     <input id= <%= raw "table_selector_text_#{search_controller.table_name}" %>

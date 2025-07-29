@@ -36,7 +36,7 @@
             <% new_rows.each do |new_row| %>      
                 <% search_results = SearchResults.new([new_row] , :search_results, search_ctl); %>
                 <% search_results.table_type = :search_results; %>
-                jQuery('#<%="#{current_filter_name}"%>').hide()
+                document.getElementById('<%="#{current_filter_name}"%>').style.display = 'none'
                                 
                 if (jQuery('#<%="#{new_row.id}_#{table_name}"%>')[0]!=null){               
                     jQuery('#<%="#{new_row.id}_#{table_name}"%>').replaceWith('<%= j render(:partial => "shared/search_results_row_button", :object =>new_row )%>');

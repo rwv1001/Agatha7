@@ -191,9 +191,9 @@ window.addElement = addElement;
 function resizeFormat()
 {
 
-      var client_height = parseInt(jQuery('#dummy_format').height());
-      var x_height = parseInt(jQuery('#dummy_fx').height());
-      var p_height = parseInt(jQuery('#dummy_fp').height());
+      var client_height = parseInt(getElementHeight('dummy_format'));
+      var x_height = parseInt(getElementHeight('dummy_fx'));
+      var p_height = parseInt(getElementHeight('dummy_fp'));
       var x_padding = (client_height - x_height)/2.0 ;
       var p_padding = (client_height - p_height)/2.0 ;
       var new_x_height = client_height  - x_padding;

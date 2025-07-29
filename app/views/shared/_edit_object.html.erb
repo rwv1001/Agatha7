@@ -17,7 +17,7 @@
 
 
 
-<form action=<%= raw "/#{table_name.tableize}/updater"%> id="update_form" method="post" onsubmit="new Ajax.Request('<%="/#{table_name.tableize}/updater"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;">
+<form action=<%= raw "/#{table_name.tableize}/updater"%> id="update_form" method="post" data-remote="true"/#{table_name.tableize}/updater"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;">
     <div style="margin:0;padding:0">
         <input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> />
     </div>
@@ -35,7 +35,7 @@
     </div>
 </form>
 
-<form action=<%= raw   "/#{table_name.tableize}/win_load" %> id="win_load" method="post" onsubmit="new Ajax.Request('<%="/#{table_name.tableize}/win_load"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+<form action=<%= raw   "/#{table_name.tableize}/win_load" %> id="win_load" method="post" data-remote="true" >
     <div style="margin:0;padding:0">
         <input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> />
     </div>
@@ -50,7 +50,7 @@
     <input name="data_type" id="unload_data_type" type="text"   />
 </div>
 
-<form action=<%= raw   "/#{table_name.tableize}/win_unload" %> id="win_unload" method="post" onsubmit="new Ajax.Request('<%="/#{table_name.tableize}/win_unload"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+<form action=<%= raw   "/#{table_name.tableize}/win_unload" %> id="win_unload" method="post" data-remote="true" >
     <div style="margin:0;padding:0">
         <input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> />
     </div>

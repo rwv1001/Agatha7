@@ -4,7 +4,7 @@
   <div class ="pad_class">
     <h3> Update User Account </h3>
 
-    <form action="/users/update_user" method="post" onsubmit="new Ajax.Request('/users/update_user', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;"><div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> ></div>
+    <form action="/users/update_user" method="post" data-remote="true"><div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> ></div>
       <table>
       <tr><td>User Name: </td><td> <input type="text" name="user[name]" value=<%= raw "#{user.name}" %>  >  </td></tr>
       <tr><td>Old Password:</td><td> <input type="password" id="old_password" name="old_password"  value=""  >  </td></tr>
@@ -20,5 +20,6 @@
 </div>
       <script type="text/javascript">
        jQuery(window).on( 'load', function() {
-        jQuery('#old_password').val("");});
+        document.getElementById('old_password').value = "";}
+        );
         </script>

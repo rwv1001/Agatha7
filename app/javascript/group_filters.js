@@ -1,3 +1,5 @@
+import Rails from "@rails/ujs";
+
 function UpdateGroupFilter(table_name, foreign_key)
 {
 

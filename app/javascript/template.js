@@ -10,25 +10,25 @@ function copyright() {
 
 
 function hideHeader() {
-  jQuery('#logo_div').hide();
-  jQuery('#title_div').hide();
-  jQuery('#black_bar_div').hide();
-  jQuery('#shrink_button_div').hide();
+  document.getElementById('logo_div').style.display = 'none';
+  document.getElementById('title_div').style.display = 'none';
+  document.getElementById('black_bar_div').style.display = 'none';
+  document.getElementById('shrink_button_div').style.display = 'none';
   jQuery('#menu_div').css('top', '17px');
   jQuery('#content_div').css('top', '17px');
   jQuery('#content_div_1').css('top', '17px');
   jQuery('#content_div_2').css('top', '17px');
   jQuery('#two_column_div').css('top', '17px');
   jQuery('#black_bar_separator_div').css('top', '17px');
-  jQuery('#expand_button_div').show();
+  document.getElementById('expand_button_div').style.display = '';
 }
 window.hideHeader = hideHeader;
 
 function showHeader() {
-  jQuery('#logo_div').show();
-  jQuery('#title_div').show();
-  jQuery('#black_bar_div').show();
-  jQuery('#shrink_button_div').show();
+  document.getElementById('logo_div').style.display = '';
+  document.getElementById('title_div').style.display = '';
+  document.getElementById('black_bar_div').style.display = '';
+  document.getElementById('shrink_button_div').style.display = '';
   jQuery('#menu_div').css('top', '187px');
   jQuery('#two_column_div').css('top', '187px');
   jQuery('#content_div').css('top', '187px');
@@ -36,7 +36,7 @@ function showHeader() {
   jQuery('#content_div_2').css('top', '187px');
   jQuery('#black_bar_separator_div').css('top', '187px');
 
-  jQuery('#expand_button_div').hide();
+  document.getElementById('expand_button_div').style.display = 'none';
 }
 window.showHeader = showHeader;
 
@@ -48,62 +48,14 @@ function snap_function(x, y) {
 }
 window.snap_function = snap_function;
 
-function end_drag() {
-  const frac_left_black_bar = jQuery('#black_bar_separator_div').offset().left;
-  const left_1_pos = content_div_1.offset().left;
-  const black_bar_width = black_bar_separator_div.outerWidth();
-  const bar_position_scale = (frac_left_black_bar - left_1_pos) / (jQuery(window).innerWidth() - left_1_pos - black_bar_width);
 
-  page_view.separator_pos = bar_position_scale;
-  scrollHandler();
 
-}
-window.end_drag = end_drag;
 
-function scrollHandler() {
-
-  //alert('event!');
-  //    var scroll_width = jQuery('#content_div')[0].scrollWidth;//getStyle('');
-  //    var current_width = jQuery('#content_div').width();//getStyle('');
-  //    var width_str;
-  //    if(current_width < scroll_width)
-  //   {
-  //        width_str = scroll_width+'px'
-  //    }
-  //    else
-  //   {
-  //        width_str = '100%'
-  //    }
-  const two_column_div = jQuery('#two_column_div')
-  if (two_column_div.is(':visible')) {
-    set_double_scroll();
-  }
-
-  jQuery('.separator_class').each(function () {
-    const content_div = jQuery(this).closest('.content_div');
-    const scroll_width = content_div[0].scrollWidth;
-    const current_width = content_div.width();
-    let width_str;
-    if (current_width < scroll_width) {
-      width_str = scroll_width + 'px'
-    }
-    else {
-      width_str = '100%'
-    }
-    jQuery(this).attr({
-      width: width_str
-    })
-  });
-  // set_double_scroll();
-  separate_resizing();
-
-}
-window.scrollHandler = scrollHandler;
 
 function scrollHandler3() {
   //alert('event!');
   const scroll_width = jQuery('#content_div')[0].scrollWidth;//getStyle('');
-  const current_width = jQuery('#content_div').width();//getStyle('');
+  const current_width = getWidth('content_div');//getStyle('');
   let width_str;
   if (current_width < scroll_width) {
     width_str = 'width: ' + scroll_width + 'px'
@@ -139,7 +91,7 @@ function template_header() {
   document.write('<div id="black_bar_div" style ="position: fixed;top:173px;height:7px;left:0px; right:0px;background-color: #000000;">&nbsp;</div>');
   document.write('<div id="expand_button_div" class="remove_header" style ="position: fixed;top:0px;height:17px;width:10px; right:0px;">');
   document.write('<a href ="#" onclick="showHeader();return false" >+</a></div>');
-  jQuery('#expand_button_div').hide();
+  document.getElementById('expand_button_div').style.display = 'none';
 }
 window.template_header = template_header;
 
@@ -172,6 +124,7 @@ function content_begin() {
 window.content_begin = content_begin;
 
 function content_end() {
+  console.log("content_end called");
 
   jQuery('#content_div').scroll(scrollHandler);
   jQuery(window).on('resize', scrollHandler);
@@ -205,7 +158,7 @@ function hide_div(div_id) {
   const div_id220 = "#" + div_id;
   const div_elt = jQuery(div_id220)
   console.log("hide_div called for " + div_id);
-  div_elt.style.display = 'none';
+  div_elt.hide();
 }
 window.hide_div = hide_div;
 
@@ -213,7 +166,7 @@ function show_div(div_id) {
 
   const div_id225 = "#" + div_id;
   const div_elt = jQuery(div_id225)
-  div_elt.style.display = '';
+  div_elt.show();
 }
 window.show_div = show_div;
 
@@ -368,21 +321,21 @@ class PageView {
 
 
   var page_view;
-  var old_option_id;
-
-  var old_page_name ;
-  var displayPageCl;
-  var option_hash;
-  var sub_menu_hash;
-function load_pages() {
-
-  var page_view = null;
   var old_option_id = 0;
 
   var old_page_name = "Person";
-  var displayPageCl = new MyHash();
+  var displayPageCl;
   var option_hash = new MyHash();
-  var sub_menu_hash = new MyHash();
+  var displayPageCl = new MyHash();
+  
+  var sub_menu_hash = new MyHash();  
+function load_pages() {
+
+  
+  
+
+  
+  
   console.log("RWV load_pages called");
 
 
@@ -1293,16 +1246,12 @@ function load_pages() {
 
   action_select0();
 
-
   const form_id = "display_page"
 
   const form_id1294 = "#" + form_id;
   const form_elt = jQuery(form_id1294);
 
   //form_elt.submit();
-
-
-
 }
 window.load_pages = load_pages;
 
@@ -1349,17 +1298,24 @@ window.add_action_items = add_action_items;
 
 
 function action_select0() {
+  console.log("calling action_select0");
 
   var old_option_id = 0;
 
   const select_str = "action_select_" + old_page_name;
 
   const select_str1350 = "#" + select_str;
+  console.log("action_select0: select_str = " + select_str1350);
   const select_elt = jQuery(select_str1350);
   if (select_elt[0] != null) {
+    
     const option_id = parseInt(select_elt.val());
     const do_js = true;
+    console.log("action_select0: option_id = " + option_id);
     display_select_action(old_page_name, option_id, do_js);
+  }
+  else {
+    console.log("action_select0: select_elt is null");
   }
 
 }
@@ -1409,6 +1365,7 @@ function display_page2(menu_name, table_name) {
 window.display_page2 = display_page2;
 
 function display_select_action(table_name, option_id, do_js) {
+  console.log("display_select_action: " + table_name + " option_id: " + option_id);
   option_hash.set(table_name, option_id);
   if (old_page_name == null) {
     console.log("RWV old_page_name is null");
@@ -1468,18 +1425,111 @@ function display_select_action(table_name, option_id, do_js) {
 }
 window.display_select_action = display_select_action;
 
-function separate_resizing() {
-  jQuery(".separator_class").each(function () {
-    var separate_div = jQuery(this);
-    separate_div.css({ 'width': 1 });
-  });
-  jQuery(".separator_class").each(function () {
-    var separate_div = jQuery(this);
-    var content_div = separate_div.closest('.content_div')
-    var scroll_width = content_div[0].scrollWidth;
-    separate_div.css({ 'width': scroll_width });
-  });
-}
+      function separate_resizing() {
+        jQuery(".separator_class").each(function () {
+          var separate_div = jQuery(this);
+          separate_div.css({ 'width': 1 });
+        });
+        jQuery(".separator_class").each(function () {
+          var separate_div = jQuery(this);
+          var content_div = separate_div.closest('.content_div')
+          var scroll_width = content_div[0].scrollWidth;
+          separate_div.css({ 'width': scroll_width });
+        });
+      }
+      function set_double_scroll() {
+        const content_div_1 = jQuery('#content_div_1');
+        const content_div_2 = jQuery('#content_div_2');
+        const div_1_style = content_div_1.attr("style");
+        const div_2_style = content_div_2.attr("style");
+
+        const black_bar_separator_div = jQuery('#black_bar_separator_div');
+        const black_bar_style = black_bar_separator_div.attr("style");
+        const left_1_pos = content_div_1.offset().left;
+        const black_bar_width = black_bar_separator_div.outerWidth();
+
+        const frac_width = (jQuery(window).innerWidth() - left_1_pos - black_bar_width) / 2
+        const div_width = Math.floor(frac_width);
+        //    bar_position_scale = 0.3;
+        const page_views = displayPageCl.get(old_page_name);
+        const page_view = page_views[old_option_id];
+        const bar_position_scale = page_view.separator_pos;
+        const frac_left_black_bar = (jQuery(window).innerWidth() - left_1_pos - black_bar_width) * bar_position_scale + left_1_pos;
+        const left_black_bar = Math.floor(frac_left_black_bar + 0.5);
+
+        const right_1_pos = left_black_bar - 1;
+        const from_right_1_pos_str = "" + (jQuery(window).innerWidth() - right_1_pos - 1);
+        const left_black_bar_str = "" + left_black_bar;
+
+        const left_2_pos = right_1_pos + black_bar_width;
+        const right_2_pos = 0;
+        const left_2_pos_str = "" + left_2_pos;
+
+
+
+        //div_1_new_style =  div_1_style.replace(/right:\s*\d+/, from_right_1_pos_str);
+        //div_2_new_style =  div_2_style.replace(/left:\s*\d+/, left_2_pos_str);
+        const black_bar_new_style = black_bar_style.replace(/left:\s*\d+/, left_black_bar_str);
+
+        content_div_1.css("right", from_right_1_pos_str + "px");
+        content_div_2.css("left", left_black_bar_str + "px");
+        black_bar_separator_div.css("left", left_black_bar_str + "px");
+
+      }
+      function scrollHandler() {
+
+        //alert('event!');
+        //    var scroll_width = jQuery('#content_div')[0].scrollWidth;//getStyle('');
+        //    var current_width = getWidth('content_div');//getStyle('');
+        //    var width_str;
+        //    if(current_width < scroll_width)
+        //   {
+        //        width_str = scroll_width+'px'
+        //    }
+        //    else
+        //   {
+        //        width_str = '100%'
+        //    }
+        const two_column_div = jQuery('#two_column_div')
+        if (two_column_div.is(':visible')) {
+          set_double_scroll();
+        }
+
+        jQuery('.separator_class').each(function () {
+          const content_div = jQuery(this).closest('.content_div');
+          const scroll_width = content_div[0].scrollWidth;
+          const current_width = content_div.width();
+          let width_str;
+          if (current_width < scroll_width) {
+            width_str = scroll_width + 'px'
+          }
+          else {
+            width_str = '100%'
+          }
+          jQuery(this).attr({
+            width: width_str
+          })
+        });
+        // set_double_scroll();
+        separate_resizing();
+
+      }
+
+
+
+      function end_drag() {
+        console.log("end_drag");
+        const frac_left_black_bar = jQuery('#black_bar_separator_div').offset().left;
+        const left_1_pos = content_div_1.offset().left;
+        const black_bar_width = black_bar_separator_div.outerWidth();
+        const bar_position_scale = (frac_left_black_bar - left_1_pos) / (jQuery(window).innerWidth() - left_1_pos - black_bar_width);
+
+        page_view.separator_pos = bar_position_scale;
+        scrollHandler();
+
+      }
+
+
 window.separate_resizing = separate_resizing;
 
 function action_select(table_name) {
@@ -1513,43 +1563,7 @@ function action_select(table_name) {
 }
 window.action_select = action_select;
 
-function set_double_scroll() {
-  const content_div_1 = jQuery('#content_div_1');
-  const content_div_2 = jQuery('#content_div_2');
-  const div_1_style = content_div_1.attr("style");
-  const div_2_style = content_div_2.attr("style");
 
-  const black_bar_separator_div = jQuery('#black_bar_separator_div');
-  const black_bar_style = black_bar_separator_div.attr("style");
-  const left_1_pos = content_div_1.offset().left;
-  const black_bar_width = black_bar_separator_div.outerWidth();
-
-  const frac_width = (jQuery(window).innerWidth() - left_1_pos - black_bar_width) / 2
-  const div_width = Math.floor(frac_width);
-  //    bar_position_scale = 0.3;
-  const bar_position_scale = page_view.separator_pos;
-  const frac_left_black_bar = (jQuery(window).innerWidth() - left_1_pos - black_bar_width) * bar_position_scale + left_1_pos;
-  const left_black_bar = Math.floor(frac_left_black_bar + 0.5);
-
-  const right_1_pos = left_black_bar - 1;
-  const from_right_1_pos_str = "" + (jQuery(window).innerWidth() - right_1_pos - 1);
-  const left_black_bar_str = "" + left_black_bar;
-
-  const left_2_pos = right_1_pos + black_bar_width;
-  const right_2_pos = 0;
-  const left_2_pos_str = "" + left_2_pos;
-
-
-
-  //div_1_new_style =  div_1_style.replace(/right:\s*\d+/, from_right_1_pos_str);
-  //div_2_new_style =  div_2_style.replace(/left:\s*\d+/, left_2_pos_str);
-  const black_bar_new_style = black_bar_style.replace(/left:\s*\d+/, left_black_bar_str);
-
-  content_div_1.css("right", from_right_1_pos_str + "px");
-  content_div_2.css("left", left_black_bar_str + "px");
-  black_bar_separator_div.css("left", left_black_bar_str + "px");
-
-}
 window.set_double_scroll = set_double_scroll;
 
 

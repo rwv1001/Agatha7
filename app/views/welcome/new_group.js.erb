@@ -39,7 +39,7 @@
        
         <% search_results.table_type = :search_results; %>
         
-        jQuery('#<%="#{current_filter_name}"%>').hide();
+        document.getElementById('<%="#{current_filter_name}"%>').style.display = 'none';
 
         if (jQuery('#<%="#{results_table_name}"%>')[0]!=null) {
             

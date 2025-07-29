@@ -12,8 +12,8 @@
             .separator_class {background: #ffffff; width: 100%; height:10px; position: relative}
     </style>
   </head>
-  <body data-controller="<%= controller_name %>" data-action="<%= action_name %>" bgcolor="#ffffff"  onUnload ="on_unload()" >
-  <% Rails.logger.debug("RWV index.html.erb body") %>  
+  <body data-controller="<%= controller_name %>" data-action="<%= action_name %>" bgcolor="#ffffff"   >
+    <% Rails.logger.debug("RWV index.html.erb body") %>
     <%=  render(:partial => "shared/template_header") %>
     <div id ="main_div">
       <div id="menu_div" style="position: fixed; top: 187px; left:0px; bottom: 7px; width:150px; ">
@@ -84,7 +84,7 @@
           </ul>
         </div>
         <div style="clear:both; height: 20px"> &nbsp</div>
-        <div style="clear:both; background-color: #AAA; padding-left: 10px"> 
+        <div style="clear:both; background-color: #AAA; padding-left: 10px">
           <p> You are logged in as user <%=User.where(:id => session[:user_id]).first.name %>. 
             <%= link_to '(Logout)', :controller => :admin, :action => 'logout'%>
           </p>
@@ -145,16 +145,16 @@
         <div id="first_div">
           <input type="button" style= "display: none" value="test button" onclick="div_test();return false" />
         </div>
-        <form action=<%= raw   "/welcome/div_test" %> id=<%= raw "div_test"%> method="post" onsubmit="new Ajax.Request('<%="/welcome/div_test"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+        <form action=<%= raw   "/welcome/div_test" %> id=<%= raw "div_test"%> method="post" data-remote="true" >
           <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
         </form>
-        <form action=<%= raw   "/welcome/delete" %> id=<%= raw "form_delete"%> method="post" onsubmit="new Ajax.Request('<%="/welcome/delete"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+        <form action=<%= raw   "/welcome/delete" %> id=<%= raw "form_delete"%> method="post" data-remote="true" >
           <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
           <input name="id" id="delete_id" type="text" style="display:none" />
           <input name="table_name" id ="delete_table_name" type="text" style="display:none"  />
         </form>
         <div>
-          <form action=<%= raw   "/welcome/select_action" %> id=<%= raw "action_form"%> method="post" onsubmit="new Ajax.Request('<%="/welcome/select_action"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+          <form action=<%= raw   "/welcome/select_action" %> id=<%= raw "action_form"%> method="post" data-remote="true" >
             <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
             <div style= "display: none" >
               <input name="action_type" id ="action_type" type="text"   />
@@ -166,7 +166,7 @@
           </form>
         </div>
         <div>
-          <form action=<%=  "/welcome/multi_table_create" %> id=<%="multi_table_create"%> data-remote="true" method="post" onsubmit="new Ajax.Request('<%="/welcome/multi_table_create"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+          <form action=<%=  "/welcome/multi_table_create" %> id=<%="multi_table_create"%> data-remote="true" method="post" data-remote="true" >
             <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= "#{form_authenticity_token}" %> /></div>
             <div style= "display: none" >
               <input type="text"  name ="multi_table_create" id="multi_table_create_table_name"   />
@@ -174,7 +174,7 @@
           </form>
         </div>
         <div>
-          <form action=<%= raw   "/welcome/make_suggestion" %> id=<%= raw "make_suggestion"%> method="post" onsubmit="new Ajax.Request('<%="/welcome/make_suggestion"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+          <form action=<%= raw   "/welcome/make_suggestion" %> id=<%= raw "make_suggestion"%> method="post" data-remote="true" >
             <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
             <div  id="make_suggestion_div" style= "display: none" >
               <input name="suggest_class" id ="suggest_class" type="text" />
@@ -196,7 +196,7 @@
           <input name="opener_attribute_name" id ="update_opener_attribute_name" type="text" value="not_set" />
           <input name="opener_id" id ="update_opener_id" type="text" value ="1" />
         </div>
-        <form action=<%= raw   "/welcome/update_main" %> id="update_main" method="post" onsubmit="new Ajax.Request('<%="/welcome/update_main"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+        <form action=<%= raw   "/welcome/update_main" %> id="update_main" method="post" data-remote="true" >
           <div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
           <div style="display:none">
             <input name="id" id="update_main_id" type="text" />
@@ -204,7 +204,7 @@
             <input name="attribute_name" id="update_main_attribute_name" type="text" />
           </div>
         </form>
-        <form action=<%= raw   "/welcome/child_unload" %> id="child_unload_main"  method="post" onsubmit="new Ajax.Request('<%="/welcome/child_unload"%>', {asynchronous:false, evalScripts:true, parameters:Form.serialize(this)}); return false;" >
+        <form action=<%= raw   "/welcome/child_unload" %> id="child_unload_main"  method="post" data-remote="true" >
           <div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
           <div style="display:none">
             <input name="id" id="child_unload_main_id" type="text" />
@@ -223,12 +223,12 @@
           <input type="text" id= "format_width" /><label> dummy_width</label>
         </div>
         <script type="text/javascript" defer>
-          jQuery('#select_height').val( jQuery('#dummy_select').height());
-             jQuery('#format_height').val( jQuery('#dummy_format').height());
-             jQuery('#format_width').val( jQuery('#dummy_format').width());
-             jQuery('#format_narrow_width').val( jQuery('#dummy_format_narrow').width());
-             jQuery('#fp_height').val( jQuery('#dummy_fp').height());
-             jQuery('#fx_height').val( jQuery('#dummy_fx').height());
+          document.getElementById('select_height').value =  getElementHeight('dummy_select');
+             document.getElementById('format_height').value =  getElementHeight('dummy_format');
+             document.getElementById('format_width').value =  getWidth('dummy_format')
+             document.getElementById('format_narrow_width').value =  getWidth('dummy_format_narrow');
+             document.getElementById('fp_height').value =  getElementHeight('dummy_fp');
+             document.getElementById('fx_height').value =  getElementHeight('dummy_fx');
         </script>
         <div>
         </div>
@@ -450,7 +450,7 @@
               <div class ="pad_class">
                 <h2>Field Display Format</h2>
                 <p>Update these settings to alter the way references to records are displayed in other tables </p>
-                <form action="/welcome/update_formats"  method="post" onsubmit="new Ajax.Request('/welcome/update_formats', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;">
+                <form action="/welcome/update_formats"  method="post" data-remote="true">
                   <div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
                   <% Rails.logger.debug("RWV index.html.erb update_formats rendering") %>
                   <%= raw  render(:partial => "shared/format_controller", :object => @format_controller) %>
@@ -473,20 +473,15 @@
           </div>
         </div>
       </div>
-      <% Rails.logger.debug("RWV index.html.erb content_end()") %>
-      <script language="javascript">
-        content_end()
-      </script>
-      <div id="two_column_div" style="position: fixed;  top: 187px; left: 166px; right:0px; bottom:7px; overflow: hidden;" >
+
+      <div id="two_column_div" class="content_div" style="position: fixed; top: 187px; left: 166px; right:0px; bottom:7px; overflow: auto;">
         <div id="content_div_1" class="content_div" style="position: fixed;  top: 187px; left: 166px; right:0px; bottom:7px; overflow: auto;">
           <div id="first_div_1"> </div>
         </div>
         <div id="content_div_2" class="content_div" style="position: fixed;  top: 187px; left: 166px; right:0px; bottom:7px; overflow: auto;">
           <div id="first_div_2"> </div>
         </div>
-        <div id="black_bar_separator_div" style ="position: fixed;top:187px; left: 166px;  bottom:7px; width: 7px; background-color: #000000;">
-          &nbsp;
-        </div>
+        <div id="black_bar_separator_div" style ="position: absolute; left: 0;  width: 7px; height: 100%; background-color: #000000; cursor: ew-resize;"></div>
       </div>
       <div id="disable_id" style ="position:absolute; top:0; right:0; width:100%; height: 100%; background-color: #ffffff;  opacity:0.5">
       </div>
@@ -495,12 +490,7 @@
       <%  end %>
     </div>
     <% Rails.logger.debug("RWV index.html.erb some js") %>
-    <script type="text/JavaScript" defer>
-    </script>
-
-
-
-
-<% Rails.logger.debug("RWV index.html.erb body end") %>
+    <script type="text/JavaScript" defer></script>
+    <% Rails.logger.debug("RWV index.html.erb body end") %>
   </body>
 </html>

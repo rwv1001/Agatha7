@@ -1,13 +1,16 @@
+import Rails from "@rails/ujs";
+
+
 function wait() {
 
-    jQuery('#disable_id').show();
+    document.getElementById('disable_id').style.display = '';
     jQuery('#disable_id').css('cursor', 'wait');
 
 
 }
 window.wait = wait;
 function unwait() {
-    jQuery('#disable_id').hide();
+    document.getElementById('disable_id').style.display = 'none';
     jQuery('#disable_id').css('cursor', 'default');
 
 }
@@ -20,7 +23,7 @@ function deleteColumn(field_name, table_name) {
     const table_text_element_str29 = "#" + table_text_element_str;
     const table_text_element = jQuery(table_text_element_str29);
     if (table_text_element[0] != null) {
-        table_text_element.attr("value", table_name);
+        table_text_element.setAttribute('value', table_name);
     }
     const class_name = field_name + "_" + table_name
     let column_elements = jQuery("td." + class_name)
@@ -86,7 +89,7 @@ function setSearchIndices(table_name) {
         const order_index_element = jQuery(order_index_element_str);
 
         order_index_element.attr("name", "order_indices");
-        order_index_element.attr("value", row_str);
+        order_index_element.setAttribute('value', row_str);
     }
 
 }
@@ -139,7 +142,7 @@ function searchOrder(field_name, table_name) {
     const order_element = jQuery(order_element_str74);
 
     order_element.attr("name", "order_text");
-    order_element.attr("value", field_name);
+    order_element.setAttribute('value', field_name);
 
 
     setSearchIndices(table_name);
@@ -169,8 +172,8 @@ function disableSubmitters() {
 window.disableSubmitters = disableSubmitters;
 
 function resizeX() {
-    var client_height = parseInt(jQuery('#dummy_x').height());
-    var a_height = jQuery('#dummy_a').height();
+    var client_height = parseInt(getElementHeight('dummy_x'));
+    var a_height = getElementHeight('dummy_a');
     var new_padding = (client_height - parseInt(a_height)) / 2;
     var new_height = client_height - new_padding;
     var style_str = "background: #AAAAAA;  border-left: 1px solid; border-color: #000000;  float: right; height: " + new_height + "px; padding-top: " + new_padding + "px"
@@ -190,15 +193,16 @@ function resizeX() {
 window.resizeX = resizeX;
 
 function doEscapeHTML(class_id_name) {
+    console.log('doEscapeHTML called for ' + class_id_name);
     const sent_text_element_str = class_id_name + "_sent"
 
     const sent_text_element_str116 = "#" + sent_text_element_str;
-    const sent_text_element = jQuery(sent_text_element_str116);
+    const sent_text_element = document.getElementById(sent_text_element_str);
 
     const sent_text_element_str117 = "#" + sent_text_element_str;
-    const sent_text_element_value = jQuery(sent_text_element_str117).val();
-    const sent_text_element_value_esc = sent_text_element_value.escapeHTML();
-    sent_text_element.attr("value", sent_text_element_value_esc);
+    const sent_text_element_value = document.getElementById(sent_text_element_str).value;
+    const sent_text_element_value_esc = escapeHTML(sent_text_element_value);
+    sent_text_element.setAttribute('value', sent_text_element_value_esc);
 }
 window.doEscapeHTML = doEscapeHTML;
 
@@ -207,13 +211,13 @@ function updatePostFilterStrings(class_id_name) {
     const typed_text_element_str = class_id_name + "_typed"
 
     const sent_text_element_str125 = "#" + sent_text_element_str;
-    const sent_text_element = jQuery(sent_text_element_str125);
+    const sent_text_element = document.getElementById(sent_text_element_str);
 
     const typed_text_element_str126 = "#" + typed_text_element_str;
-    const typed_text_element = jQuery(typed_text_element_str126);
-    const typed_filter_str = typed_text_element.val();
-    const typed_filter_str_esc = typed_filter_str.escapeHTML()
-    sent_text_element.attr("value", typed_filter_str_esc);
+    const typed_text_element = document.getElementById(typed_text_element_str);
+    const typed_filter_str = typed_text_element.value;
+    const typed_filter_str_esc = escapeHTML(typed_filter_str)
+    sent_text_element.setAttribute('value', typed_filter_str_esc);
 }
 window.updatePostFilterStrings = updatePostFilterStrings;
 
@@ -234,6 +238,7 @@ function updatePostExternalFilter(class_id_name) {
 window.updatePostExternalFilter = updatePostExternalFilter;
 
 function Search(table_name) {
+    console.log("Calling Search for " + table_name);
     wait();
     resizeFilters();
     //   jQuery('#person_id_Person_x').hasAttribute('style')
@@ -243,7 +248,7 @@ function Search(table_name) {
 
     const current_filter_str152 = "#" + current_filter_str;
     const current_filter_element = jQuery(current_filter_str152);
-    current_filter_element.style.display = 'none';
+    current_filter_element.hide();
     const do_search_str = "do_search_" + table_name;
 
     const do_search_str155 = "#" + do_search_str;
@@ -291,7 +296,7 @@ function AddField(table_name) {
 
     const text_element_id189 = "#" + text_element_id;
     const text_element = jQuery(text_element_id189);
-    text_element.attr("name", selected_val);
+    text_element.setAttribute('name', selected_val);
     text_element.attr("value", "%");
     const form_id = "search_form_" + table_name
 
@@ -326,7 +331,7 @@ function AddFilter(table_name) {
 
     const text_element_str215 = "#" + text_element_str;
     const text_elt = jQuery(text_element_str215);
-    text_elt.attr("value", selected_val);
+    text_elt.setAttribute('value', selected_val);
 
     const text_num_filters_str = "number_of_external_filters_" + table_name;
 
@@ -341,7 +346,7 @@ function AddFilter(table_name) {
         header_elt.html("<label>Search Filters </label>")
     }
     const new_num_filters = current_num_filters + 1;
-    text_num_filters_elt.attr("value", new_num_filters);
+    text_num_filters_elt.setAttribute('value', new_num_filters);
 
     const form_id = "add_external_filter_" + table_name;
 
@@ -382,11 +387,11 @@ function onUpdateExternalFilterGroup(class_name, filter_id, elt_id) {
     const group_id = group_select_elt.val();
     const member_id = member_select_elt.val();
 
-    filter_id_elt.attr("value", filter_id);
-    elt_id_elt.attr("value", elt_id);
+    filter_id_elt.setAttribute('value', filter_id);
+    elt_id_elt.setAttribute('value', elt_id);
 
-    member_id_elt.attr("value", member_id);
-    group_id_elt.attr("value", group_id);
+    member_id_elt.setAttribute('value', member_id);
+    group_id_elt.setAttribute('value', group_id);
 
     const form_str = "update_external_filter_" + class_name;
 
@@ -409,7 +414,7 @@ function addExternalFilterElement(class_name, filter_id) {
     const current_num_elts = parseInt(num_elts_elt.val());
     const new_elt_id = current_num_elts;
     const new_current_num = current_num_elts + 1;
-    num_elts_elt.attr("value", new_current_num);
+    num_elts_elt.setAttribute('value', new_current_num);
     max_filter_element.attr("value", new_elt_id + 1);
 
     const prev_elt_id = new_elt_id - 1;
@@ -502,7 +507,7 @@ function deleteExternalFilterElement(class_name, filter_id, elt_id) {
         const num_filters_elt = jQuery(num_filters_str340);
         const current_num_filters = parseInt(num_filters_elt.val());
         const new_num_filters = current_num_filters - 1;
-        num_filters_elt.attr("value", new_num_filters);
+        num_filters_elt.setAttribute('value', new_num_filters);
         if (new_num_filters == 0) {
             header_elt.html("")
         }
@@ -538,7 +543,7 @@ function deleteExternalFilterElement(class_name, filter_id, elt_id) {
         }
     }
     else {
-        num_elts_elt.attr("value", new_current_num);
+        num_elts_elt.setAttribute('value', new_current_num);
 
         for (reorder_index = parseInt(elt_id) + 1; reorder_index <= new_current_num; reorder_index++) {
             const filter_selection_str = "external_filter_selection_" + class_name + "_" + filter_id + "_" + reorder_index;
@@ -571,7 +576,7 @@ window.deleteExternalFilterElement = deleteExternalFilterElement;
 
 function resizeExternalFilters(class_name) {
 
-    var client_height = jQuery('#dummy_x').height();
+    var client_height = getElementHeight('dummy_x');
     var height_str = "" + client_height + "px"
     jQuery('.external_filter_group_selection_' + class_name).each(function () {
         jQuery(this).css({ height: height_str });
@@ -583,7 +588,7 @@ function resizeExternalFilters(class_name) {
         jQuery(this).css({ height: height_str });
     });
 
-    var a_height = jQuery('#dummy_a').height();
+    var a_height = getElementHeight('dummy_a');
     var new_padding = ((client_height - parseInt(a_height)) / 2);
     var new_height = client_height - new_padding;
 
@@ -601,11 +606,11 @@ function resizeExternalFilters(class_name) {
 window.resizeExternalFilters = resizeExternalFilters;
 
 function resizeFilters() {
-    var client_height = parseInt(jQuery('#dummy_x').height());
-    var narrow_width = parseInt(jQuery('#dummy_format_narrow').width());
-    var wide_width = parseInt(jQuery('#dummy_format').width());
-    var x_height = parseInt(jQuery('#dummy_fx').height());
-    var p_height = parseInt(jQuery('#dummy_fp').height());
+    var client_height = parseInt(getElementHeight('dummy_x'));
+    var narrow_width = parseInt(getWidth('dummy_format_narrow'));
+    var wide_width = parseInt(getWidth('dummy_format'));
+    var x_height = parseInt(getElementHeight('dummy_fx'));
+    var p_height = parseInt(getElementHeight('dummy_fp'));
     var x_padding = (client_height - x_height) / 2.0;
     var p_padding = (client_height - p_height) / 2.0;
     var new_x_height = client_height - x_padding;
@@ -645,7 +650,7 @@ window.resizeFilters = resizeFilters;
 function group_unrestriction() {
     const external_filter_Group_0 = jQuery('#external_filter_Group_0');
     if (external_filter_Group_0[0] != null) {
-        external_filter_Group_0.style.display = '';
+        external_filter_Group_0.show();
     }
 
 
@@ -662,7 +667,7 @@ function group_restriction_timeout(table_name, do_update) {
         setTimeout(function_str, 10);
     }
     else {
-        external_filter_Group_0.style.display = 'none';
+        external_filter_Group_0.hide();
         const select_value = select_obj.val();
         if (select_value != table_name) {
             const do_update = true;
