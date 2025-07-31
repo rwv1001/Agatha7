@@ -1,4 +1,5 @@
 
+
 function copyright() {
   document.write('<p style="text-align: center; font-size: 32%;"> Agatha database version, 3.10.12.09 © 2010, Robert Verrill O.P.</p>');
 
@@ -14,12 +15,12 @@ function hideHeader() {
   document.getElementById('title_div').style.display = 'none';
   document.getElementById('black_bar_div').style.display = 'none';
   document.getElementById('shrink_button_div').style.display = 'none';
-  jQuery('#menu_div').css('top', '17px');
-  jQuery('#content_div').css('top', '17px');
-  jQuery('#content_div_1').css('top', '17px');
-  jQuery('#content_div_2').css('top', '17px');
-  jQuery('#two_column_div').css('top', '17px');
-  jQuery('#black_bar_separator_div').css('top', '17px');
+  document.getElementById('menu_div').style.top = '17px';
+  document.getElementById('content_div').style.top = '17px';
+  document.getElementById('content_div_1').style.top = '17px';
+  document.getElementById('content_div_2').style.top = '17px';
+  document.getElementById('two_column_div').style.top = '17px';
+  document.getElementById('black_bar_separator_div').style.top = '17px';
   document.getElementById('expand_button_div').style.display = '';
 }
 window.hideHeader = hideHeader;
@@ -29,57 +30,23 @@ function showHeader() {
   document.getElementById('title_div').style.display = '';
   document.getElementById('black_bar_div').style.display = '';
   document.getElementById('shrink_button_div').style.display = '';
-  jQuery('#menu_div').css('top', '187px');
-  jQuery('#two_column_div').css('top', '187px');
-  jQuery('#content_div').css('top', '187px');
-  jQuery('#content_div_1').css('top', '187px');
-  jQuery('#content_div_2').css('top', '187px');
-  jQuery('#black_bar_separator_div').css('top', '187px');
+  document.getElementById('menu_div').style.top = '187px';
+  document.getElementById('two_column_div').style.top = '187px';
+  document.getElementById('content_div').style.top = '187px';
+  document.getElementById('content_div_1').style.top = '187px';
+  document.getElementById('content_div_2').style.top = '187px';
+  document.getElementById('black_bar_separator_div').style.top = '187px';
 
   document.getElementById('expand_button_div').style.display = 'none';
 }
 window.showHeader = showHeader;
 
-function snap_function(x, y) {
-  const x_min = jQuery('#content_div_1').offset().left;
-  const x_max = jQuery('#content_div_2').offset().left + jQuery('#content_div_2').outerWidth() - jQuery('#black_bar_separator_div').outerWidth();
-  const y_snap = jQuery('#content_div_2').offset().top;
-  return [(x < x_max - 50) ? (x > x_min + 50 ? x : x_min) : x_max, y_snap];
-}
-window.snap_function = snap_function;
 
 
 
 
 
-function scrollHandler3() {
-  //alert('event!');
-  const scroll_width = jQuery('#content_div')[0].scrollWidth;//getStyle('');
-  const current_width = getWidth('content_div');//getStyle('');
-  let width_str;
-  if (current_width < scroll_width) {
-    width_str = 'width: ' + scroll_width + 'px'
-  }
-  else {
-    width_str = 'width: ' + '100%'
-  }
-  // if
-  //  var content_str = content_width;
 
-
-  //jQuery('#jum_jo').attr({width: width_str});
-  //var jum_jo_width = jQuery('#jum_jo').getStyle('width');
-  //  jQuery('#test_resize').replace('<p id ="test_resize"> scroll size is '+ scroll_width+' current = '+current_width +' width_str = ' + width_str+'</p>');
-
-  jQuery('.separator_class').each(function () {
-    const style_str = jQuery(this).attr("style");
-    jQuery(this).attr('style', width_str);
-    const style_str2 = jQuery(this).attr("style");
-    const x = 1;
-  });
-
-}
-window.scrollHandler3 = scrollHandler3;
 
 function template_header() {
   document.write('<div id ="logo_div" style ="position: fixed;left: 0px; top:0px;width:150px;height:154px">');
@@ -142,10 +109,10 @@ function display_page(page_name, option_str) {
   const page_name_elt = jQuery(page_name_id211)
 
   const option_id212 = "#" + option_id;
-  const option_elt = jQuery(option_id212);
+  const option_elt = document.getElementById((option_id212).slice(1)); //rwv vanilla change
 
   const form_id213 = "#" + form_id;
-  const form_elt = jQuery(form_id213);
+  const form_elt = document.getElementById((form_id213).slice(1)); //rwv vanilla change
   page_name_elt.attr("value", page_name);
   option_elt.attr("value", option_str);
   //form_elt.submit();
@@ -156,48 +123,48 @@ window.display_page = display_page;
 function hide_div(div_id) {
 
   const div_id220 = "#" + div_id;
-  const div_elt = jQuery(div_id220)
+  const div_elt = document.getElementById((div_id220).slice(1)); //rwv vanilla change
   console.log("hide_div called for " + div_id);
-  div_elt.hide();
+  div_elt.style.display = 'none';
 }
 window.hide_div = hide_div;
 
 function show_div(div_id) {
 
   const div_id225 = "#" + div_id;
-  const div_elt = jQuery(div_id225)
-  div_elt.show();
+  const div_elt = document.getElementById((div_id225).slice(1)); //rwv vanilla change
+  div_elt.style.display = '';
 }
 window.show_div = show_div;
 
 function hide_class(div_id, class_name) {
-
-  const div_id230 = "#" + div_id;
-  const div_elt = jQuery(div_id230)
-  div_elt.find(class_name).each(function () {
-    jQuery(this).hide();
-  });
+    const div_elt = document.getElementById(div_id);
+    if (!div_elt) return;
+    const elements = div_elt.querySelectorAll(class_name);
+    elements.forEach(el => {
+        el.style.display = 'none';  // hides the element
+    });
 }
+
 window.hide_class = hide_class;
 
 function show_class(div_id, class_name) {
-
-  const div_id237 = "#" + div_id;
-  const div_elt = jQuery(div_id237)
-  div_elt.find(class_name).each(function () {
-    jQuery(this).show();
-  });
+    const div_elt = document.getElementById(div_id);
+    if (!div_elt) return;
+    const elements = div_elt.querySelectorAll(class_name);
+    elements.forEach(el => {
+        el.style.display = '';  // resets to default, showing the element
+    });
 }
 window.show_class = show_class;
 
 function insert_div(div_id, insert_id) {
+  const div_elt = document.getElementById(div_id);
+  const insert_elt = document.getElementById(insert_id);
 
-  const div_id244 = "#" + div_id;
-  const div_elt = jQuery(div_id244);
-
-  const insert_id245 = "#" + insert_id;
-  const insert_elt = jQuery(insert_id245);
-  div_elt.insertAfter(insert_elt);
+  if (div_elt && insert_elt && insert_elt.parentNode) {
+    insert_elt.parentNode.insertBefore(div_elt, insert_elt.nextSibling);
+  }
 }
 window.insert_div = insert_div;
 
@@ -212,9 +179,9 @@ function set_option(table_name, option_id_input) {
   const option_id = "action_select_" + table_name + "_" + option_id_input;
 
   const option_id258 = "#" + option_id;
-  const option_elt = jQuery(option_id258)
-  if (option_elt[0] != null) {
-    option_elt.prop('selected', true);
+  const option_elt = document.getElementById(option_id258.slice(1)); //rwv vanilla change
+  if (option_elt != null) {
+    option_elt.selected = true;
   }
 
 }
@@ -320,22 +287,22 @@ class PageView {
 
 
 
-  var page_view;
-  var old_option_id = 0;
+var page_view;
+var old_option_id = 0;
 
-  var old_page_name = "Person";
-  var displayPageCl;
-  var option_hash = new MyHash();
-  var displayPageCl = new MyHash();
-  
-  var sub_menu_hash = new MyHash();  
+var old_page_name = "Person";
+var displayPageCl;
+var option_hash = new MyHash();
+var displayPageCl = new MyHash();
+
+var sub_menu_hash = new MyHash();
 function load_pages() {
 
-  
-  
 
-  
-  
+
+
+
+
   console.log("RWV load_pages called");
 
 
@@ -1249,51 +1216,53 @@ function load_pages() {
   const form_id = "display_page"
 
   const form_id1294 = "#" + form_id;
-  const form_elt = jQuery(form_id1294);
+  const form_elt = document.getElementById((form_id1294).slice(1)); //rwv vanilla change
 
   //form_elt.submit();
 }
 window.load_pages = load_pages;
 
 function add_action_items(page_views) {
+  // Grab the “administrator_div” if it exists
+  const administratorDiv = document.getElementById('administrator_div');
 
-
-  const administrator_div = jQuery('#administrator_div');
-
-  const table_name = page_views[0].page_name;
-  const select_id = "action_select_" + table_name;
-
-  const select_id1308 = "#" + select_id;
-  const select_obj = jQuery(select_id1308);
-
-
-
-
-  if (page_views.length > 1 && select_obj[0] != null) {
-
-    page_views.forEach(function (page_view) {
-
-
-      if (page_view.unrestricted || administrator_div[0] != null) {
-
-
-        const id_str = "action_select_" + table_name + "_" + page_view.option_id;
-        const value_str = "" + page_view.option_id;
-        var new_option = jQuery("<option></option>").attr({ 'id': id_str, 'value': value_str })
-        new_option.html(page_view.page_option_str);
-
-        select_obj.append(new_option);
-
-      }
-      else {
-        if (page_views[0].page_name == "GroupUser") { alert("add_action_items"); }
-
-      }
-    });
+  if (!page_views || page_views.length < 2) {
+    return;
   }
 
+  // Determine which <select> we’re targeting
+  const table_name = page_views[0].page_name;
+  const selectId   = "action_select_" + table_name;
+  const selectEl   = document.getElementById(selectId);
+  if (!selectEl) {
+    return;
+  }
 
+  // Loop through each page_view
+  page_views.forEach(page_view => {
+    // Only add if unrestricted *or* admin div is present
+    if (page_view.unrestricted || administratorDiv) {
+      // Build a new <option>
+      const id_str    = `action_select_${table_name}_${page_view.option_id}`;
+      const value_str = String(page_view.option_id);
+
+      const newOption = document.createElement('option');
+      newOption.id    = id_str;
+      newOption.value = value_str;
+      newOption.textContent = page_view.page_option_str;
+
+      // Append into the <select>
+      selectEl.appendChild(newOption);
+
+    } else {
+      // preserve your original debug behavior
+      if (table_name === "GroupUser") {
+        alert("add_action_items");
+      }
+    }
+  });
 }
+
 window.add_action_items = add_action_items;
 
 
@@ -1306,10 +1275,10 @@ function action_select0() {
 
   const select_str1350 = "#" + select_str;
   console.log("action_select0: select_str = " + select_str1350);
-  const select_elt = jQuery(select_str1350);
-  if (select_elt[0] != null) {
-    
-    const option_id = parseInt(select_elt.val());
+  const select_elt = document.getElementById((select_str1350).slice(1)); //rwv vanilla change
+  if (select_elt != null) {
+
+    const option_id = parseInt(select_elt.value);
     const do_js = true;
     console.log("action_select0: option_id = " + option_id);
     display_select_action(old_page_name, option_id, do_js);
@@ -1325,9 +1294,9 @@ function action_select_no_js() {
   const select_str = "action_select_" + old_page_name;
 
   const select_str1362 = "#" + select_str;
-  const select_elt = jQuery(select_str1362);
-  if (select_elt[0] != null) {
-    const option_id = parseInt(select_elt.val());
+  const select_elt = document.getElementById((select_str1362).slice(1)); //rwv vanilla change
+  if (select_elt != null) {
+    const option_id = parseInt(select_elt.value);
     const do_js = false;
     display_select_action(old_page_name, option_id, do_js);
   }
@@ -1339,9 +1308,9 @@ function action_select2(table_name) {
   const select_str = "action_select_" + table_name;
 
   const select_str1374 = "#" + select_str;
-  const select_elt = jQuery(select_str1374);
-  if (select_elt[0] != null) {
-    const option_id = parseInt(select_elt.val());
+  const select_elt = document.getElementById((select_str1374).slice(1)); //rwv vanilla change
+  if (select_elt != null) {
+    const option_id = parseInt(select_elt.value);
     const do_js = true;
     display_select_action(table_name, option_id, do_js);
   }
@@ -1425,110 +1394,131 @@ function display_select_action(table_name, option_id, do_js) {
 }
 window.display_select_action = display_select_action;
 
-      function separate_resizing() {
-        jQuery(".separator_class").each(function () {
-          var separate_div = jQuery(this);
-          separate_div.css({ 'width': 1 });
-        });
-        jQuery(".separator_class").each(function () {
-          var separate_div = jQuery(this);
-          var content_div = separate_div.closest('.content_div')
-          var scroll_width = content_div[0].scrollWidth;
-          separate_div.css({ 'width': scroll_width });
-        });
-      }
-      function set_double_scroll() {
-        const content_div_1 = jQuery('#content_div_1');
-        const content_div_2 = jQuery('#content_div_2');
-        const div_1_style = content_div_1.attr("style");
-        const div_2_style = content_div_2.attr("style");
+function separate_resizing() {
+  const elements = document.querySelectorAll('.separator_class');
+  elements.forEach(element => {
+    element.style.width = '1px';
+  });
+  elements.forEach(element => {
+    const content_div = element.closest('.content_div');
+    const scroll_width = content_div.scrollWidth;
+    // console.log("separate_resizing: setting width for " + element.id + " to " + scroll_width);
+    element.style.width = scroll_width + 'px';
+  });
 
-        const black_bar_separator_div = jQuery('#black_bar_separator_div');
-        const black_bar_style = black_bar_separator_div.attr("style");
-        const left_1_pos = content_div_1.offset().left;
-        const black_bar_width = black_bar_separator_div.outerWidth();
+}
+function set_double_scroll() {
+  console.log("set_double_scroll called for " + old_page_name + " option_id: " + old_option_id);
+  const content_div_1 = document.getElementById('content_div_1');
+  const content_div_2 = document.getElementById('content_div_2');
 
-        const frac_width = (jQuery(window).innerWidth() - left_1_pos - black_bar_width) / 2
-        const div_width = Math.floor(frac_width);
-        //    bar_position_scale = 0.3;
-        const page_views = displayPageCl.get(old_page_name);
-        const page_view = page_views[old_option_id];
-        const bar_position_scale = page_view.separator_pos;
-        const frac_left_black_bar = (jQuery(window).innerWidth() - left_1_pos - black_bar_width) * bar_position_scale + left_1_pos;
-        const left_black_bar = Math.floor(frac_left_black_bar + 0.5);
 
-        const right_1_pos = left_black_bar - 1;
-        const from_right_1_pos_str = "" + (jQuery(window).innerWidth() - right_1_pos - 1);
-        const left_black_bar_str = "" + left_black_bar;
+  const black_bar_separator_div = document.getElementById('black_bar_separator_div');
 
-        const left_2_pos = right_1_pos + black_bar_width;
-        const right_2_pos = 0;
-        const left_2_pos_str = "" + left_2_pos;
+  const left_1_pos = getLeftOffset('content_div_1')
+  const black_bar_width = getOuterWidth('black_bar_separator_div');
+
+
+  //    bar_position_scale = 0.3;
+
+  const bar_position_scale = getBarPositionScale();
+  const frac_left_black_bar = getLeftOffset('black_bar_separator_div');
+  //const frac_left_black_bar = (window.innerWidth - left_1_pos - black_bar_width) * bar_position_scale + left_1_pos;
+  const left_black_bar = Math.floor(frac_left_black_bar + 0.5);
+
+  const right_1_pos = left_black_bar - 1;
+  const from_right_1_pos_str = "" + (window.innerWidth - right_1_pos - 1);
+  const left_black_bar_str = "" + left_black_bar;
+
+  const left_2_pos = right_1_pos + black_bar_width;
 
 
 
-        //div_1_new_style =  div_1_style.replace(/right:\s*\d+/, from_right_1_pos_str);
-        //div_2_new_style =  div_2_style.replace(/left:\s*\d+/, left_2_pos_str);
-        const black_bar_new_style = black_bar_style.replace(/left:\s*\d+/, left_black_bar_str);
 
-        content_div_1.css("right", from_right_1_pos_str + "px");
-        content_div_2.css("left", left_black_bar_str + "px");
-        black_bar_separator_div.css("left", left_black_bar_str + "px");
+  console.log("left_black_bar_str = " + left_black_bar_str);
+  console.log("from_right_1_pos_str = " + from_right_1_pos_str);
+  console.log("bar_position_scale = " + bar_position_scale);
+  console.log("window.innerWidth = " + window.innerWidth);
+  console.log("left_1_pos = " + left_1_pos);
+  console.log("right_1_pos = " + right_1_pos);
+  console.log("black_bar_width = " + black_bar_width);
+  console.log("frac_left_black_bar = " + frac_left_black_bar);
+  console.log("left_black_bar = " + left_black_bar);
+  content_div_1.style.right = from_right_1_pos_str + "px";
+  content_div_2.style.left = left_black_bar_str + "px";
+  //black_bar_separator_div.style.left = left_black_bar_str + "px";
 
-      }
-      function scrollHandler() {
+}
 
-        //alert('event!');
-        //    var scroll_width = jQuery('#content_div')[0].scrollWidth;//getStyle('');
-        //    var current_width = getWidth('content_div');//getStyle('');
-        //    var width_str;
-        //    if(current_width < scroll_width)
-        //   {
-        //        width_str = scroll_width+'px'
-        //    }
-        //    else
-        //   {
-        //        width_str = '100%'
-        //    }
-        const two_column_div = jQuery('#two_column_div')
-        if (two_column_div.is(':visible')) {
-          set_double_scroll();
-        }
+function getLeftOffset(id) {
+  const element = document.getElementById(id);
+  const rect = element.getBoundingClientRect();
+  const left_1_pos = rect.left + window.scrollX;
+  console.log('getLeftOffset for id ' + id + ': returns ' + left_1_pos);
+  //console.log('jQuery offset returns ' + jQuery('#'+id).offset().left);
+  return left_1_pos;
+}
+function getOuterWidth(id) {
+  const element = document.getElementById(id);
+  const rect = element.getBoundingClientRect();
+  const outer_width = rect.width;
+  //console.log('getOuterWidth: returns ' + outer_width);
+  //console.log('jQuery outerWidth returns ' + jQuery('#'+id).outerWidth());
+  return outer_width;
+}
+window.getOuterWidth = getOuterWidth;
+function scrollHandler() {
+  console.log("scrollHandler called");
 
-        jQuery('.separator_class').each(function () {
-          const content_div = jQuery(this).closest('.content_div');
-          const scroll_width = content_div[0].scrollWidth;
-          const current_width = content_div.width();
-          let width_str;
-          if (current_width < scroll_width) {
-            width_str = scroll_width + 'px'
-          }
-          else {
-            width_str = '100%'
-          }
-          jQuery(this).attr({
-            width: width_str
-          })
-        });
-        // set_double_scroll();
-        separate_resizing();
+  const twoColumnDiv = document.getElementById('two_column_div');
+  // “Is visible” → check computed display & visibility
+  const twoColStyle = window.getComputedStyle(twoColumnDiv);
+  if (twoColStyle.display !== 'none' && twoColStyle.visibility !== 'hidden') {
+    set_double_scroll();
+  }
 
-      }
+  // For each “.separator_class”…
+  document.querySelectorAll('.separator_class').forEach(separator => {
+    // Find its closest ancestor with class “.content_div”
+    const contentDiv = separator.closest('.content_div');
+    if (!contentDiv) return;
+
+    // Compute scrollWidth vs clientWidth
+    const scrollWidth  = contentDiv.scrollWidth;
+    const currentWidth = contentDiv.clientWidth;
+    const widthStr     = (currentWidth < scrollWidth)
+      ? scrollWidth + 'px'
+      : '100%';
+
+    // Set the width attribute
+    separator.setAttribute('width', widthStr);
+  });
+
+  // finally…
+  separate_resizing();
+}
+
+function getBarPositionScale() {
+  const frac_left_black_bar = getLeftOffset('black_bar_separator_div');
+  const left_1_pos = getLeftOffset('content_div_1');
+  const black_bar_width = getOuterWidth('black_bar_separator_div');
+  const bar_position_scale = (frac_left_black_bar - left_1_pos) / (window.innerWidth - left_1_pos - black_bar_width);
+  console.log("getBarPositionScale: frac_left_black_bar = " + frac_left_black_bar);
+  console.log("getBarPositionScale: left_1_pos = " + left_1_pos);
+  console.log("getBarPositionScale: black_bar_width = " + black_bar_width);
+  console.log("getBarPositionScale: bar_position_scale = " + bar_position_scale);
+  return bar_position_scale;
+}
 
 
 
-      function end_drag() {
-        console.log("end_drag");
-        const frac_left_black_bar = jQuery('#black_bar_separator_div').offset().left;
-        const left_1_pos = content_div_1.offset().left;
-        const black_bar_width = black_bar_separator_div.outerWidth();
-        const bar_position_scale = (frac_left_black_bar - left_1_pos) / (jQuery(window).innerWidth() - left_1_pos - black_bar_width);
+function end_drag() {
+  console.log("end_drag");
 
-        page_view.separator_pos = bar_position_scale;
-        scrollHandler();
+  scrollHandler();
 
-      }
-
+}
+window.end_drag = end_drag
 
 window.separate_resizing = separate_resizing;
 
@@ -1537,21 +1527,21 @@ function action_select(table_name) {
   const select_str = "action_select_" + table_name;
 
   const select_str1459 = "#" + select_str;
-  const select_elt = jQuery(select_str1459);
-  if (select_elt[0] != null) {
+  const select_elt = document.getElementById((select_str1459).slice(1)); //rwv vanilla change
+  if (select_elt != null) {
     const option_name = select_elt.val();
     const page_name_id = "display_page_name"
     const option_id = "display_page_option"
     const form_id = "display_page"
 
     const page_name_id1466 = "#" + page_name_id;
-    const page_name_elt = jQuery(page_name_id1466)
+    const page_name_elt = document.getElementById((page_name_id1466).slice(1)); //rwv vanilla change
 
     const option_id1467 = "#" + option_id;
-    const option_elt = jQuery(option_id1467);
+    const option_elt = document.getElementById((option_id1467).slice(1)); //rwv vanilla change
 
     const form_id1468 = "#" + form_id;
-    const form_elt = jQuery(form_id1468);
+    const form_elt = document.getElementById((form_id1468).slice(1)); //rwv vanilla change
     page_name_elt.attr("value", table_name);
     option_elt.attr("value", option_name);
 

@@ -60,8 +60,11 @@
   </div>
 
   <script type="text/javascript">
+    document.addEventListener("turbolinks:load", function(){
     resizeFilters();
     resizeExternalFilters(<%= raw "\"#{search_controller.table_name}\""%> );
+  });
+    
   </script>
 
 

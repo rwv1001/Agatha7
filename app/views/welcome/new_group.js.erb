@@ -1,77 +1,66 @@
 
-<% Rails.logger.info("RWV Created new group js.erb 1"); %>
-<% if(existing_group ==nil) %>
-    <% eval("#{table_name}.set_controller(search_ctl)"); %>
-    <% Rails.logger.info("RWV Created new group js.erb 2"); %>
-    <% Rails.logger.info("RWV Created new group js.erb 2a"); %>
-    <% updated_objects = search_ctl.GetUpdateObjects(table_name, ["id"], ids); %>  
-   <% Rails.logger.info("RWV Created new group js.erb 2b"); %>
-    <% Rails.logger.info("RWV Created new group js.erb 3"); %>
-     
-    <% updated_objects.each do |row| %>
-        if (jQuery('#<%="#{row.id}_#{table_name}"%>') ){
-            jQuery('#<%="#{row.id}_#{table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
-        }
-    <% end %>
-    <% Rails.logger.info("RWV Created new group js.erb 4"); %>
-    recolour('<%="#{table_name}"%>'); 
-    <% table_name = "Group" %>
-    <% eval("#{table_name}.set_controller(search_ctl_group)"); %>
-    <% updated_objects = search_ctl_group.GetUpdateObjects(table_name, ["id"], [new_group_id]); %> 
-    <% updated_objects.each do |row| %>
-        if (jQuery('#<%="#{row.id}_#{table_name}"%>') ){
-            jQuery('#<%="#{row.id}_#{table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");  
 
-        }
-    <% end %>
-    <% results_table_name = "search_results_table_Group" %>
-    <% current_filter_name = "current_filters_Group" %>
-    <% group_id = [new_group_id]; %>                 
-    <% select_string = search_ctl.get_sql_id_string(group_id); %>
-    <% eval_str = "Group.find_by_sql(\"#{select_string}\")" %>
-    <% Rails.logger.info("eval str = #{eval_str}"); %>
-    <% eval("Group.set_controller(search_ctl_group)"); %>
-    <% new_rows = eval(eval_str); %>
-    
-    <% new_rows.each do |new_row|   %> 
-         
-        <% search_results = SearchResults.new([new_row] , :search_results, search_ctl_group); %>
-       
-        <% search_results.table_type = :search_results; %>
-        
-        document.getElementById('<%="#{current_filter_name}"%>').style.display = 'none';
+<% if existing_group.nil? %>
+  <% table_name.set_controller(search_ctl) %>
+  <% updated_objects = search_ctl.GetUpdateObjects(table_name, ["id"], ids) %>
+  <% updated_objects.each do |row| %>
+    (function(){
+      const el = document.getElementById("<%= "#{row.id}_#{table_name}" %>");
+      if (el) {
+        // replaceWith: swap the element’s outerHTML
+        el.outerHTML = "<%= j render(partial: 'shared/search_results_row_button', object: row).gsub("\"","\\\"") %>";
+      }
+    })();
+  <% end %>
 
-        if (jQuery('#<%="#{results_table_name}"%>')[0]!=null) {
-            
-            jQuery('<%= j render(:partial => "shared/search_results_row_button", :object =>new_row )%>').insertAfter('#<%="#{results_table_name}"%> tr:last');
-        }else{            
-            jQuery('#<%="search_results_#{table_name}"%>').html('<%= j render(:partial => "shared/search_results" , :object => search_results)%>');
-            
-            resizeX();              
-        }
-        <% Rails.logger.info("RWV new_group.js.erb row.id = #{new_row.id}") %>     
-        <% new_option_str = search_ctl_group.GetShortField(new_row.id); %>
-        
-        <% Rails.logger.info("select_update"); %>
-        select_update('Group',<%="#{new_row.id}"%>,'<%="#{new_option_str}"%>') 
-        
-    <% end %>
-  
-    recolour('Group');
-     
-    action_select_no_js();
-     
-    alert('<%="Successfully created #{class_name} group with name #{group_name}"%>')
-    <% Rails.logger.info("RWV Created new group js.erb 2fff"); %>
+  recolour("<%= table_name %>");
 
-    
-    
-    <% Rails.logger.info("RWV Created new group js.erb 5"); %>
+  <% table_name = "Group" %>
+  <% table_name.set_controller(search_ctl_group) %>
+  <% updated_objects = search_ctl_group.GetUpdateObjects(table_name, ["id"], [new_group_id]) %>
+  <% updated_objects.each do |row| %>
+    (function(){
+      const el = document.getElementById("<%= "#{row.id}_#{table_name}" %>");
+      if (el) {
+        el.outerHTML = "<%= j render(partial: 'shared/search_results_row_button', object: row) %>";
+      }
+    })();
+  <% end %>
+
+  <% results_table_name    = "search_results_table_Group" %>
+  <% current_filter_name   = "current_filters_Group" %>
+  document.getElementById("<%= current_filter_name %>").style.display = "none";
+
+  <% table_name.set_controller(search_ctl_group) %>
+  <% select_string = search_ctl.get_sql_id_string([new_group_id]) %>
+  <% new_rows = Group.find_by_sql(select_string) %>
+  <% new_rows.each do |new_row| %>
+    (function(){
+      const resultsTable = document.getElementById("<%= results_table_name %>");
+      const rowHtml      = "<%= j render(partial: 'shared/search_results_row_button', object: new_row) %>";
+      if (resultsTable) {
+        // insertAfter last row
+        const lastTr = resultsTable.querySelector("tr:last-child");
+        if (lastTr) lastTr.insertAdjacentHTML("afterend", rowHtml);
+      } else {
+        // replace entire results container
+        document.getElementById("search_results_<%= table_name %>").innerHTML =
+          "<%= j render(partial: 'shared/search_results', object: SearchResults.new([new_row], :search_results, search_ctl_group)) %>";
+        resizeX();
+      }
+
+      const newOptionStr = "<%= search_ctl_group.GetShortField(new_row.id) %>";
+      select_update("Group", <%= new_row.id %>, newOptionStr);
+    })();
+  <% end %>
+
+  recolour("Group");
+  action_select_no_js();
+  alert("Successfully created <%= class_name %> group with name <%= group_name %>");
 <% else %>
-    <% Rails.logger.info("RWV Created new group js.erb 6"); %>
-    alert('<%="Group creation failed: #{class_name} group with name #{group_name} already exists."%>');
-    <% Rails.logger.info("RWV Created new group js.erb 7"); %>
+  alert("Group creation failed: <%= class_name %> group with name <%= group_name %> already exists.");
 <% end %>
-<% Rails.logger.info("RWV Created new group js.erb 81"); %>
+
 unwait();
+
     

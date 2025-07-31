@@ -1,70 +1,58 @@
 
-function deleteElement(table, count_str)
-{
-    const count = parseInt(count_str);
-    const current_elts_str = "display_format_count_"+ table;
+function deleteElement(table, count) {
+  count = parseInt(count, 10);
+  const currentEltsId = "display_format_count_" + table;
+  const currentEltsInput = document.getElementById(currentEltsId);
+  let currentElts = parseInt(currentEltsInput.value, 10);
 
-    const current_elts_str14 = "#"+current_elts_str;
-    const current_elts_obj = jQuery(current_elts_str14);
-    let current_elts = parseInt(current_elts_obj.val());
-    if( current_elts == 1)
-        {
-            return;
-        }
-    const field_names = new Array();
-    const insert_strings = new Array();
+  if (currentElts === 1) {
+    return;
+  }
 
-    for(i=count+1;i<current_elts;i++)
-    {
-        const field_name_str = "display_format_field_"+table + "_"+i
+  // Gather values of all fields and strings after the one being deleted
+  const fieldNames = [];
+  const insertStrings = [];
+  for (let i = count + 1; i < currentElts; i++) {
+    const fieldInput = document.getElementById(`display_format_field_${table}_${i}`);
+    fieldNames.push(fieldInput.value);
 
-        const field_name_str26 = "#"+field_name_str;
-        const field_name_obj = jQuery(field_name_str26);
-        const field_name = field_name_obj.val();
-        field_names.push( field_name);
+    const stringInput = document.getElementById(`display_format_string_${table}_${i}`);
+    insertStrings.push(stringInput.value);
+  }
 
-        const insert_string_str = "display_format_string_"+table + "_"+i
+  // Decrement total
+  currentElts -= 1;
 
-        const insert_string_str31 = "#"+insert_string_str;
-        const insert_string_obj = jQuery(insert_string_str31);
-        const insert_string = insert_string_obj.val();
-        insert_strings.push( insert_string);
-    }
-    current_elts = current_elts - 1;
-    
+  // Shift values down by one
+  for (let i = count; i < currentElts; i++) {
+    const fieldInput = document.getElementById(`display_format_field_${table}_${i}`);
+    fieldInput.value = fieldNames[i - count];
 
-    for(i=count;i<current_elts;i++)
-    {
-        const field_name_str = "display_format_field_"+table + "_"+i
+    const stringInput = document.getElementById(`display_format_string_${table}_${i}`);
+    stringInput.value = insertStrings[i - count];
+  }
 
-        const field_name_str41 = "#"+field_name_str;
-        const field_name_obj = jQuery(field_name_str41);
-        field_name_obj.val( field_names[i-count]);
+  // Update the counter input
+  currentEltsInput.value = currentElts;
 
-        const insert_string_str = "display_format_string_"+table + "_"+i
+  // Remove the last element row
+  const deleteElt = document.querySelector(`#display_format_${table}_${currentElts}`);
+  if (deleteElt) {
+    deleteElt.remove();
+  }
 
-        const insert_string_str45 = "#"+insert_string_str;
-        const insert_string_obj = jQuery(insert_string_str45);
-        insert_string_obj.val( insert_strings[i-count]);
-    }
-    current_elts_obj.val( current_elts);
-    const delete_elt_str = "display_format_" +table +"_" + current_elts;
+  // If we’re down to one element, also remove its “remove” link
+  if (currentElts === 1) {
+    const removeLink = document.querySelector("#display_format_" + table + "_0 .remove_format_field");
+    if (removeLink) removeLink.remove();
+  }
 
-    const delete_elt_str50 = "#"+delete_elt_str;
-    const delete_elt = jQuery(delete_elt_str50);
-    delete_elt.remove();
-    if(current_elts ==1)
-    {
-        const elt_str = "#display_format_" +table +"_0 .remove_format_field";
-        const a_elts = jQuery(elt_str);
-        a_elts[0].remove();
-
-    }
-    const min_width_div_str = "min_width_"+table;
-    const width = (current_elts )*230;
-    const width_str = ' '+ width +'px';
-
-    jQuery(min_width_div_str).attr('min-width', width_str );
+  // Finally, adjust the min-width on the container
+  const minWidthDiv = document.getElementById("min_width_" + table);
+  if (minWidthDiv) {
+    // each element is 230px wide
+    minWidthDiv.style.minWidth = (currentElts * 230) + "px";
+  }
 }
 window.deleteElement = deleteElement;
 
@@ -74,14 +62,14 @@ function addElement(table, count_str)
     const current_elts_str = "display_format_count_"+ table;
 
     const current_elts_str71 = "#"+current_elts_str;
-    const current_elts_obj = jQuery(current_elts_str71);
-    const current_elts = parseInt(current_elts_obj.val());
+    const current_elts_obj = document.getElementById((current_elts_str71).slice(1)); //rwv vanilla change
+    const current_elts = parseInt(current_elts_obj.value);
     if(current_elts ==1)
     {
         const first_textbox_str = "display_format_string_div_" + table+"_0";
 
         const first_textbox_str76 = "#"+first_textbox_str;
-        const first_textbox = jQuery(first_textbox_str76);
+        const first_textbox = document.getElementById((first_textbox_str76).slice(1)); //rwv vanilla change
         const parent_textbox = first_textbox.getOffsetParent();
 
      //   jQuery(element).wrap('div').attr({backgroundImage: 'url(images/rounded-corner-top-left.png) top left'});
@@ -102,13 +90,13 @@ function addElement(table, count_str)
     for(i=current_elts-1;  i>=count; i--)
     {
        
-        const div_obj = jQuery('#display_format_' + table+"_"+i);
-        const display_format_string_div = jQuery('#display_format_string_div_'+ table+"_"+i);
-        const display_format_field = jQuery('#display_format_field_'+ table+"_"+i);
-        const display_format_string = jQuery('#display_format_string_'+ table+"_"+i);
-        const remove_format = jQuery('#remove_format_'+ table+"_"+i);
+        const div_obj = document.getElementById(('#display_format_' + table+"_"+i).slice(1)); //rwv vanilla change
+        const display_format_string_div = document.getElementById(('#display_format_string_div_'+ table+"_"+i).slice(1)); //rwv vanilla change
+        const display_format_field = document.getElementById(('#display_format_field_'+ table+"_"+i).slice(1)); //rwv vanilla change
+        const display_format_string = document.getElementById(('#display_format_string_'+ table+"_"+i).slice(1)); //rwv vanilla change
+        const remove_format = document.getElementById(('#remove_format_'+ table+"_"+i).slice(1)); //rwv vanilla change
         const aref_remove_format = remove_format.find('a:first');
-        const add_format = jQuery('#add_format_'+ table+"_"+i);
+        const add_format = document.getElementById(('#add_format_'+ table+"_"+i).slice(1)); //rwv vanilla change
         const aref_add_format = add_format.find('a:first');
 
         const new_count = i+1;
@@ -141,7 +129,7 @@ function addElement(table, count_str)
     
 
     const div_str133 = "#"+div_str;
-    const first_div_obj = jQuery(div_str133);
+    const first_div_obj = document.getElementById((div_str133).slice(1)); //rwv vanilla change
     const div_obj = first_div_obj.clone(true);
    
     const display_format_string = div_obj.find('input:first');
@@ -164,8 +152,8 @@ function addElement(table, count_str)
     add_format.attr('id',"add_format_"+ table+"_"+new_count);
     aref_add_format.attr("onclick", "addElement('"+table+"','"+(new_count+1)+"');return false");
 
-    display_format_string.val("");
-    display_format_field.val( "");
+    display_format_string.value = ""; //rwv vanilla change;
+    display_format_field.value =  ""; //rwv vanilla change;
 
     if(pos_str == 'before')
     {
@@ -177,12 +165,12 @@ function addElement(table, count_str)
 
     }
     
-    current_elts_obj.val( current_elts +1);
+    current_elts_obj.value =  current_elts +1; //rwv vanilla change;
     const min_width_div_str = "min_width_"+table;
     const width = (current_elts+1)*230;
     const width_str = ' '+ width +'px';
 
-    jQuery(min_width_div_str).attr('min-width', width_str );
+    (min_width_div_str).attr('min-width', width_str );
 
 
 }

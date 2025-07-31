@@ -62,7 +62,19 @@ jquery.globalEval = function (data) {
 console.log("Agatha application.js loaded");
 document.addEventListener("hide_expand_button", () => {
   document.getElementById('expand_button_div').style.display = 'none';
-  });
+});
+function hideElement(elt) {
+  elt.style.display = 'none';
+}
+window.hideElement = hideElement;
+function centerSeparator() {
+
+  const separator = document.getElementById('black_bar_separator_div');
+  
+  const left_black_bar = Math.floor((getOuterWidth('content_div') - getOuterWidth('black_bar_separator_div')) / 2 + 0.5);
+  console.log('centerSeparator: left_black_bar=', left_black_bar);
+  separator.style.left = left_black_bar + "px";
+}
 document.addEventListener('turbo:load', function () {
   document.getElementById('expand_button_div').style.display = 'none';
   const controller = document.body.getAttribute('data-controller');
@@ -80,10 +92,10 @@ document.addEventListener('turbo:load', function () {
     document.getElementById('format_narrow_width').value = getWidth('dummy_format_narrow');
     document.getElementById('fp_height').value = getElementHeight('dummy_fp');
     document.getElementById('fx_height').value = getElementHeight('dummy_fx');
-    
+
     document.getElementById('content_div').style.display = 'none';
-    
-    
+
+
     //document.getElementById('two_column_div').style.display = 'none';
 
     load_pages();
@@ -96,51 +108,69 @@ document.addEventListener('turbo:load', function () {
         el = el.nextSibling;
       return jQuery(el);
     };
+    centerSeparator();
 
-const separator = document.getElementById('black_bar_separator_div');
-const container = document.getElementById('two_column_div');
 
-separator.addEventListener('mousedown', function(event) {
-  event.preventDefault(); // Prevent text selection or other default behaviors
-  
-  const startingMouseX = event.clientX; // Mouse position at drag start
-  const startingLeft = parseFloat(separator.style.left) || 0; // Current left position (default to 0 if unset)
-  const containerWidth = container.clientWidth; // Container's inner width
-  const separatorWidth = separator.offsetWidth; // Separator's total width
+    const separator = document.getElementById('black_bar_separator_div');
+    const container = document.getElementById('two_column_div');
 
-  console.log('Starting drag: startingLeft=', startingLeft, 'containerWidth=', containerWidth, 'separatorWidth=', separatorWidth);
+    separator.addEventListener('mousedown', function (event) {
+      event.preventDefault(); // Prevent text selection or other default behaviors
 
-  function onMouseMove(event) {
-    const delta = event.clientX - startingMouseX; // Distance moved
-    let newLeft = startingLeft + delta; // New position
-    // Restrict position within container
-    const maxLeft = containerWidth - separatorWidth;
-    newLeft = Math.max(0, Math.min(maxLeft, newLeft));
-    separator.style.left = `${newLeft}px`; // Update position
-    console.log('Dragging: newLeft=', newLeft, 'maxLeft=', maxLeft);
+      const startingMouseX = event.clientX; // Mouse position at drag start
+      const startingLeft = parseFloat(separator.style.left) || 0; // Current left position (default to 0 if unset)
+      const containerWidth = container.clientWidth; // Container's inner width
+      const separatorWidth = separator.offsetWidth; // Separator's total width
+
+      console.log('Starting drag: startingLeft=', startingLeft, 'containerWidth=', containerWidth, 'separatorWidth=', separatorWidth);
+
+      function onMouseMove(event) {
+        const delta = event.clientX - startingMouseX; // Distance moved
+        let newLeft = startingLeft + delta; // New position
+        // Restrict position within container
+        const maxLeft = containerWidth - separatorWidth;
+        newLeft = Math.max(0, Math.min(maxLeft, newLeft));
+        separator.style.left = `${newLeft}px`; // Update position
+        console.log('Dragging: newLeft=', newLeft, 'maxLeft=', maxLeft);
+      }
+
+      function onMouseUp(event) {
+        // Remove event listeners
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        // Call your function when drag ends
+        end_drag();
+      }
+
+      // Add listeners to document to capture movement outside the div
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+
+    // Define your function to be called when drag ends
+
+
+    document.getElementById('x_height').value = getElementHeight('dummy_x');
+    document.getElementById('a_height').value = getElementHeight('dummy_a');
+    resizeX();
+    resizeFormat();
+
+
   }
-
-  function onMouseUp(event) {
-    // Remove event listeners
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', onMouseUp);
-    // Call your function when drag ends
-    yourFunction();
-  }
-
-  // Add listeners to document to capture movement outside the div
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', onMouseUp);
 });
 
-// Define your function to be called when drag ends
-function yourFunction() {
-  console.log('Drag ended!'); // Replace with your desired functionality
-}
-
-
+let lastWidth = window.innerWidth;
+window.addEventListener('resize', () => {
+  const currentWidth = window.innerWidth;
+  if (currentWidth !== lastWidth) {
+    lastWidth = currentWidth;
+    // fire your function!
+    if (document.getElementById('two_column_div').style.display === 'none') {
+      centerSeparator();
+    }
   }
 });
+
 
 
 

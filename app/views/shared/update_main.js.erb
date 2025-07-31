@@ -1,68 +1,87 @@
 <% Rails.logger.info("update_main.js.erb"); %>
 
-<% if(fail_str.length==0 && attribute_names.length>0 && ids.length>0) %>
-    <% search_ctls.each do |table_name, search_ctl|  %>
-        
-        <% eval("#{table_name}.set_controller(search_ctl)");  %>  
-       
-        <% updated_objects = search_ctl.GetUpdateObjects(edited_table_name, attribute_names, ids); %>
-        
-         
-        <% for row in updated_objects  %>
-            
-            <% Rails.logger.info("update_main.js.erb rwv #{row.id}") %>
-            
-            if (jQuery('#<%="#{row.id}_#{table_name}"%>')[0]!=null ){
-                
-                jQuery('#<%="#{row.id}_#{table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
-            
-            setcheck('#<%="#{table_name}_check_#{row.id.to_s}"%>',true)
-            
+<% if fail_str.empty? && attribute_names.any? && ids.any? %>
+  <% search_ctls.each do |table_name, search_ctl| %>
+    <% table_name.set_controller(search_ctl) %>
+    <% updated_objects = search_ctl.GetUpdateObjects(edited_table_name, attribute_names, ids) %>
+
+    <% updated_objects.each do |row| %>
+      (function(){
+        const elId   = "<%= "#{row.id}_#{table_name}" %>";
+        const el     = document.getElementById(elId);
+        if (el) {
+          // replaceWith
+          el.outerHTML = "<%= j render(partial: 'shared/search_results_row_button', object: row) %>";
+
+          // setcheck → set the checkbox on manually
+          const chk = document.getElementById("<%= "#{table_name}_check_#{row.id}" %>");
+          if (chk) chk.checked = true;
+        }
+
+        // update the select option text
+        const newOptionText = "<%= search_ctl.GetShortField(row.id) %>";
+        select_update("<%= table_name %>", <%= row.id %>, newOptionText);
+      })();
+    <% end %>
+
+    <% if table_name == edited_table_name %>
+      <% results_table_name  = "search_results_table_#{table_name}" %>
+      <% current_filter_name = "current_filters_#{table_name}" %>
+      // hide current filters
+      const filtersEl = document.getElementById("<%= current_filter_name %>");
+      if (filtersEl) filtersEl.style.display = "none";
+
+      <% select_string = search_ctl.get_sql_id_string(ids) %>
+      <% eval("#{table_name}.set_controller(search_ctl)") %>
+      <% new_rows = eval("#{table_name}.find_by_sql(\"#{select_string}\")") %>
+
+      <% new_rows.each do |new_row| %>
+        (function(){
+          const rowId    = "<%= "#{new_row.id}_#{table_name}" %>";
+          const rowEl    = document.getElementById(rowId);
+          const tableEl  = document.getElementById("<%= results_table_name %>");
+          const htmlStr  = "<%= j render(partial: 'shared/search_results_row_button', object: new_row) %>";
+
+          if (rowEl) {
+            // replace existing row
+            rowEl.outerHTML = htmlStr;
+
+          } else if (tableEl) {
+            // append after last <tr>
+            const lastTr = tableEl.querySelector("tr:last-child");
+            if (lastTr) lastTr.insertAdjacentHTML("afterend", htmlStr);
+
+          } else {
+            // render whole results block
+            const container = document.getElementById("search_results_<%= table_name %>");
+            if (container) {
+              container.innerHTML = "<%= j render(partial: 'shared/search_results', object: SearchResults.new([new_row], :search_results, search_ctl)) %>";
+              resizeX();
             }
-            <% Rails.logger.info("RWV _update_main.js.erb row.id = #{row.id}") %>    
-            <% new_option_str = search_ctl.GetShortField(row.id); %>    
-            select_update('<%="#{table_name}"%>',<%="#{row.id}"%>,'<%="#{new_option_str}"%>') 
-        <% end %>
-       
-        <% if table_name == edited_table_name %>             
-            <% results_table_name = "search_results_table_#{table_name}" %>
-            <% current_filter_name = "current_filters_#{table_name}" %>          
-            
-            <% select_string = search_ctl.get_sql_id_string(ids); %>
-            <% eval_str = "#{table_name}.find_by_sql(\"#{select_string}\")" %>
-            <% Rails.logger.info("eval str = #{eval_str}"); %>
-            <% eval("#{table_name}.set_controller(search_ctl)"); %>
-            <% new_rows = eval(eval_str); %>
-            <% new_rows.each do |new_row| %>      
-                <% search_results = SearchResults.new([new_row] , :search_results, search_ctl); %>
-                <% search_results.table_type = :search_results; %>
-                document.getElementById('<%="#{current_filter_name}"%>').style.display = 'none'
-                                
-                if (jQuery('#<%="#{new_row.id}_#{table_name}"%>')[0]!=null){               
-                    jQuery('#<%="#{new_row.id}_#{table_name}"%>').replaceWith('<%= j render(:partial => "shared/search_results_row_button", :object =>new_row )%>');
-               }else if (jQuery('#<%="#{results_table_name}"%>')[0]!=null){ 
-                    jQuery('#<%="#{results_table_name}"%> tr:last').after('<%= j render(:partial => "shared/search_results_row_button", :object =>new_row )%>');
-                }else{
-                    jQuery('#<%="search_results_#{table_name}"%>').html('<%= j render(:partial => "shared/search_results" , :object => search_results)%>');            
-                    resizeX();              
-                }
-                <% new_option_str = search_ctl.GetShortField(new_row.id); %>
-                select_update('<%="#{table_name}"%>',<%="#{new_row.id}"%>,'<%="#{new_option_str}"%>') 
-            <% end %>
-        <% end %>
-        
-        recolour('<%="#{table_name}"%>')
+          }
+
+          // update the select option text
+          const optText = "<%= search_ctl.GetShortField(new_row.id) %>";
+          select_update("<%= table_name %>", <%= new_row.id %>, optText);
+        })();
+      <% end %>
     <% end %>
-    action_select_no_js();
-    <% if(success_str.length>0) %>
-        alert('<%="#{success_str}"%>') 
-    <% end %>
+
+    // recolour the updated table
+    recolour("<%= table_name %>");
+  <% end %>
+
+  action_select_no_js();
+  <% unless success_str.empty? %>
+    alert("<%= j success_str %>");
+  <% end %>
+
 <% else %>
-    <% if(fail_str.length>0) %>
-        alert('<%="#{fail_str}"%>')       
-    <% end %>
+  <% unless fail_str.empty? %>
+    alert("<%= j fail_str %>");
+  <% end %>
 <% end %>
 
-<% if(unwait_flag) %>
-    unwait();
+<% if unwait_flag %>
+  unwait();
 <% end %>

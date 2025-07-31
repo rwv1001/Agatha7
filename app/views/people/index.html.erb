@@ -22,11 +22,11 @@
 
         <div >
            <input type="button" class ="check" value="Select All"
-              onClick="jQuery('#search_results input.check').each(function(){jQuery(this).prop( 'checked', true ) })">
+              onClick="jQuery('#search_results input.check').each(function(){this.checked = true  })">
            <input type="button" class ="check"  value="Deselect All"
-              onClick="jQuery('#search_results input.check').each(function(){jQuery(this).prop( 'checked', false );})">
+              onClick="jQuery('#search_results input.check').each(function(){this.checked = false ;})">
            <input type="button" class ="check" value="Invert Selection"
-              onClick="jQuery('#search_results input.check').each(function(){jQuery(this).prop( 'checked', !jQuery(this).is(':checked') ) })">
+              onClick="jQuery('#search_results input.check').each(function(){this.checked = !this.checked })">
         </div>
         <div id ="list_buttons" class ="select_cell">
         <%= submit_tag "Delete selected entries",

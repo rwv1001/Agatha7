@@ -7,7 +7,7 @@ function UpdateGroupFilter(table_name, foreign_key)
     const group_id_str = "group_filters_option_" + table_name +"_" +foreign_key;
 
     const group_id_str15 = "#"+group_id_str;
-    const group_id_obj = jQuery(group_id_str15);
+    const group_id_obj = document.getElementById((group_id_str15).slice(1)); //rwv vanilla change
     const group_id = group_id_obj.val();
 
     jQuery(group_filters_table_name).val( table_name);
