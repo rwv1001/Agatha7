@@ -56,147 +56,126 @@ function deleteElement(table, count) {
 }
 window.deleteElement = deleteElement;
 
-function addElement(table, count_str)
-{
-    const count = parseInt(count_str);
-    const current_elts_str = "display_format_count_"+ table;
+function addElement(table, count) {
+  count = parseInt(count);
+  const current_elts_obj = document.getElementById("display_format_count_" + table);
+  let current_elts = parseInt(current_elts_obj.value);
 
-    const current_elts_str71 = "#"+current_elts_str;
-    const current_elts_obj = document.getElementById((current_elts_str71).slice(1)); //rwv vanilla change
-    const current_elts = parseInt(current_elts_obj.value);
-    if(current_elts ==1)
-    {
-        const first_textbox_str = "display_format_string_div_" + table+"_0";
+  if (current_elts === 1) {
+    const first_textbox = document.getElementById("display_format_string_div_" + table + "_0");
 
-        const first_textbox_str76 = "#"+first_textbox_str;
-        const first_textbox = document.getElementById((first_textbox_str76).slice(1)); //rwv vanilla change
-        const parent_textbox = first_textbox.getOffsetParent();
+    const new_a = document.createElement("a");
+    new_a.href = "/";
+    new_a.dataset.remote = "true";
+    new_a.rel = "nofollow";
+    new_a.onclick = function () {
+      deleteElement(table, "0");
+      return false;
+    };
+    new_a.innerHTML = "X";
 
-     //   jQuery(element).wrap('div').attr({backgroundImage: 'url(images/rounded-corner-top-left.png) top left'});
-        var new_a = jQuery('<a href ="/" data-remote="true" rel="nofollow"></a>').attr({ onclick: "deleteElement('"+table+"','0');return false" });
-        new_a.html("X")
-        var new_a_div = new_a.wrap('div',{ 'class': 'remove_format_field' })
-        new_a_div.attr('id',"remove_format_"+ table+"_0");
-       // var new_x = new Element( 'i' );
-       // new_x.update("<div class=\"remove_format_field\"><a href =\"#\">X</a> </div>");
-       // new_x.attr("onclick","deleteElement('"+table+"','0');return false");
-       // new_x.attr('id',"remove_format_"+ table+"_0");
-        new_a_div.insertAfter(first_textbox );
-    }
+    const new_a_div = document.createElement("div");
+    new_a_div.className = "remove_format_field";
+    new_a_div.id = "remove_format_" + table + "_0";
+    new_a_div.appendChild(new_a);
 
-    
-    let i;
-    let new_count;
-    for(i=current_elts-1;  i>=count; i--)
-    {
-       
-        const div_obj = document.getElementById(('#display_format_' + table+"_"+i).slice(1)); //rwv vanilla change
-        const display_format_string_div = document.getElementById(('#display_format_string_div_'+ table+"_"+i).slice(1)); //rwv vanilla change
-        const display_format_field = document.getElementById(('#display_format_field_'+ table+"_"+i).slice(1)); //rwv vanilla change
-        const display_format_string = document.getElementById(('#display_format_string_'+ table+"_"+i).slice(1)); //rwv vanilla change
-        const remove_format = document.getElementById(('#remove_format_'+ table+"_"+i).slice(1)); //rwv vanilla change
-        const aref_remove_format = remove_format.find('a:first');
-        const add_format = document.getElementById(('#add_format_'+ table+"_"+i).slice(1)); //rwv vanilla change
-        const aref_add_format = add_format.find('a:first');
+    first_textbox.insertAdjacentElement("afterend", new_a_div);
+  }
 
-        const new_count = i+1;
+  for (let i = current_elts - 1; i >= count; i--) {
+    const new_count = i + 1;
+    const div_obj = document.getElementById("display_format_" + table + "_" + i);
+    const display_format_string_div = document.getElementById("display_format_string_div_" + table + "_" + i);
+    const display_format_field = document.getElementById("display_format_field_" + table + "_" + i);
+    const display_format_string = document.getElementById("display_format_string_" + table + "_" + i);
+    const remove_format = document.getElementById("remove_format_" + table + "_" + i);
+    const add_format = document.getElementById("add_format_" + table + "_" + i);
 
-        div_obj.attr('id',"display_format_" + table+"_"+new_count);
-        display_format_string_div.attr('id',"display_format_string_div_"+ table+"_"+new_count);
-        display_format_field.attr('id',"display_format_field_"+ table+"_"+new_count);
-        display_format_field.attr('name',"display_format_field_"+ table+"_"+new_count);
-        display_format_string.attr('id',"display_format_string_"+ table+"_"+new_count);
-        display_format_string.attr('name',"display_format_string_"+ table+"_"+new_count);
-        aref_remove_format.attr("onclick","deleteElement('"+table+"','"+new_count+"');return false");
-        remove_format.attr('id',"remove_format_"+ table+"_"+new_count);
-        add_format.attr('id',"add_format_"+ table+"_"+new_count);
-        aref_add_format.attr("onclick", "addElement('"+table+"','"+(new_count+1)+"');return false");
-    }
-    let pos_str;
-    let div_str;
+    const aref_remove_format = remove_format.querySelector("a");
+    const aref_add_format = add_format.querySelector("a");
 
-    if(count ==current_elts)
-    {
-        const pos_str = 'after';
-        const div_str = "display_format_" + table+"_"+(count-1);
+    div_obj.id = "display_format_" + table + "_" + new_count;
+    display_format_string_div.id = "display_format_string_div_" + table + "_" + new_count;
+    display_format_field.id = "display_format_field_" + table + "_" + new_count;
+    display_format_field.name = "display_format_field_" + table + "_" + new_count;
+    display_format_string.id = "display_format_string_" + table + "_" + new_count;
+    display_format_string.name = "display_format_string_" + table + "_" + new_count;
+    aref_remove_format.setAttribute("onclick", "deleteElement('" + table + "','" + new_count + "');return false");
+    remove_format.id = "remove_format_" + table + "_" + new_count;
+    add_format.id = "add_format_" + table + "_" + new_count;
+    aref_add_format.setAttribute("onclick", "addElement('" + table + "','" + (new_count + 1) + "');return false");
+  }
 
-    }
-    else
-    {
-        const pos_str = 'before';
-        const div_str = "display_format_" + table+"_" +(count+1);
-    }
-    
+  const div_str = (count === current_elts)
+    ? "display_format_" + table + "_" + (count - 1)
+    : "display_format_" + table + "_" + (count + 1);
 
-    const div_str133 = "#"+div_str;
-    const first_div_obj = document.getElementById((div_str133).slice(1)); //rwv vanilla change
-    const div_obj = first_div_obj.clone(true);
-   
-    const display_format_string = div_obj.find('input:first');
-    const display_format_string_div = div_obj.find('display_format_string_div:first');
-    const display_format_field = div_obj.find('select:first');
-    const remove_format = div_obj.find('remove_format_field:first');
-    const aref_remove_format = remove_format.find('a:first');
-    const add_format = div_obj.find('add_format_field:first');
-    const aref_add_format = add_format.find('a:first');
+  const first_div_obj = document.getElementById(div_str);
+  const div_obj = first_div_obj.cloneNode(true);
 
-    new_count = count;
-    div_obj.attr('id',"display_format_" + table+"_"+new_count);
-    display_format_string_div.attr('id',"display_format_string_div_"+ table+"_"+new_count);
-    display_format_field.attr('id',"display_format_field_"+ table+"_"+new_count);
-    display_format_field.attr('name',"display_format_field_"+ table+"_"+new_count);
-    display_format_string.attr('id',"display_format_string_"+ table+"_"+new_count);
-    display_format_string.attr('name',"display_format_string_"+ table+"_"+new_count);
-    aref_remove_format.attr("onclick","deleteElement('"+table+"','"+new_count+"');return false");
-    remove_format.attr('id',"remove_format_"+ table+"_"+new_count);
-    add_format.attr('id',"add_format_"+ table+"_"+new_count);
-    aref_add_format.attr("onclick", "addElement('"+table+"','"+(new_count+1)+"');return false");
+  const display_format_string = div_obj.querySelector("input");
+  const display_format_string_div = div_obj.querySelector(".display_format_string_div");
+  const display_format_field = div_obj.querySelector("select");
+  const remove_format = div_obj.querySelector(".remove_format_field");
+  const aref_remove_format = remove_format.querySelector("a");
+  const add_format = div_obj.querySelector(".add_format_field");
+  const aref_add_format = add_format.querySelector("a");
 
-    display_format_string.value = ""; //rwv vanilla change;
-    display_format_field.value =  ""; //rwv vanilla change;
+  const new_count = count;
+  div_obj.id = "display_format_" + table + "_" + new_count;
+  display_format_string_div.id = "display_format_string_div_" + table + "_" + new_count;
+  display_format_field.id = "display_format_field_" + table + "_" + new_count;
+  display_format_field.name = "display_format_field_" + table + "_" + new_count;
+  display_format_string.id = "display_format_string_" + table + "_" + new_count;
+  display_format_string.name = "display_format_string_" + table + "_" + new_count;
+  aref_remove_format.setAttribute("onclick", "deleteElement('" + table + "','" + new_count + "');return false");
+  remove_format.id = "remove_format_" + table + "_" + new_count;
+  add_format.id = "add_format_" + table + "_" + new_count;
+  aref_add_format.setAttribute("onclick", "addElement('" + table + "','" + (new_count + 1) + "');return false");
 
-    if(pos_str == 'before')
-    {
-        div_obj.insertBefore(first_div_obj );
-    }
-    else
-    {
-        div_obj.insertAfter(first_div_obj);
+  display_format_string.value = "";
+  display_format_field.value = "";
 
-    }
-    
-    current_elts_obj.value =  current_elts +1; //rwv vanilla change;
-    const min_width_div_str = "min_width_"+table;
-    const width = (current_elts+1)*230;
-    const width_str = ' '+ width +'px';
+  if (count === current_elts) {
+    first_div_obj.insertAdjacentElement("afterend", div_obj);
+  } else {
+    first_div_obj.insertAdjacentElement("beforebegin", div_obj);
+  }
 
-    (min_width_div_str).attr('min-width', width_str );
+  current_elts_obj.value = current_elts + 1;
 
-
+  const min_width_div = document.getElementById("min_width_" + table);
+  min_width_div.style.minWidth = (current_elts + 1) * 230 + "px";
 }
+
 window.addElement = addElement;
 
-function resizeFormat()
-{
+function resizeFormat() {
+    var client_height = parseInt(getElementHeight('dummy_format'));
+    var x_height = parseInt(getElementHeight('dummy_fx'));
+    var p_height = parseInt(getElementHeight('dummy_fp'));
+    var x_padding = (client_height - x_height) / 2.0;
+    var p_padding = (client_height - p_height) / 2.0;
+    var new_x_height = client_height - x_padding;
+    var new_p_height = client_height - p_padding;
 
-      var client_height = parseInt(getElementHeight('dummy_format'));
-      var x_height = parseInt(getElementHeight('dummy_fx'));
-      var p_height = parseInt(getElementHeight('dummy_fp'));
-      var x_padding = (client_height - x_height)/2.0 ;
-      var p_padding = (client_height - p_height)/2.0 ;
-      var new_x_height = client_height  - x_padding;
-      var new_p_height = client_height- p_padding;
+    var x_style_str = "background: #AAAAAA; border-left: 1px solid; border-color: #000000; float:right; height: " + new_x_height + "px; padding-top: " + x_padding + "px";
+    var p_style_str = "background: #AAAAAA; border: 1px solid #000; float:left; height: " + new_p_height + "px; padding-top: " + p_padding + "px";
+    var select_style_str = "border:none; background-color: transparent; overflow:hidden; height: " + client_height + "px";
+    var input_style_str = "border:none; height: " + client_height + "px";
 
-      var x_style_str = "background: #AAAAAA;  border-left: 1px solid;  border-color: #000000; float:right; height: " + new_x_height + "px; padding-top: " + x_padding + "px";
-      var p_style_str = "background: #AAAAAA;  border: 1px solid #000; float:left; height: " + new_p_height + "px; padding-top: " + p_padding + "px";
-      var select_style_str = "border:none; background-color: transparent; overflow:hidden; height: " + client_height + "px"
-      var input_style_str = "border:none; height: " + client_height + "px"
-    //  var p_style_str = "background: #AAAAAA;  border: 1px solid #000; float:left; height: 60px: padding-top: " + p_padding + "px";
-      jQuery('.add_format_field').each(function(){jQuery(this).attr('style',p_style_str)});
-      jQuery('.remove_format_field').each(function(){jQuery(this).attr('style',x_style_str)});
-       jQuery('.format_select').each(function(){jQuery(this).attr('style',select_style_str)});
-       jQuery('.format_input').each(function(){jQuery(this).attr('style',input_style_str)});
-
+    document.querySelectorAll('.add_format_field').forEach(function(el) {
+        el.setAttribute('style', p_style_str);
+    });
+    document.querySelectorAll('.remove_format_field').forEach(function(el) {
+        el.setAttribute('style', x_style_str);
+    });
+    document.querySelectorAll('.format_select').forEach(function(el) {
+        el.setAttribute('style', select_style_str);
+    });
+    document.querySelectorAll('.format_input').forEach(function(el) {
+        el.setAttribute('style', input_style_str);
+    });
 }
 window.resizeFormat = resizeFormat;
 

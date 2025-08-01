@@ -1,5 +1,5 @@
-<% if(update_status) %>       
-    jQuery("#user").html("<%= j render(:partial => 'shared/user', :object => current_user) %>");
+<% if(update_status) %>
+    document.getElementById("user").innerHTML = "<%= j render(:partial => 'shared/user', :object => current_user) %>";
     alert('<%="Username #{current_user.name} has been successfully updated"%>');
 <% else %>
     alert('Unable to update user');

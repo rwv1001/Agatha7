@@ -2,11 +2,7 @@
   <head>
     <title tal:content="template/title">Agatha People Page</title>
 
-
-
-
     <script type="text/JavaScript">
-
 <!--
 
 var menu_width = 150;
@@ -16,7 +12,10 @@ var logo_height = 154;
 var title_div_height =173;
 var black_bar_height = 7;
 var white_bar_height = 7;
-jQuery(window).onbeforeunload = unloadMess;
+
+
+window.onbeforeunload = unloadMess;
+
 function unloadMess(){
   attribute = document.getElementById('unload_attribute').value;
   data_type = document.getElementById('unload_data_type').value;
@@ -25,17 +24,13 @@ function unloadMess(){
  
   editBlur(attribute,data_type,true);
 
-    
-	on_unload();
-	
+  on_unload();
 }
-
 
 //-->
 </script>
 <style type="text/css">
 td img {display: block;}
-
 
       #menu_div { background: #FFFF77; }
       #content_div {background: #ffffff;}
@@ -58,26 +53,17 @@ td img {display: block;}
  menu_begin();
    </script>
 
-
- 
-
-
  <div style="clear:both; height: 20px"> &nbsp</div>
 
 <div style="clear:both; background-color: #FD3; padding-left: 10px"> <p> You are logged in as user <%=User.where(:id => session[:user_id]).first.name %> </p></div>
 <div id ="flash" style="padding: 3px 13px 3px 13px">
 
-
 </div>
-
-
 
    <script language="javascript">
     menu_end();
 
   </script>
-
-
 
   <script language="javascript">
   content_begin()
@@ -93,12 +79,6 @@ td img {display: block;}
   </div>
 
    <script language="javascript">
-  
-
-
-
-
-
      </script>
 
 </html>

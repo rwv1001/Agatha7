@@ -33,8 +33,9 @@
     <% updated_objects = search_ctl.GetUpdateObjects(table_name, ["id"], id_array); %>
 
     <% updated_objects.each do |row| %>
-        if (jQuery('#<%="#{row.id}_#{table_name}"%>') ){
-            jQuery('#<%="#{row.id}_#{table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
+        var el = document.getElementById('<%="#{row.id}_#{table_name}"%>');
+        if (el) {
+            el.outerHTML = "<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>";
         }
     <% end %>
     recolour('<%="#{table_name}"%>'); 
@@ -42,8 +43,9 @@
     <% eval("#{table_name}.set_controller(search_ctl_group)"); %>
     <% updated_objects = search_ctl_group.GetUpdateObjects(table_name, ["id"], group_ids); %>
     <% updated_objects.each do |row| %>
-        if (jQuery('#<%="#{row.id}_#{table_name}"%>') ){
-            jQuery('#<%="#{row.id}_#{table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
+        var el = document.getElementById('<%="#{row.id}_#{table_name}"%>');
+        if (el) {
+            el.outerHTML = "<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>";
             setcheck('#<%="#{table_name}_check_#{row.id.to_s}"%>',true)
         }
     <% end %>
@@ -52,8 +54,3 @@
     alert('<%="#{success_str}"%>');
 <% end %>
 unwait();
-
-
-
-
-

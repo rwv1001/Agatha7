@@ -1,3 +1,6 @@
-jQuery('#<%="format_controller_div"%>').html("<%= j render(:partial => 'shared/format_controller', :object => format_controller) %>");
+const formatDiv = document.getElementById('<%= "format_controller_div" %>');
+if (formatDiv) {
+  formatDiv.innerHTML = `<%= j render(:partial => 'shared/format_controller', :object => format_controller) %>`;
+}
 resizeFormat();
 unwait();

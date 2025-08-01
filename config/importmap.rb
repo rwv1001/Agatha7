@@ -5,8 +5,7 @@ pin "@hotwired/turbo-rails", to: "turbo.min.js"
 pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin "@rails/ujs", to: "https://ga.jspm.io/npm:@rails/ujs@7.0.6/lib/assets/compiled/rails-ujs.js"
-pin "jquery", to: "https://ga.jspm.io/npm:jquery@3.6.4/dist/jquery.js"
-pin "jquery-ui", to: "https://code.jquery.com/ui/1.13.2/jquery-ui.min.js", preload: true
+
 
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin "display_format", to: "display_format.js", preload: true

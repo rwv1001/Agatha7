@@ -1,4 +1,4 @@
-<% if error_str.length >0 %>
+<% if error_str.length > 0 %>
 alert('<%="#{error_str}"%>');
 <% else %>
 
@@ -9,9 +9,12 @@ alert('<%="#{error_str}"%>');
 <%   eval("#{table_name}.set_controller(search_ctl)"); %>
 <%   updated_objects = search_ctl.GetUpdateObjects(table_name, "id", id_array); %>
 <%   updated_objects.each do |row| %>
-     if (jQuery('#<%="#{row.id}_#{ table_name}"%>')) {
-       jQuery('#<%="#{row.id}_#{ table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
-       setcheck('#<%="#{table_name}_check_#{row.id.to_s}"%>',true);
+     var elem = document.getElementById('<%="#{row.id}_#{ table_name}"%>');
+     if (elem) {
+       var tempDiv = document.createElement('div');
+       tempDiv.innerHTML = "<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>";
+       elem.replaceWith(tempDiv.firstElementChild);
+       setcheck('<%="#{table_name}_check_#{row.id.to_s}"%>', true);
      }
 <%   end %>
      recolour('AgathaEmail'); 
@@ -20,5 +23,3 @@ alert('<%="#{error_str}"%>');
 <% end %>
 
 unwait();
-
-

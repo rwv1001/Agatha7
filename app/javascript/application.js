@@ -1,6 +1,5 @@
 import "@hotwired/turbo-rails"
-import jquery from "jquery"
-window.jQuery = window.$ = jquery;
+
 import "controllers";
 
 import "edit";
@@ -48,16 +47,7 @@ function escapeHTML(str) {
 window.escapeHTML = escapeHTML;
 
 
-const _oldGlobalEval = jquery.globalEval;
 
-jquery.globalEval = function (data) {
-  if (!data) return;
-  const script = document.createElement("script");
-  script.text = data;
-  if (window._cspNonce) script.nonce = window._cspNonce;
-  document.head.appendChild(script);
-  document.head.removeChild(script);
-};
 
 console.log("Agatha application.js loaded");
 document.addEventListener("hide_expand_button", () => {
@@ -101,13 +91,7 @@ document.addEventListener('turbo:load', function () {
     load_pages();
     content_end();
     document.getElementById('disable_id').style.display = 'none';
-    jQuery(window).name = "main_window";
-    jQuery.fn.down = function () {
-      var el = this[0] && this[0].firstChild;
-      while (el && el.nodeType != 1)
-        el = el.nextSibling;
-      return jQuery(el);
-    };
+
     centerSeparator();
 
 

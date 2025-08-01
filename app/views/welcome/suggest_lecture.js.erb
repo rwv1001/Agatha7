@@ -1,2 +1,5 @@
-jQuery('#<%="schedule_div"%>').html("<%= j render(:partial => 'shared/suggested_lecture', :object => suggested_lecture) %>");
+const scheduleDiv = document.getElementById("<%= 'schedule_div' %>");
+if (scheduleDiv) {
+  scheduleDiv.innerHTML = `<%= j render(:partial => 'shared/suggested_lecture', :object => suggested_lecture) %>`;
+}
 unwait();

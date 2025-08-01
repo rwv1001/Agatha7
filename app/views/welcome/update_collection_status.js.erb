@@ -1,14 +1,24 @@
-<%   table_name = "Tutorial" %>
-<%   search_ctl = search_ctls[table_name] %>
-<%   eval("#{table_name}.set_controller(search_ctl)"); %>
-<%   updated_objects = search_ctl.GetUpdateObjects(table_name, "id", ids); %>
-<%   updated_objects.each do |row| %>
-     if (jQuery('#<%="#{row.id}_#{ table_name}"%>')) {
-       jQuery('#<%="#{row.id}_#{ table_name}"%>').replaceWith("<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>");
-       setcheck('#<%="#{table_name}_check_#{row.id.to_s}"%>',true);
-     }
-<%   end %>
-     
-     action_select_no_js(); 
-     alert('<%="#{success_str}"%>');
-     unwait();
+<% table_name = "Tutorial" %>
+<% search_ctl = search_ctls[table_name] %>
+<% eval("#{table_name}.set_controller(search_ctl)"); %>
+<% updated_objects = search_ctl.GetUpdateObjects(table_name, "id", ids); %>
+<% updated_objects.each do |row| %>
+  {
+    const elementId = '<%= "#{row.id}_#{table_name}" %>';
+    const replacementHtml = `<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>`;
+    const existingElement = document.getElementById(elementId);
+
+    if (existingElement) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = replacementHtml;
+      const newElement = tempDiv.firstElementChild;
+      existingElement.replaceWith(newElement);
+      
+      setcheck('<%= "#{table_name}_check_#{row.id}" %>', true);
+    }
+  }
+<% end %>
+
+action_select_no_js();
+alert('<%= "#{success_str}" %>');
+unwait();

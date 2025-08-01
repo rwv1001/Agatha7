@@ -1,52 +1,48 @@
 <div>
-
-   <form action="/people/test" id ="test_form" method="post" data-remote="true"><input name="authenticity_token" type="hidden" value="b64e4bc55a64a27f97774b03dee69691e625e707" /></div>
-          <input type="button" class ="check" id ="test_button" value="Test button2" >
-<input type="button" class ="check"  value="display test"
-              onClick="displaySearchResults();return false;">
-
+   <form action="/people/test" id="test_form" method="post" data-remote="true">
+      <input name="authenticity_token" type="hidden" value="b64e4bc55a64a27f97774b03dee69691e625e707" />
+      <input type="button" class="check" id="test_button" value="Test button2">
+      <input type="button" class="check" value="display test"
+        onClick="displaySearchResults();return false;">
    </form>
-   
 </div>
-<div id ="test_div">
+<div id="test_div">
 </div>
-<div id = "table_selector" >
-  <%= raw  render(:partial => "table_selector", :object =>  @table_selection ) %>
+<div id="table_selector">
+  <%= raw render(:partial => "table_selector", :object => @table_selection) %>
 </div>
 
-<div id = "search_form_div" >
-    <%=  form_tag  :url => { :action => :test } , :remote=>true do %>
-        <div id = "search_results" >
+<div id="search_form_div">
+  <%= form_tag :url => { :action => :test }, :remote => true do %>
+    <div id="search_results">
+    </div>
 
-        </div>
-
-        <div >
-           <input type="button" class ="check" value="Select All"
-              onClick="jQuery('#search_results input.check').each(function(){this.checked = true  })">
-           <input type="button" class ="check"  value="Deselect All"
-              onClick="jQuery('#search_results input.check').each(function(){this.checked = false ;})">
-           <input type="button" class ="check" value="Invert Selection"
-              onClick="jQuery('#search_results input.check').each(function(){this.checked = !this.checked })">
-        </div>
-        <div id ="list_buttons" class ="select_cell">
-        <%= submit_tag "Delete selected entries",
-          :confirm => 'Are you sure you want to delete all selected items and their dependencies from the database?' ,
-          :class => 'list_button'%>
-        </div>
-    <% end  %>
+    <div>
+      <input type="button" class="check" value="Select All"
+        onClick="document.querySelectorAll('#search_results input.check').forEach(function(el){el.checked = true;});">
+      <input type="button" class="check" value="Deselect All"
+        onClick="document.querySelectorAll('#search_results input.check').forEach(function(el){el.checked = false;});">
+      <input type="button" class="check" value="Invert Selection"
+        onClick="document.querySelectorAll('#search_results input.check').forEach(function(el){el.checked = !el.checked;});">
+    </div>
+    <div id="list_buttons" class="select_cell">
+      <%= submit_tag "Delete selected entries",
+        :confirm => 'Are you sure you want to delete all selected items and their dependencies from the database?',
+        :class => 'list_button' %>
+    </div>
+  <% end %>
 </div>
-<div > <%= form_tag :action => :import_csv do %>
-  <p> <%= submit_tag "Import CSV" %></p>
-<% end %></div>
+<div>
+  <%= form_tag :action => :import_csv do %>
+    <p><%= submit_tag "Import CSV" %></p>
+  <% end %>
+</div>
 
-
-
-<p><%= link_to "Back to main menu", {:controller => "index"  } %> </p>
+<p><%= link_to "Back to main menu", { :controller => "index" } %></p>
 
 <div style="width: 150px; height: 150px; overflow-y: scroll; scrollbar-arrow-color:
 blue; scrollbar-face-color: #e7e7e7; scrollbar-3dlight-color: #a0a0a0; scrollbar-darkshadow-color:
 #888888">
-
 Put your text in here
 Put your text in here
 Put your text in here
@@ -73,8 +69,3 @@ Put your text in here
 Put your text in here
 Put your text in here
 </div>
-
-
-
-
-

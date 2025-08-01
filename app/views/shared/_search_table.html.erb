@@ -1,3 +1,5 @@
+
+
 <% Rails.logger.debug("RWV _search_table.html.erb begin #{search_table.table_name}") %>
 <%  search_controller = search_table %>
 <% table_name = search_controller.table_name %>
@@ -9,24 +11,18 @@
   </div>
   <div class ="separator_class">&nbsp</div>
   <%  if session[:administrator] %>
-
-
 <div class ="create_new_entry">
   <div class ="content_class" style="width: 100%">
     <div class ="pad_class">
-      
     <h2>Create <%=  table_name.underscore.humanize.titleize %> </h2>
-
   <%= raw  render(:partial => "shared/create_entry", :object => table_name ) %>
       </div>
   </div>
-
 <div class ="separator_class">&nbsp</div>
   </div>
   <% end %>
 </div>
 <div class ="content_class" style="width: 100%">
-
  <div class ="pad_class" >
    <div class = "search_title" >
     <h2>Search <%=  search_controller.tables_name.humanize.titleize %> Database</h2>
@@ -49,10 +45,6 @@
         <div class= "create_emails_title" >
        <h2>Select emails recipients </h2>
     </div>
-
-
-
-
         <div class= "add_to_willing_tutor_title" >
        <h2>Click on 'Make Willing' to make person willing tutor for selected courses </h2>
     </div>
@@ -91,92 +83,76 @@
      <h2>Select groups to be removed from </h2>
    </div>
    <% end %>
-
  <%  end %>
     <%= raw  render(:partial => "shared/search_controller", :object => search_controller) %>
-
   <div>
-        
         <div id = <%= raw "search_results_#{table_name}"  %> >
-
         </div>
-         
         <% if table_name == "Person" %>
             <div class ="tutorial_assign_title" >
       <input type="button" class ="check" value="Unassign selected" onclick="on_assign('1');return false" >
          </div>
          <% end %>
-
         <div class= "select_options" >
           <h3> Select options</h3>
-          <% check_box_str = "'\#search_results_#{table_name} input.check'"   %>
+          <% check_box_str = "search_results_#{table_name}"   %>
            <input type="button" class ="check" value="Select All"
-              onClick="jQuery(<%= check_box_str %>).each(function(){this.checked = true  })">
+              onClick="document.querySelectorAll('#<%= check_box_str %> input.check').forEach(function(el){el.checked = true;})">
            <input type="button" class ="check"  value="Deselect All"
-              onClick="jQuery(<%=check_box_str%>).each(function(){this.checked = false ;})">
+              onClick="document.querySelectorAll('#<%= check_box_str %> input.check').forEach(function(el){el.checked = false;})">
            <input type="button" class ="check" value="Invert Selection"
-              onClick="jQuery(<%=check_box_str%>).each(function(){this.checked = !this.checked })">
+              onClick="document.querySelectorAll('#<%= check_box_str %> input.check').forEach(function(el){el.checked = !el.checked;})">
         </div>
-
       <% if table_name == "Person" || table_name == "Lecture" %>
         <div class= "add_attendee_options" >
           <h3> Select options</h3>
-          <% check_box_str = "'\#search_results_#{table_name} input.check'"   %>
-          <% exam_box_str = "'\#search_results_#{table_name} input.examcheck'"   %>
-          <% compulsory_box_str = "'\#search_results_#{table_name} input.compulsorycheck'"   %>
-          <% invert_select_str = "\"invert_selection('#{table_name}','check')\"" %>
-          <% invert_comp_select_str = "\"invert_selection('#{table_name}','compulsorycheck')\"" %>
-          <% invert_exam_select_str = "\"invert_selection('#{table_name}','examcheck')\"" %>
+          <% check_box_str = "search_results_#{table_name}"   %>
+          <% exam_box_str = "search_results_#{table_name}"   %>
+          <% compulsory_box_str = "search_results_#{table_name}"   %>
+          <% invert_select_str = "invert_selection('#{table_name}','check')" %>
+          <% invert_comp_select_str = "invert_selection('#{table_name}','compulsorycheck')" %>
+          <% invert_exam_select_str = "invert_selection('#{table_name}','examcheck')" %>
           <table>
             <tr>
            <th align ="left" >Add Update Column</th><td><input type="button" class ="check" value="Select All"
-              onClick="jQuery(<%= raw "#{check_box_str}" %>).each(function(){this.checked = true })">
+              onClick="document.querySelectorAll('#<%= check_box_str %> input.check').forEach(function(el){el.checked = true;})">
            <input type="button" class ="check"  value="Deselect All"
-              onClick="jQuery(<%=raw "#{check_box_str}" %>).each(function(){this.checked = false });jQuery(<%= exam_box_str%>).each(function(){this.checked = false });jQuery(<%= raw "#{compulsory_box_str}" %>).each(function(){this.checked = false })">
+              onClick="document.querySelectorAll('#<%= check_box_str %> input.check').forEach(function(el){el.checked = false;});document.querySelectorAll('#<%= exam_box_str %> input.examcheck').forEach(function(el){el.checked = false;});document.querySelectorAll('#<%= compulsory_box_str %> input.compulsorycheck').forEach(function(el){el.checked = false;});">
            <input type="button" class ="check" value="Invert Selection"
-           onClick=<%= raw "#{invert_select_str}" %> ></td>
+           onClick="<%= invert_select_str %>" ></td>
             </tr>
             <tr>
            <th align ="left">Examine Column</th><td><input type="button" class ="check" value="Select All"
-              onClick="jQuery(<%= raw "#{exam_box_str}" %>).each(function(){this.checked = true });jQuery(<%= raw "#{check_box_str}" %>).each(function(){this.checked = true })">
+              onClick="document.querySelectorAll('#<%= exam_box_str %> input.examcheck').forEach(function(el){el.checked = true;});document.querySelectorAll('#<%= check_box_str %> input.check').forEach(function(el){el.checked = true;});">
            <input type="button" class ="check"  value="Deselect All"
-              onClick="jQuery(<%=raw "#{exam_box_str}"%>).each(function(){this.checked = false })">
+              onClick="document.querySelectorAll('#<%= exam_box_str %> input.examcheck').forEach(function(el){el.checked = false;});">
            <input type="button" class ="check" value="Invert Selection"
-           onClick=<%= raw "#{invert_exam_select_str}" %> ></td>
+           onClick="<%= invert_exam_select_str %>" ></td>
             </tr>
             <tr>
            <th align ="left">Compulsory Column</th><td><input type="button" class ="check" value="Select All"
-              onClick="jQuery(<%= raw "#{compulsory_box_str}" %>).each(function(){this.checked = true });jQuery(<%= raw "#{check_box_str}" %>).each(function(){this.checked = true })">
+              onClick="document.querySelectorAll('#<%= compulsory_box_str %> input.compulsorycheck').forEach(function(el){el.checked = true;});document.querySelectorAll('#<%= check_box_str %> input.check').forEach(function(el){el.checked = true;});">
            <input type="button" class ="check"  value="Deselect All"
-              onClick="jQuery(<%=  raw "#{compulsory_box_str}" %>).each(function(){this.checked = false })">
+              onClick="document.querySelectorAll('#<%= compulsory_box_str %> input.compulsorycheck').forEach(function(el){el.checked = false;});">
            <input type="button" class ="check" value="Invert Selection"
-           onClick=<%= raw "#{invert_comp_select_str}" %> ></td>
+           onClick="<%= invert_comp_select_str %>" ></td>
             </tr>
           </table>
         </div>
         <% end %>
-        
         <div style="padding-left: 7px" id=<%="#{table_name}_action_div"%>  >
-
       <%  if session[:administrator] %>
-      
         <select id= <%= raw   "action_select_#{table_name}" %> onchange= <%= raw "\"action_select2('#{table_name}');return false;\""%> >
-  
         </select>
         <% else %>
                 <select style="display:none" id= <%= raw   "action_select_#{table_name}" %> onchange= <%= raw "\"action_select2('#{table_name}');return false;\""%> >
-
         </select>
 <% end %>
-       
         <div style="height: 6px">&nbsp</div>
-        
         <div class="delete_div" >
-        
         <% onclick_str2 = "onclick=\"DeleteMembers('#{table_name}'); return false; \"" %>
         <input type="button" value=<%= raw "Delete selected" %> class="list_button"  <%= onclick_str2.html_safe  %>  />
        </div>
-
       <% if table_name == "TutorialSchedule" %>
         <div class= "tutorial_no_div" >
     <% onclick_str = "onclick=\"SetTutorialNumber();return false\"" %>
@@ -187,44 +163,30 @@
         <div>        
         <input type="text" id =<%="tutorial_number"%> name="tutorial_number" size =14 />
         </div>
-
         </div>
       <% end %>
-
-
          <div class= "group_div" >
-
         <% onclick_str = "\"CreateGroup('#{table_name}');return false;\"" %>
         <div>
         <input type="button" id=<%= raw "create_group_button_#{table_name}"%> value=<%= raw "Create from selected" %> class="list_button"  onclick= <%= raw "#{onclick_str }"%>  >
         </div>
         <label>New group name</label>
         <div>
-        
         <input type="text" id =<%= raw "new_group_name_#{table_name}"%> name="new_group_name" size =14 />
         </div>
         <form>
         <input  type="radio" class="group_privacy" name = "group_privacy"  value=false  CHECKED><label>Public</label><br>
         <input type="radio"  class="group_privacy" name ="group_privacy" value=true   /><label>Private</label>
         </form>
-     
         </div>
         <div class="multi_change_div" align="center" style=" position:relative; left:-3.5px">
           <div style= "display: none" >
           <input type="radio"  id=<%="multi_change_present_#{table_name}"%>   />
           </div>
-         
-
-
           <div id= <%="multi_change_table_div_#{table_name}"%> >
-
-
           </div>
-
-
           <% onclick_str = "MultiUpdate('#{table_name}');return false;" %>
         <input type="button" id=<%="multi_update_button_#{table_name}"%> value='<%="Update Selected" %>' class="list_button"  onclick= '<%="#{onclick_str }"%>'  >
-         
         </div>
        <% if table_name == "Tutorial" %>
           <% onclick_str = "\"UpdateCollectionStatus();return false\"" %>
@@ -239,24 +201,15 @@
             </div>
           </div>
        <% end %>
-
-
-        
       <% if table_name == "Course" %>
           <div class="schedule_div"  id ="schedule_div">
-            
-         
-
           <%  suggested_lecture = SuggestedLecture::default(search_controller); %>
-      
           <%= raw  render(:partial => "shared/suggested_lecture", :object =>  suggested_lecture ) %>
           </div>
-
           <div class ="tutorial_schedule_div" id ="tutorial_schedule_div">
             <%  suggested_tutorial = SuggestedTutorial::default(search_controller) %>
             <%= raw  render(:partial => "shared/suggested_tutorial", :object => suggested_tutorial  ) %>
           </div>
-        
         <% end %>
         <% if table_name == "EmailTemplate" %>
           <div class="email_template_div">
@@ -292,16 +245,12 @@
         <input type="button" value=<%= raw "Test Emails" %> class="list_button"  onClick= <%= raw "#{onclick_str2}"  %> />
          </div>
          <% end %>
-
-
       <% if table_name == "Person" %>
         <div class= "max_tutorials_div" >
         <% onclick_str = "\"SetMaxTutorials();return false\"" %>
         <div>
         <input type="button"  style="width: 115px" value=<%= raw "Set Max Tutorials" %>  onclick= <%= raw "#{onclick_str }"%>  >
         </div>
-        
-
           <%  possible_terms = search_controller.filter_controller.GetOptions("term","Term", session[:current_term], true,false) %>
           <label>Term</label><br>
         <select style="width: 115px"  name = "term_id"  id= "max_tutorials_term">
@@ -318,22 +267,17 @@
         <br>
         <input type="text"  style="width: 3em" id =<%= raw "max_tutorials"%> name="max_tutorials" value ="0"  />
         </div>
-
       <% end %>
-       
-        
-       
-        
-
         </div>
-        
-      
-       
-      
-
-        
         </div>
-        
     </div>
 </div>
 <% Rails.logger.debug("RWV _search_table.html.erb end  #{search_table.table_name}") %>
+
+<script>
+function invert_selection(tableName, className) {
+  document.querySelectorAll(`#search_results_${tableName} input.${className}`).forEach(function(el){
+    el.checked = !el.checked;
+  });
+}
+</script>

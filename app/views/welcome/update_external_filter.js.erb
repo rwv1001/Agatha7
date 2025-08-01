@@ -1,3 +1,13 @@
-jQuery('#<%="external_filter_argument_span_#{class_name}_#{filter_id}_#{elt_index}"%>').replaceWith("<%= j render(:partial => 'shared/external_filter_element', :object => external_filter_element) %>");
-resizeExternalFilters('<%="#{class_name}"%>');
+const spanId = '<%= "external_filter_argument_span_#{class_name}_#{filter_id}_#{elt_index}" %>';
+const newHtml = `<%= j render(:partial => 'shared/external_filter_element', :object => external_filter_element) %>`;
+const oldSpan = document.getElementById(spanId);
+
+if (oldSpan) {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = newHtml;
+  const newElement = tempDiv.firstElementChild;
+  oldSpan.replaceWith(newElement);
+}
+
+resizeExternalFilters('<%= "#{class_name}" %>');
 unwait();

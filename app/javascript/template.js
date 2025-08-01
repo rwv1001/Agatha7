@@ -93,37 +93,36 @@ window.content_begin = content_begin;
 function content_end() {
   console.log("content_end called");
 
-  jQuery('#content_div').scroll(scrollHandler);
-  jQuery(window).on('resize', scrollHandler);
+  const contentDiv = document.getElementById('content_div');
+  if (contentDiv) {
+    contentDiv.addEventListener('scroll', scrollHandler);
+  }
+
+  window.addEventListener('resize', scrollHandler);
 }
 window.content_end = content_end;
 
 function display_page(page_name, option_str) {
+  const page_name_id = "display_page_name";
+  const option_id = "display_page_option";
+  const form_id = "display_page";
 
+  const page_name_elt = document.getElementById(page_name_id);
+  const option_elt = document.getElementById(option_id);
+  const form_elt = document.getElementById(form_id);
 
-  const page_name_id = "display_page_name"
-  const option_id = "display_page_option"
-  const form_id = "display_page"
+  if (page_name_elt) page_name_elt.value = page_name;
+  if (option_elt) option_elt.value = option_str;
 
-  const page_name_id211 = "#" + page_name_id;
-  const page_name_elt = jQuery(page_name_id211)
-
-  const option_id212 = "#" + option_id;
-  const option_elt = document.getElementById((option_id212).slice(1)); //rwv vanilla change
-
-  const form_id213 = "#" + form_id;
-  const form_elt = document.getElementById((form_id213).slice(1)); //rwv vanilla change
-  page_name_elt.attr("value", page_name);
-  option_elt.attr("value", option_str);
-  //form_elt.submit();
-
+  // If you want to submit the form:
+  // if (form_elt) form_elt.submit();
 }
 window.display_page = display_page;
 
 function hide_div(div_id) {
 
-  const div_id220 = "#" + div_id;
-  const div_elt = document.getElementById((div_id220).slice(1)); //rwv vanilla change
+  
+  const div_elt = document.getElementById(div_id); //rwv vanilla change
   console.log("hide_div called for " + div_id);
   div_elt.style.display = 'none';
 }
@@ -131,8 +130,8 @@ window.hide_div = hide_div;
 
 function show_div(div_id) {
 
-  const div_id225 = "#" + div_id;
-  const div_elt = document.getElementById((div_id225).slice(1)); //rwv vanilla change
+  
+  const div_elt = document.getElementById(div_id); //rwv vanilla change
   div_elt.style.display = '';
 }
 window.show_div = show_div;
@@ -169,9 +168,7 @@ function insert_div(div_id, insert_id) {
 window.insert_div = insert_div;
 
 function set_body_id(body_id_str) {
-  jQuery('body').each(function () {
-    jQuery(this).attr('id', body_id_str)
-  });
+  document.body.id = body_id_str;
 }
 window.set_body_id = set_body_id;
 
