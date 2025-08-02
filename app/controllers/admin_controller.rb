@@ -17,7 +17,7 @@ class AdminController < ApplicationController
      if session[:valid_ip] == false
       Rails.logger.debug "AdminController:login b"
          current_ip = request.remote_ip
-         if current_ip =~ /(127\.0\.0\.1|163\.1\.170\..*|192\.168\.1\..*|10\.100\.1\..*|129\.67\..*\..*|192\.168\.0\..*)/
+         if current_ip =~ /(127\.0\.0\.1|163\.1\.170\..*|192\.168\.1\..*|10\.100\.1\..*|129\.67\..*\..*)/
             Rails.logger.debug "AdminController:login c"
             session[:valid_ip] = true
             
@@ -61,13 +61,11 @@ session.each { |k, v| Rails.logger.debug "#{k}: #{v.class}" }
         end
         Rails.logger.debug "AdminController:login l"
         redirect_to( { :controller=> :welcome, :action => :index })
-        return
 
       else
         Rails.logger.debug "AdminController:login m"
         flash.now[:notice] = "Invalid user/password combination"
         redirect_to :controller => :admin, :action => :accessdenied
-        return
       end
     else
       Rails.logger.debug "AdminController:login n"

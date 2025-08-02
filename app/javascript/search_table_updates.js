@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Subscribe to search table updates
   const searchTableChannel = consumer.subscriptions.create("SearchTableChannel", {
     connected() {
-      console.log("Connected to SearchTableChannel");
+      console.log("Connected to SearchTableChannel A");
     },
 
     disconnected() {
