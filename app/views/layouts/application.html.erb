@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Agatha7dev" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
-
-    <%= yield :head %>
-
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-    <%= stylesheet_link_tag "application" %>
-    <%= javascript_importmap_tags %>
+    <%= render(:partial => "shared/shared_head") %>
   </head>
-
-  
-  <%= yield %>
- 
+  <body>
+    
+    <%= render(:partial => "shared/template_header") %>
+    <div id="menu_div" style="position: fixed; top: 187px; left:0px; bottom: 7px; width:150px; ">
+      <div style="clear:both; height: 20px"> &nbsp</div>
+      <% if session[:user_id] %>
+      <div style="clear:both; background-color: #FD3; padding-left: 10px">
+        <p> You are logged in as user <%=User.where(:id => session[:user_id]).first.name %> </p>
+      </div>
+      <% end %>
+      <div id ="flash" style="padding: 3px 13px 3px 13px">
+      </div>
+      <div style ="width: 150px; position:  absolute;bottom:0;">
+        <p style="text-align: center; font-size: 25%;"> </p>
+        <%= render(:partial => "shared/copyright") %>
+      </div>
+    </div>
+    <div id="content_div" class="content_div" style="position: fixed;  top: 187px; left: 166px; right:0px; bottom:7px; overflow: auto;">
+      <div id ="session_div">
+      </div>
+      <%=  yield %>
+    </div>
+</body>
 </html>

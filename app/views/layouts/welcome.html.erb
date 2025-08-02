@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Agatha Main Page!" %></title>
+    <%= render(:partial => "shared/shared_head") %>      
+  </head>
+  <body data-controller="<%= controller_name %>" data-action="<%= action_name %>" bgcolor="#ffffff"   >
+  
+  <%= yield %>
+
+  </body>
+ 
+</html>

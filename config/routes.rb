@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
+  # ActionCable mount
+  mount ActionCable.server => '/cable'
+  
   # Home page
-  root to: "welcome#default"
+  root to: "welcome#index"
 
   # Admin login/logout
   get  "admin/login",  to: "admin#login"
@@ -11,6 +14,10 @@ Rails.application.routes.draw do
   # Welcome custom actions
   match "welcome/table_search",
         to: "welcome#table_search",
+        via: [:get, :post]
+
+  match "welcome/new",
+        to: "welcome#new",
         via: [:get, :post]
 
   match "accessdenied", to: "admin#accessdenied", via: [:get, :post]
@@ -34,26 +41,37 @@ Rails.application.routes.draw do
         to: "people#clear_filter",
         via: [:get, :post]
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # RESTful resources
-  resources :attendees
-  resources :lectures
-  resources :pcourses
-  resources :student_programmes
-  resources :programmes
-  resources :people
-  resources :courses
-  resources :users
-  resources :institutions
-  resources :locations
-  resources :tutorials
-  resources :groups
-  resources :tutorial_schedules
-  resources :willing_tutors
-  resources :willing_lecturers
-  resources :email_templates
-  resources :agatha_emails
-  resources :agatha_files
-  resources :maximum_tutorials
+  
+  # RESTful resources with custom actions
+  %w[
+    attendees
+    lectures
+    pcourses
+    student_programmes
+    programmes
+    people
+    courses
+    users
+    institutions
+    locations
+    tutorials
+    groups
+    tutorial_schedules
+    willing_tutors
+    willing_lecturers
+    email_templates
+    agatha_emails
+    agatha_files
+    maximum_tutorials
+  ].each do |resource|
+    resources resource do
+      collection do
+        post :updater
+        post :win_load
+        post :win_unload
+      end
+    end
+  end
 
   # If you really need a catch‑all (NOT recommended!), you can uncomment:
   # match ":controller(/:action(/:id))",

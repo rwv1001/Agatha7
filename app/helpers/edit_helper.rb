@@ -1,9 +1,11 @@
 
 module EditHelper
+  include SearchTableBroadcastHelper
+  
 def edit_helper(table_name, readonly_fields)
     
     @table_name = table_name;
-    @user_id = session[:user_id];
+    @user_id = session[:user_id] || 0;
 #    session["#{@table_name}_readonly_fields"]= readonly_fields;
     id = params[:id];
     time_out = 20*60;
@@ -118,7 +120,7 @@ def win_unload_helper
     @id = params[:id];
     @table_name = params[:table_name];
     attribute_name = params[:field_name];
-    @user_id = session[:user_id];
+    @user_id = session[:user_id] || 0;
 
 
     sql_str = "OpenRecord.find_by_sql(\"SELECT * FROM  open_records WHERE (user_id = " + @user_id.to_s + " AND table_name = '" + @table_name + "' AND  record_id = " +@id.to_s + "  AND in_use = true)\")"
@@ -157,7 +159,7 @@ def win_unload_helper
 
 end
 def update_helper()
-    @user_id = session[:user_id];
+    @user_id = session[:user_id] || 0;
     id = params[:id];
     @table_name = params[:table_name];
     field_value = params[:field_value];
@@ -231,8 +233,12 @@ end
                     attribute2 = @attribute_list.attribute_hash["updated_at"];  
                     update_parent = false;
                     edit_cell2 = EditCell.new(attribute2, object, @table_name, @filter_controller, update_parent,readonly_flag);
+                    
+                    # Broadcast search table updates via ActionCable instead of using window.opener
+                    broadcast_search_table_update(@table_name, object, [attribute1.name], [id], @search_ctls)
+                    
                     respond_to do |format| #5
-                        format.js { render :partial => "shared/update_helper", :locals => {:table_name => @table_name, :field_name => field_name, :edit_cell1 => edit_cell1, :edit_cell2 => edit_cell2, :attribute => attribute1, :id => id , :search_ctls => @search_ctls} }
+                        format.js { render :partial => "shared/update_helper_actioncable", :locals => {:table_name => @table_name, :field_name => field_name, :edit_cell1 => edit_cell1, :edit_cell2 => edit_cell2, :attribute => attribute1, :id => id} }
                     end #5
                 else #4
                     respond_to do |format|
@@ -284,7 +290,7 @@ end
 
 
 def email_update()
-    @user_id = session[:user_id];
+    @user_id = session[:user_id] || 0;
     id = params[:id];
     @table_name = params[:table_name];
     field_value = params[:field_value];

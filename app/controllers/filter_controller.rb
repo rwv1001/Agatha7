@@ -117,8 +117,10 @@ class FilterController
   end
 
   def self.GroupID(table_name, foreign_key, user_id)
+    # Handle nil user_id by defaulting to 0
+    safe_user_id = user_id || 0
     
-    sql_str = "GroupFilter.find_by_sql(\"SELECT id, group_id FROM group_filters WHERE (user_id = #{user_id}  AND table_name = '#{table_name}' AND foreign_key = '#{foreign_key}') \")"
+    sql_str = "GroupFilter.find_by_sql(\"SELECT id, group_id FROM group_filters WHERE (user_id = #{safe_user_id}  AND table_name = '#{table_name}' AND foreign_key = '#{foreign_key}') \")"
  #   Rails.logger.error( "DEBUG: before eval(#{sql_str})" );
     results = eval(sql_str);
     if(results.length == 0)

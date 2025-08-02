@@ -1518,7 +1518,7 @@ window.editBlur = editBlur;
 
 function editFocus(attribute_name, data_type)
 {
-    document.getElementById('unload_attribute').value =  attribute_name;
+    document.getElementById('unload_attribute_name').value =  attribute_name;
     document.getElementById('unload_data_type').value =  data_type;
 
 }
@@ -1593,3 +1593,13 @@ const x = 1;
 
     }
 window.yahoo_widget = yahoo_widget;
+
+function createNewEntry(create_entry) {
+    console.log("Calling createNewEntry for " + create_entry); 
+    
+    const form_id = "create_entry_form_" + create_entry;
+    const elem = document.getElementById(form_id);
+    Rails.fire(elem, 'submit');
+}
+window.createNewEntry = createNewEntry;
+

@@ -1,26 +1,33 @@
 
 
-function copyright() {
-  document.write('<p style="text-align: center; font-size: 32%;"> Agatha database version, 3.10.12.09 © 2010, Robert Verrill O.P.</p>');
 
+function top17(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.style.top = '17px';
+  }
 }
-
-
-
-
-
+function top187(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.style.top = '187px';
+  }
+}
 
 function hideHeader() {
   document.getElementById('logo_div').style.display = 'none';
   document.getElementById('title_div').style.display = 'none';
   document.getElementById('black_bar_div').style.display = 'none';
   document.getElementById('shrink_button_div').style.display = 'none';
-  document.getElementById('menu_div').style.top = '17px';
-  document.getElementById('content_div').style.top = '17px';
-  document.getElementById('content_div_1').style.top = '17px';
-  document.getElementById('content_div_2').style.top = '17px';
-  document.getElementById('two_column_div').style.top = '17px';
-  document.getElementById('black_bar_separator_div').style.top = '17px';
+  top17('menu_div');
+  top17('content_div');
+  top17('content_div_1');
+  top17('content_div_2');
+  top17('two_column_div');
+  const blackBarSeparator = document.getElementById('black_bar_separator_div');
+  if (blackBarSeparator) {
+    blackBarSeparator.style.height = '100%';
+  }
   document.getElementById('expand_button_div').style.display = '';
 }
 window.hideHeader = hideHeader;
@@ -30,12 +37,15 @@ function showHeader() {
   document.getElementById('title_div').style.display = '';
   document.getElementById('black_bar_div').style.display = '';
   document.getElementById('shrink_button_div').style.display = '';
-  document.getElementById('menu_div').style.top = '187px';
-  document.getElementById('two_column_div').style.top = '187px';
-  document.getElementById('content_div').style.top = '187px';
-  document.getElementById('content_div_1').style.top = '187px';
-  document.getElementById('content_div_2').style.top = '187px';
-  document.getElementById('black_bar_separator_div').style.top = '187px';
+  top187('menu_div');
+  top187('two_column_div');
+  top187('content_div');
+  top187('content_div_1');
+  top187('content_div_2');
+  const blackBarSeparator = document.getElementById('black_bar_separator_div');
+  if (blackBarSeparator) {
+    blackBarSeparator.style.height = '100%';
+  }
 
   document.getElementById('expand_button_div').style.display = 'none';
 }

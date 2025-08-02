@@ -3,13 +3,14 @@
 # Version of your assets, change this if you want to expire all your assets.
 Rails.application.config.assets.version = "1.0"
 
-Rails.application.config.assets.precompile += %w( display_format.js )
-Rails.application.config.assets.precompile += %w( edit.js )
-Rails.application.config.assets.precompile += %w( group_filters.js )
-Rails.application.config.assets.precompile += %w( search_ctl.js )
-
-Rails.application.config.assets.precompile += %w( template.js )
+# Precompile JavaScript files for importmap (required for importmap to work)
+Rails.application.config.assets.precompile += %w( application.js )
 Rails.application.config.assets.precompile += %w( prepend_template.js )
+Rails.application.config.assets.precompile += %w( template.js )
+Rails.application.config.assets.precompile += %w( edit.js )
+Rails.application.config.assets.precompile += %w( search_ctl.js )
+Rails.application.config.assets.precompile += %w( display_format.js )
+Rails.application.config.assets.precompile += %w( group_filters.js )
 Rails.application.config.assets.precompile += %w( controllers/hello_controller.js )
 Rails.application.config.assets.precompile += %w( controllers/index.js )
 Rails.application.config.assets.precompile += %w( controllers/application.js )

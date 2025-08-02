@@ -2,7 +2,7 @@
 include EditHelper
 
 class PeopleController < ApplicationController
-  protect_from_forgery :only => [:create, :updater, :destroy]
+  protect_from_forgery :only => [:updater, :destroy]
 
  
   def destroy()

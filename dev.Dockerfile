@@ -47,6 +47,6 @@ USER rails
 
 ENTRYPOINT ["docker-dev-entrypoint"]
 
-# Start server
+# Start server with Puma
 EXPOSE 3000
-CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
+CMD ["./bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]

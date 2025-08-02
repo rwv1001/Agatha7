@@ -17,7 +17,7 @@
 
 
 
-<form action=<%= raw "/#{table_name.tableize}/updater"%> id="update_form" method="post" data-remote="true"/#{table_name.tableize}/updater"%>', {asynchronous:true, evalScripts:true, parameters:Form.serialize(this)}); return false;">
+<form action=<%= raw "/#{table_name.tableize}/updater"%> id="update_form" method="post" data-remote="true" >
     <div style="margin:0;padding:0">
         <input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> />
     </div>
@@ -27,7 +27,7 @@
         <input name="field_value" id="field_value" type="text" />
         <input name="body_value" id="body_value" type="text" />
         <input name="field_data_type" id="field_data_type" type="text" />
-        <input name="id" id="id_value" type="text" value=<%= raw "#{current_object.id}" %>  />
+        <input name="id" id="id_value_updater" type="text" value=<%= raw "#{current_object.id}" %>  />
         <input name="closing_flag" id="closing_flag" type="text" value= "0"  />
     </div>
     <div>
@@ -45,10 +45,7 @@
     </div>
 </form>
 
-<div  style="display:none">
-    <input name="attribute" id="unload_attribute" type="text"   />
-    <input name="data_type" id="unload_data_type" type="text"   />
-</div>
+
 
 <form action=<%= raw   "/#{table_name.tableize}/win_unload" %> id="win_unload" method="post" data-remote="true" >
     <div style="margin:0;padding:0">
@@ -88,9 +85,11 @@
 </table>
 
 
-
-
-<script type ="text/javascript">
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
     silly_update();
+  });
 </script>
+
+
 

@@ -1,0 +1,1 @@
+// Asset pipeline application.js - minimal since we're using importmap for ActionCable

@@ -737,7 +737,9 @@ class SearchController
 
     number_available_fields = @extended_filters.length
 
-    sql_str = "DisplayFilter.find_by_sql(\"SELECT table_name, filter_index, element_order FROM display_filters WHERE (user_id = " + @user_id.to_s +  " AND table_name = '" + @tables_name + "' AND in_use = true) ORDER BY element_order asc\")"
+    # Handle nil user_id by defaulting to 0
+    safe_user_id = @user_id || 0
+    sql_str = "DisplayFilter.find_by_sql(\"SELECT table_name, filter_index, element_order FROM display_filters WHERE (user_id = " + safe_user_id.to_s +  " AND table_name = '" + @tables_name + "' AND in_use = true) ORDER BY element_order asc\")"
  #   Rails.logger.error( "DEBUG: before eval(#{sql_str})" );
     results = eval(sql_str);
     if(results.length == 0)
@@ -1526,7 +1528,9 @@ class SearchController
 
 
     if update_display_
-      sql_str = "DisplayFilter.find_by_sql(\"SELECT id, user_id, table_name, filter_index, element_order, in_use FROM display_filters WHERE (user_id = " + @user_id.to_s +  " AND table_name = '" + @tables_name + "') ORDER BY element_order asc\")"
+      # Handle nil user_id by defaulting to 0
+      safe_user_id = @user_id || 0
+      sql_str = "DisplayFilter.find_by_sql(\"SELECT id, user_id, table_name, filter_index, element_order, in_use FROM display_filters WHERE (user_id = " + safe_user_id.to_s +  " AND table_name = '" + @tables_name + "') ORDER BY element_order asc\")"
    #   Rails.logger.error( "DEBUG: before eval(#{sql_str})" );
       old_fields = eval(sql_str);
       old_fields_count  = old_fields.length;

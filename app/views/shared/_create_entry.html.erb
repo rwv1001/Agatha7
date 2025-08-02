@@ -1,11 +1,15 @@
-<%= form_with url: "/welcome/new", method: :post, remote: true do |form| %>
-
-
-     <div style ="display:none">
-       <input  name="class_name" type="text" value= '<%= create_entry %>'  >
-       <label  name ="hash_for_new_label"> Hash For New Label </label>
-     </div>
-     <div>
-     <%= submit_tag "Create new entry in #{create_entry} database", :class => 'new_entry', :name => 'new_entry'  %>
-     </div>
- <% end %>
+<form action="/welcome/new" id="create_entry_form_<%= create_entry %>" method="post" data-remote="true">
+  <div style="margin:0;padding:0">
+    <input name="authenticity_token" type="hidden" value="<%= form_authenticity_token %>" />
+  </div>
+  
+  <div style="display:none">
+    <input name="class_name" type="text" value="<%= create_entry %>">
+    <label name="hash_for_new_label">Hash For New Label</label>
+  </div>
+  
+  <div>
+    <% onclick_str = "createNewEntry('#{create_entry}');return false" %>
+    <input type="button" name="new_entry" value="Create new entry in <%= create_entry %> database" class="new_entry" onclick="<%= raw onclick_str %>">
+  </div>
+</form>

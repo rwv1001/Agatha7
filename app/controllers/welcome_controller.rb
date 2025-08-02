@@ -13,7 +13,8 @@ end
 include FilterHelper
 class WelcomeController < ApplicationController
  
-skip_before_action :authorize, only: [:index]
+#skip_before_action :authorize, only: [:index]
+layout "welcome"
 
 
 
@@ -46,6 +47,10 @@ skip_before_action :authorize, only: [:index]
 
 
   def index
+      unless session[:user_id]
+        redirect_to controller: :admin, action: :login
+        return
+      end
  if session[:user_id]==1 && Person.first == nil
       import_csv
     end
@@ -137,7 +142,7 @@ skip_before_action :authorize, only: [:index]
     user_id = session[:user_id]
     administrator = session[:administrator];
     Rails.logger.debug("InitializeSessionController: user_id: #{user_id}, administrator: #{administrator}, number_of_controllers: #{@number_of_controllers}");
-    for controller_index in (0 .. @number_of_controllers -1)
+    for controller_index in (0 .. (@number_of_controllers - 1))
 
       search_controller = SearchController.new(table_options[controller_index], user_id, administrator, session);
       attribute_eval_str = "AttributeList.new(#{table_options[controller_index]})"
@@ -154,7 +159,7 @@ skip_before_action :authorize, only: [:index]
     end
 
    
-    for controller_index in (0 .. @number_of_controllers -1)
+    for controller_index in (0 .. (@number_of_controllers - 1))
       Rails.logger.debug("InitializeSessionController: controller_index: #{controller_index}, table_options[controller_index]: #{table_options[controller_index]}");
     
       @search_ctls[table_options[controller_index]].SetExtendedFilterControllers(@search_ctls);
@@ -522,9 +527,10 @@ skip_before_action :authorize, only: [:index]
 
   def new
 #     RubyProf.start
+#     
     class_name = params[:class_name];
     table_name = class_name.tableize;
-
+    Rails.logger.debug("WelcomeController:new class_name: #{class_name}, table_name: #{table_name}");
     new_eval_str = "#{class_name}.new"
     new_obj = eval(new_eval_str);
     if(class_name == "EmailTemplate")
@@ -538,6 +544,12 @@ skip_before_action :authorize, only: [:index]
 
     respond_to do |format|
       format.js { render "new", :locals=>{:table_name => table_name, :id => id, :class_name => class_name } }
+      format.html do
+        Rails.logger.debug "WARNING: Form submitted as HTML instead of JavaScript format"
+        Rails.logger.debug "Request headers: #{request.headers['Accept']}"
+        Rails.logger.debug "Request format: #{request.format}"
+        redirect_to root_path, notice: "#{class_name} created successfully with ID #{id}"
+      end
       
 =begin
         render :update do |page|
@@ -2671,7 +2683,7 @@ do
 
 
   def update_formats
-    user_id = session[:user_id];
+    user_id = session[:user_id] || 0;
     @format_controller =  FormatController.new(user_id);
     for table_object in @format_controller.table_objects
       sql_str = "FormatElement.find_by_sql(\"SELECT id, field_name, insert_string, element_order, in_use FROM format_elements WHERE (user_id = " + user_id.to_s +  " AND table_name = '" + table_object.table + "') ORDER BY element_order asc\")"

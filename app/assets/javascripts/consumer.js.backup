@@ -1,0 +1,12 @@
+// ActionCable Consumer for Asset Pipeline
+
+(function() {
+  this.App || (this.App = {});
+  
+  // Ensure ActionCable is available before creating consumer
+  if (typeof ActionCable !== 'undefined') {
+    App.cable = ActionCable.createConsumer();
+  } else {
+    console.error('ActionCable is not available');
+  }
+}).call(this);

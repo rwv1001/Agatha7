@@ -1,0 +1,130 @@
+// ActionCable Search Table Updates
+import consumer from "./consumer";
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Subscribe to search table updates
+  const searchTableChannel = consumer.subscriptions.create("SearchTableChannel", {
+    connected() {
+      console.log("Connected to SearchTableChannel");
+    },
+
+    disconnected() {
+      console.log("Disconnected from SearchTableChannel");
+    },
+
+    received(data) {
+      console.log("Received search table update:", data);
+      
+      if (data.action === 'update_search_rows') {
+        this.handleSearchTableUpdate(data);
+      }
+    },
+
+    handleSearchTableUpdate(data) {
+      const editedTableName = data.edited_table_name;
+      const searchControllers = data.search_controllers;
+
+      // Process updates for each search controller
+      Object.keys(searchControllers).forEach(tableName => {
+        const controllerData = searchControllers[tableName];
+        
+        // Update existing rows
+        if (controllerData.updated_objects) {
+          controllerData.updated_objects.forEach(rowData => {
+            this.updateSearchRow(tableName, rowData);
+          });
+        }
+
+        // Handle new rows if this is the edited table
+        if (tableName === editedTableName && controllerData.new_rows) {
+          this.handleNewRows(tableName, controllerData);
+        }
+
+        // Update select options
+        if (controllerData.updated_objects) {
+          controllerData.updated_objects.forEach(rowData => {
+            if (typeof window.select_update === 'function') {
+              window.select_update(tableName, rowData.id, rowData.short_field);
+            }
+          });
+        }
+
+        // Recolor the table
+        if (typeof window.recolour === 'function') {
+          window.recolour(tableName);
+        }
+      });
+
+      // Call action_select_no_js if it exists
+      if (typeof window.action_select_no_js === 'function') {
+        window.action_select_no_js();
+      }
+    },
+
+    updateSearchRow(tableName, rowData) {
+      const rowId = `${rowData.id}_${tableName}`;
+      const rowElement = document.getElementById(rowId);
+      
+      if (rowElement) {
+        rowElement.outerHTML = rowData.html;
+        
+        // Set checkbox state if setcheck function exists
+        if (typeof window.setcheck === 'function') {
+          window.setcheck(`${tableName}_check_${rowData.id}`, true);
+        }
+      }
+    },
+
+    handleNewRows(tableName, controllerData) {
+      // Hide current filters if they exist
+      const currentFilterName = controllerData.current_filter_name;
+      if (currentFilterName) {
+        const filterElement = document.getElementById(currentFilterName);
+        if (filterElement) {
+          filterElement.style.display = 'none';
+        }
+      }
+
+      controllerData.new_rows.forEach(newRowData => {
+        const rowId = `${newRowData.id}_${tableName}`;
+        const rowElement = document.getElementById(rowId);
+        const resultsTableName = controllerData.results_table_name;
+        const tableElement = document.getElementById(resultsTableName);
+
+        if (rowElement) {
+          // Replace existing row
+          rowElement.outerHTML = newRowData.html;
+        } else if (tableElement) {
+          // Append to table
+          const lastTr = tableElement.querySelector('tr:last-child');
+          if (lastTr) {
+            lastTr.insertAdjacentHTML('afterend', newRowData.html);
+          }
+        } else {
+          // Create new results container if needed
+          const searchResultsContainer = document.getElementById(`search_results_${tableName}`);
+          if (searchResultsContainer) {
+            // You might need to render a complete search results partial here
+            // For now, just append the row
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = newRowData.html;
+            searchResultsContainer.appendChild(tempDiv.firstChild);
+            
+            // Call resizeX if it exists
+            if (typeof window.resizeX === 'function') {
+              window.resizeX();
+            }
+          }
+        }
+
+        // Update select options
+        if (typeof window.select_update === 'function') {
+          window.select_update(tableName, newRowData.id, newRowData.short_field);
+        }
+      });
+    }
+  });
+
+  // Store the channel reference globally if needed
+  window.searchTableChannel = searchTableChannel;
+});

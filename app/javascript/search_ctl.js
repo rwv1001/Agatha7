@@ -273,6 +273,7 @@ function Search(table_name) {
 }
 window.Search = Search;
 
+
 function AddField(table_name) {
   wait();
 

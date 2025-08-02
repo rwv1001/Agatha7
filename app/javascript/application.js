@@ -1,14 +1,14 @@
 import "@hotwired/turbo-rails"
 
 import "controllers";
-
+import "prepend_template";  // Import this first to define MyHash
 import "edit";
 import "template";
 import "search_ctl";
 import "display_format";
-
 import "group_filters";
 import Rails from "@rails/ujs";
+
 Rails.start();
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
 
@@ -66,9 +66,11 @@ function centerSeparator() {
   separator.style.left = left_black_bar + "px";
 }
 document.addEventListener('turbo:load', function () {
+  console.log('turbo:load event fired');
   document.getElementById('expand_button_div').style.display = 'none';
   const controller = document.body.getAttribute('data-controller');
   const action = document.body.getAttribute('data-action');
+  console.log('Controller:', controller, 'Action:', action);
 
 
 
@@ -149,8 +151,11 @@ window.addEventListener('resize', () => {
   if (currentWidth !== lastWidth) {
     lastWidth = currentWidth;
     // fire your function!
-    if (document.getElementById('two_column_div').style.display === 'none') {
-      centerSeparator();
+    const two_column_div = document.getElementById('two_column_div');
+    if (two_column_div) {
+      if (two_column_div.style.display === 'none') {
+        centerSeparator();
+      } 
     }
   }
 });
