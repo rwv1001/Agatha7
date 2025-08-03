@@ -22,4 +22,5 @@ pin "template", to: "template.js", preload: true
 # ActionCable support
 pin "search_table_updates", to: "search_table_updates.js", preload: true
 pin "consumer", to: "consumer.js", preload: true
+pin "debug_actioncable", to: "debug_actioncable.js", preload: true
 

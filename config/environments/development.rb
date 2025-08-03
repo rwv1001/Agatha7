@@ -80,6 +80,10 @@ Rails.application.configure do
   # Allow ActionCable connections from Docker network
   config.action_cable.disable_request_forgery_protection = true
   config.action_cable.allowed_request_origins = ['http://192.168.1.29:3000', 'http://localhost:3000']
+  
+  # Force ActionCable to use WebSocket (not falling back to polling)
+  config.action_cable.url = "/cable"
+  config.force_ssl = false
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true

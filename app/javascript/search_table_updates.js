@@ -1,9 +1,35 @@
 // ActionCable Search Table Updates
 import consumer from "./consumer";
 
+// Fallback function to get ActionCable consumer across browsers
+function getActionCableConsumer() {
+  // Try multiple ways to get the consumer for cross-browser compatibility
+  if (typeof consumer !== 'undefined') {
+    return consumer;
+  } else if (window.actionCableConsumer) {
+    return window.actionCableConsumer;
+  } else if (window.consumer) {
+    return window.consumer;
+  } else if (window.ActionCable) {
+    return window.ActionCable.createConsumer();
+  } else {
+    console.error("ActionCable not available in this browser");
+    return null;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  const actionCableConsumer = getActionCableConsumer();
+  
+  if (!actionCableConsumer) {
+    console.error("Failed to initialize ActionCable consumer");
+    return;
+  }
+  
+  console.log("ActionCable consumer initialized:", actionCableConsumer);
+  
   // Subscribe to search table updates
-  const searchTableChannel = consumer.subscriptions.create("SearchTableChannel", {
+  const searchTableChannel = actionCableConsumer.subscriptions.create("SearchTableChannel", {
     connected() {
       console.log("Connected to SearchTableChannel A");
     },

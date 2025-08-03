@@ -7,7 +7,9 @@ import "template";
 import "search_ctl";
 import "display_format";
 import "group_filters";
+import "consumer";  // Import ActionCable consumer first
 import "search_table_updates";  // Import ActionCable search table updates
+import "debug_actioncable";  // Import ActionCable debug script
 import Rails from "@rails/ujs";
 
 Rails.start();
