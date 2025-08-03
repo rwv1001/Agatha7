@@ -7,6 +7,7 @@ import "template";
 import "search_ctl";
 import "display_format";
 import "group_filters";
+import "search_table_updates";  // Import ActionCable search table updates
 import Rails from "@rails/ujs";
 
 Rails.start();
