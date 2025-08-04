@@ -101,7 +101,7 @@ function content_begin() {
 window.content_begin = content_begin;
 
 function content_end() {
-  console.log("content_end called");
+//  console.log("content_end called");
 
   const contentDiv = document.getElementById('content_div');
   if (contentDiv) {
@@ -133,7 +133,7 @@ function hide_div(div_id) {
 
   
   const div_elt = document.getElementById(div_id); //rwv vanilla change
-  console.log("hide_div called for " + div_id);
+ // console.log("hide_div called for " + div_id);
   div_elt.style.display = 'none';
 }
 window.hide_div = hide_div;
@@ -1415,7 +1415,7 @@ function separate_resizing() {
 
 }
 function set_double_scroll() {
-  console.log("set_double_scroll called for " + old_page_name + " option_id: " + old_option_id);
+//  console.log("set_double_scroll called for " + old_page_name + " option_id: " + old_option_id);
   const content_div_1 = document.getElementById('content_div_1');
   const content_div_2 = document.getElementById('content_div_2');
 
@@ -1442,15 +1442,15 @@ function set_double_scroll() {
 
 
 
-  console.log("left_black_bar_str = " + left_black_bar_str);
-  console.log("from_right_1_pos_str = " + from_right_1_pos_str);
-  console.log("bar_position_scale = " + bar_position_scale);
-  console.log("window.innerWidth = " + window.innerWidth);
-  console.log("left_1_pos = " + left_1_pos);
-  console.log("right_1_pos = " + right_1_pos);
-  console.log("black_bar_width = " + black_bar_width);
-  console.log("frac_left_black_bar = " + frac_left_black_bar);
-  console.log("left_black_bar = " + left_black_bar);
+  //console.log("left_black_bar_str = " + left_black_bar_str);
+  //console.log("from_right_1_pos_str = " + from_right_1_pos_str);
+  //console.log("bar_position_scale = " + bar_position_scale);
+  //console.log("window.innerWidth = " + window.innerWidth);
+  //console.log("left_1_pos = " + left_1_pos);
+  //console.log("right_1_pos = " + right_1_pos);
+  //console.log("black_bar_width = " + black_bar_width);
+  //console.log("frac_left_black_bar = " + frac_left_black_bar);
+  //console.log("left_black_bar = " + left_black_bar);
   content_div_1.style.right = from_right_1_pos_str + "px";
   content_div_2.style.left = left_black_bar_str + "px";
   //black_bar_separator_div.style.left = left_black_bar_str + "px";
@@ -1461,7 +1461,7 @@ function getLeftOffset(id) {
   const element = document.getElementById(id);
   const rect = element.getBoundingClientRect();
   const left_1_pos = rect.left + window.scrollX;
-  console.log('getLeftOffset for id ' + id + ': returns ' + left_1_pos);
+ // console.log('getLeftOffset for id ' + id + ': returns ' + left_1_pos);
   //console.log('jQuery offset returns ' + jQuery('#'+id).offset().left);
   return left_1_pos;
 }
@@ -1475,7 +1475,7 @@ function getOuterWidth(id) {
 }
 window.getOuterWidth = getOuterWidth;
 function scrollHandler() {
-  console.log("scrollHandler called");
+//  console.log("scrollHandler called");
 
   const twoColumnDiv = document.getElementById('two_column_div');
   // “Is visible” → check computed display & visibility
@@ -1510,10 +1510,10 @@ function getBarPositionScale() {
   const left_1_pos = getLeftOffset('content_div_1');
   const black_bar_width = getOuterWidth('black_bar_separator_div');
   const bar_position_scale = (frac_left_black_bar - left_1_pos) / (window.innerWidth - left_1_pos - black_bar_width);
-  console.log("getBarPositionScale: frac_left_black_bar = " + frac_left_black_bar);
-  console.log("getBarPositionScale: left_1_pos = " + left_1_pos);
-  console.log("getBarPositionScale: black_bar_width = " + black_bar_width);
-  console.log("getBarPositionScale: bar_position_scale = " + bar_position_scale);
+  //console.log("getBarPositionScale: frac_left_black_bar = " + frac_left_black_bar);
+ // console.log("getBarPositionScale: left_1_pos = " + left_1_pos);
+ // console.log("getBarPositionScale: black_bar_width = " + black_bar_width);
+ // console.log("getBarPositionScale: bar_position_scale = " + bar_position_scale);
   return bar_position_scale;
 }
 

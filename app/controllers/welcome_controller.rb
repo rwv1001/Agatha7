@@ -1226,7 +1226,7 @@ layout "welcome"
       elsif str == "a"
         ret_val = ""
       elsif str == "has"
-        ret_val = have
+        ret_val = "have"
       else
         ret_val = str.pluralize;
       end
@@ -1761,8 +1761,64 @@ do
       end
     end
 
-        @search_ctls = session[:search_ctls];
-        respond_to do |format|
+    @search_ctls = session[:search_ctls];
+    
+    # Disable ActionCable broadcasting to avoid row-level highlighting conflicts
+    # The frontend will handle targeted cell updates directly
+    # if error_str.empty? && @search_ctls
+    #   begin
+    #     # Broadcast person row update
+    #     person_table_search_ctl = @search_ctls["Person"]
+    #     if person_table_search_ctl
+    #       Person.set_controller(person_table_search_ctl)
+    #       updated_person = person_table_search_ctl.GetUpdateObjects("Person", "id", [person_id.to_i])
+    #       if updated_person.any?
+    #         ActionCable.server.broadcast("search_table_updates", {
+    #           action: "update_search_rows",
+    #           data: {
+    #             "Person" => {
+    #               updated_objects: updated_person.map do |person|
+    #                 {
+    #                   id: person.id,
+    #                   html: render_to_string(partial: 'shared/search_results_row_button', object: person),
+    #                   short_field: person.short_field
+    #                 }
+    #               end
+    #             }
+    #           }
+    #         })
+    #       end
+    #     end
+    #     
+    #     # Broadcast lecture row updates
+    #     lecture_table_search_ctl = @search_ctls["Lecture"]
+    #     if lecture_table_search_ctl && lecture_ids.any?
+    #       Lecture.set_controller(lecture_table_search_ctl)
+    #       updated_lectures = lecture_table_search_ctl.GetUpdateObjects("Lecture", "id", lecture_ids.map(&:to_i))
+    #       if updated_lectures.any?
+    #         ActionCable.server.broadcast("search_table_updates", {
+    #           action: "update_search_rows", 
+    #           data: {
+    #             "Lecture" => {
+    #               updated_objects: updated_lectures.map do |lecture|
+    #                 {
+    #                   id: lecture.id,
+    #                   html: render_to_string(partial: 'shared/search_results_row_button', object: lecture),
+    #                   short_field: lecture.short_field
+    #                 }
+    #               end
+    #             }
+    #           }
+    #         })
+    #       end
+    #     end
+    #   rescue => e
+    #     Rails.logger.error "ActionCable broadcast failed in make_attendee: #{e.message}"
+    #     # Continue without ActionCable if it fails
+    #   end
+    # end
+    
+    respond_to do |format|
       format.js { render "make_attendee", :locals => { :error_str => error_str, :search_ctls => @search_ctls, :person_id => person_id, :lecture_ids => lecture_ids, :compulsory_ids => compulsory_ids, :exam_ids => exam_ids, :success_str => success_str } }
       
     end

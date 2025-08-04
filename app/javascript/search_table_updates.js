@@ -385,4 +385,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Store the channel reference globally if needed
   window.searchTableChannel = searchTableChannel;
+  
+  // Listen for custom attendee_added events
+  document.addEventListener('attendee_added', function(event) {
+    console.log("👂 Received attendee_added event:", event.detail);
+    
+    const { person_id, lecture_ids, compulsory_ids, exam_ids } = event.detail;
+    
+    // Manually trigger visual updates for the affected rows
+    // Add highlight effects to person row
+    const personRow = document.getElementById(`${person_id}_Person`);
+    if (personRow) {
+      personRow.classList.add('row-updated');
+      setTimeout(() => {
+        personRow.classList.remove('row-updated');
+      }, 1500);
+    }
+    
+    // Add highlight effects to lecture rows
+    lecture_ids.forEach(lectureId => {
+      const lectureRow = document.getElementById(`${lectureId}_Lecture`);
+      if (lectureRow) {
+        lectureRow.classList.add('row-updated');
+        setTimeout(() => {
+          lectureRow.classList.remove('row-updated');
+        }, 1500);
+      }
+    });
+    
+    console.log("✨ Applied visual highlights to attendee rows");
+  });
 });

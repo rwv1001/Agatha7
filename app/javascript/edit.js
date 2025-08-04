@@ -257,59 +257,205 @@ function OnChangeNewGroup(class_name)
 }
 window.OnChangeNewGroup = OnChangeNewGroup;
 
-function setcheck(check_id, value)
+function setcheck(check_id, value, silent = false)
 {
+    // Handle both cases: with and without # prefix
+    let elementId = check_id;
+    if (check_id.startsWith('#')) {
+        elementId = check_id.slice(1);
+    }
     
-
-    const check_id199 = "#"+check_id;
-    const check_obj = document.getElementById((check_id199).slice(1)); //rwv vanilla change
-    check_obj.checked = value;
+    const check_obj = document.getElementById(elementId);
+    if (check_obj) {
+        check_obj.checked = value;
+        return true;
+    } else {
+        if (!silent) {
+            console.warn(`setcheck: Could not find element with ID: ${elementId}`);
+        }
+        return false;
+    }
 }
 window.setcheck = setcheck;
 
-function setcheckremote(check_id, value,doc)
+function setcheckremote(check_id, value, doc)
 {
-     const check_id199 = "#"+check_id;
-    const check_obj = document.getElementById((check_id,doc).slice(1)); //rwv vanilla change
-    check_obj.checked = value;  
+    // Handle both cases: with and without # prefix
+    let elementId = check_id;
+    if (check_id.startsWith('#')) {
+        elementId = check_id.slice(1);
+    }
+    
+    const check_obj = (doc || document).getElementById(elementId);
+    if (check_obj) {
+        check_obj.checked = value;
+    } else {
+        console.warn(`setcheckremote: Could not find element with ID: ${elementId}`);
+    }
 }
 window.setcheckremote = setcheckremote;
 
 function on_checkbox_click(row_id, type_name, class_name)
 {
+    console.log(`🔍 on_checkbox_click called: row_id=${row_id}, type_name=${type_name}, class_name=${class_name}`);
+    
+    // Only auto-check select box for tables that have exam/compulsory checkboxes
+    if (class_name !== "Person" && class_name !== "Lecture") {
+        console.log(`❌ Skipping checkbox sync for ${class_name} - not Person or Lecture`);
+        return false;
+    }
+    
     const check_str = class_name +'_'+ type_name +'_'+  row_id
+    console.log(`🎯 Looking for checkbox with ID: ${check_str}`);
 
      const check_str206 = "#"+check_str;
      const check_obj = document.getElementById((check_str206).slice(1)); //rwv vanilla change
-    if( check_obj != null && check_obj.checked)
+     
+    if( check_obj != null)
         {
-
-            const class_name209 = "#"+class_name;
-            const select_box = document.getElementById((class_name209 + "_check_"+row_id).slice(1)); //rwv vanilla change
-            select_box.checked = true;
+            console.log(`✅ Found ${type_name} checkbox, checked: ${check_obj.checked}`);
+            
+            // Debug: Let's see what checkboxes actually exist
+            console.log(`🔍 DEBUG: Looking for all checkboxes in row ${row_id}:`);
+            const allCheckboxes = document.querySelectorAll(`input[type="checkbox"]`);
+            const rowCheckboxes = Array.from(allCheckboxes).filter(cb => cb.id && cb.id.includes(row_id));
+            rowCheckboxes.forEach(cb => console.log(`   Found checkbox: ID="${cb.id}", name="${cb.name}", class="${cb.className}"`));
+            
+            const select_box_id = class_name + "_check_"+row_id;
+            const select_box = document.getElementById(select_box_id);
+            console.log(`🎯 Looking for select box with ID: ${select_box_id}`);
+            
+            if (select_box) {
+                console.log(`✅ Found select box, currently checked: ${select_box.checked}`);
+                
+                if (check_obj.checked) {
+                    // If exam or compulsory is checked, auto-check the select box
+                    console.log(`🔄 ${type_name} was checked, auto-checking select box`);
+                    select_box.checked = true;
+                } else {
+                    // If exam or compulsory is unchecked, check if we should uncheck select box
+                    // Only uncheck select if BOTH exam and compulsory are unchecked
+                    const exam_box = document.getElementById(class_name + "_examcheck_"+row_id); 
+                    const compulsory_box = document.getElementById(class_name + "_compulsorycheck_"+row_id);
+                    
+                    const exam_checked = exam_box ? exam_box.checked : false;
+                    const compulsory_checked = compulsory_box ? compulsory_box.checked : false;
+                    
+                    console.log(`🔍 Checking other boxes - exam: ${exam_checked}, compulsory: ${compulsory_checked}`);
+                    
+                    if (!exam_checked && !compulsory_checked) {
+                        console.log(`🔄 Both exam and compulsory unchecked, unchecking select box`);
+                        select_box.checked = false;
+                    } else {
+                        console.log(`⏸️ Not unchecking select box - other checkboxes still checked`);
+                    }
+                }
+            } else {
+                console.log(`❌ Could not find select box with ID: ${select_box_id}`);
+                console.log(`🔍 DEBUG: Let's try alternative select box IDs:`);
+                // Try different possible ID formats
+                const altIds = [
+                    `${class_name.toLowerCase()}_check_${row_id}`,
+                    `${class_name}_check${row_id}`,
+                    `check_${row_id}`,
+                    `${row_id}_${class_name}_check`,
+                    `${row_id}_check`
+                ];
+                altIds.forEach(altId => {
+                    const altBox = document.getElementById(altId);
+                    if (altBox) {
+                        console.log(`   ✅ Found alternative select box: ID="${altId}"`);
+                    } else {
+                        console.log(`   ❌ No checkbox with ID="${altId}"`);
+                    }
+                });
+            }
+        } else {
+            console.log(`❌ Could not find ${type_name} checkbox with ID: ${check_str}`);
         }
-        return check_obj.checked
+        return check_obj ? check_obj.checked : false;
 }
 window.on_checkbox_click = on_checkbox_click;
 
 function on_select_check_click(row_id, class_name)
 {
-
-    const class_name217 = "#"+class_name;
-    const select_box = document.getElementById((class_name217 +"_check_"+row_id).slice(1)); //rwv vanilla change
+    console.log(`🔍 on_select_check_click called: row_id=${row_id}, class_name=${class_name}`);
     
-    if(select_box && !select_box.is(':checked'))
-        {
-
-            const class_name221 = "#"+class_name;
-            const compulosry_box = document.getElementById((class_name221 + "_compulsorycheck_"+row_id).slice(1)); //rwv vanilla change
-            compulosry_box.checked = false;
-
-            const class_name223 = "#"+class_name;
-            const exam_box = document.getElementById((class_name223 + "_examcheck_"+row_id).slice(1)); //rwv vanilla change
-            exam_box.checked = false;
+    // Debug: Let's see what checkboxes actually exist for this row
+    console.log(`🔍 DEBUG: Looking for all checkboxes in row ${row_id}:`);
+    const allCheckboxes = document.querySelectorAll(`input[type="checkbox"]`);
+    const rowCheckboxes = Array.from(allCheckboxes).filter(cb => cb.id && cb.id.includes(row_id));
+    rowCheckboxes.forEach(cb => console.log(`   Found checkbox: ID="${cb.id}", name="${cb.name}", class="${cb.className}"`));
+    
+    const select_box_id = class_name +"_check_"+row_id;
+    const select_box = document.getElementById(select_box_id);
+    console.log(`🎯 Looking for select box with ID: ${select_box_id}`);
+    
+    // Try alternative ID formats if the first one doesn't work
+    let actualSelectBox = select_box;
+    if (!actualSelectBox) {
+        console.log(`🔍 DEBUG: Trying alternative select box IDs:`);
+        const altIds = [
+            `${class_name.toLowerCase()}_check_${row_id}`,
+            `${class_name}_check${row_id}`,
+            `check_${row_id}`,
+            `${row_id}_${class_name}_check`,
+            `${row_id}_check`
+        ];
+        
+        for (const altId of altIds) {
+            const altBox = document.getElementById(altId);
+            if (altBox) {
+                console.log(`   ✅ Found alternative select box: ID="${altId}"`);
+                actualSelectBox = altBox;
+                break;
+            } else {
+                console.log(`   ❌ No checkbox with ID="${altId}"`);
+            }
         }
-        return select_box.is(':checked')
+    }
+    
+    // Only auto-sync exam/compulsory boxes for tables that have them
+    if(actualSelectBox && (class_name === "Person" || class_name === "Lecture"))
+        {
+            console.log(`✅ Found select box, checked: ${actualSelectBox.checked}`);
+            
+            const compulsory_box_id = class_name + "_compulsorycheck_"+row_id;
+            const compulosry_box = document.getElementById(compulsory_box_id);
+            console.log(`🎯 Looking for compulsory box with ID: ${compulsory_box_id}`);
+            
+            const exam_box_id = class_name + "_examcheck_"+row_id;
+            const exam_box = document.getElementById(exam_box_id);
+            console.log(`🎯 Looking for exam box with ID: ${exam_box_id}`);
+            
+            if (!actualSelectBox.checked) {
+                // If select is unchecked, uncheck both exam and compulsory
+                console.log(`🔄 Select box unchecked - unchecking exam and compulsory`);
+                if (compulosry_box) {
+                    console.log(`✅ Unchecking compulsory box`);
+                    compulosry_box.checked = false;
+                } else {
+                    console.log(`❌ Could not find compulsory box`);
+                }
+                if (exam_box) {
+                    console.log(`✅ Unchecking exam box`);
+                    exam_box.checked = false;
+                } else {
+                    console.log(`❌ Could not find exam box`);
+                }
+            } else {
+                // REMOVED: Don't auto-check exam and compulsory when select is checked
+                // This allows users to attend without being examined or compulsory
+                console.log(`✅ Select box checked - leaving exam/compulsory as user set them`);
+            }
+        } else {
+            if (!actualSelectBox) {
+                console.log(`❌ Could not find select box with any ID format`);
+            } else {
+                console.log(`❌ Skipping sync for ${class_name} - not Person or Lecture`);
+            }
+        }
+        return actualSelectBox ? actualSelectBox.checked : false;
 }
 window.on_select_check_click = on_select_check_click;
 

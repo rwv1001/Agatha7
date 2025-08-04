@@ -32,8 +32,16 @@ Rails.application.routes.draw do
         to: "welcome#update_formats",
         via: [:get, :post]
 
+  match "welcome/multi_table_create",
+        to: "welcome#multi_table_create",
+        via: [:get, :post]
+
   match "welcome/new",
         to: "welcome#new",
+        via: [:get, :post]
+
+  match "welcome/select_action",
+        to: "welcome#select_action",
         via: [:get, :post]
 
   match "accessdenied", to: "admin#accessdenied", via: [:get, :post]

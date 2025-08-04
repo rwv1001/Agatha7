@@ -2,45 +2,102 @@
 alert('<%="#{error_str}"%>');
 <% else %>
 
-<%   table_name = "Person" %>
-<%   search_ctl = search_ctls[table_name] %>
-<%   id_array = []; %>
-<%   id_array << person_id.to_i; %>  
-<%   eval("#{table_name}.set_controller(search_ctl)"); %>
-<%   updated_objects = search_ctl.GetUpdateObjects(table_name, "id", id_array); %>
-<%   updated_objects.each do |row| %>
-     var elem = document.getElementById('<%="#{row.id}_#{ table_name}"%>');
-     if (elem) {
-       var tempDiv = document.createElement('div');
-       tempDiv.innerHTML = "<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>";
-       elem.replaceWith(tempDiv.firstElementChild);
-     }
-<%   end %>
-<%   table_name = "Lecture" %>
-<%   search_ctl = search_ctls[table_name] %>
-<%   eval("#{table_name}.set_controller(search_ctl)"); %>
-<%   updated_objects = search_ctl.GetUpdateObjects(table_name, "id", lecture_ids); %>
-<%   updated_objects.each do |row| %>
-     var elem = document.getElementById('<%="#{row.id}_#{ table_name}"%>');
-     if (elem) {
-       var tempDiv = document.createElement('div');
-       tempDiv.innerHTML = "<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>";
-       elem.replaceWith(tempDiv.firstElementChild);
-<%       if compulsory_ids.index(row.id.to_s)%>       
-              setcheck('#<%="#{table_name}_compulsorycheck_#{row.id.to_s}"%>',true); 
-<%       end %>   
-<%       if exam_ids.index(row.id.to_s)%>            
-              setcheck('#<%="#{table_name}_examcheck_#{row.id.to_s}"%>',true); 
-<%       end %> 
-         
-         setcheck('#<%="#{table_name}_check_#{row.id.to_s}"%>',true); 
-         
-     }
-<%   end %> 
-
-     recolour('Lecture'); 
-     recolour('Person'); 
+     console.log("🚀 MAKE_ATTENDEE JS EXECUTING - Person ID: <%= person_id %>, Lecture IDs: <%= lecture_ids %>"); 
+     
+     // Update UI first, then highlight the updated content
      action_select_no_js(); 
+     
+     // Force a content refresh and then highlight
+     setTimeout(function() {
+       console.log("🔄 Triggering content refresh");
+       
+       // Store checkbox states before refresh
+       const personTable = document.getElementById('search_results_Person');
+       const lectureTable = document.getElementById('search_results_Lecture');
+       const checkboxStates = {};
+       
+       [personTable, lectureTable].forEach(table => {
+         if (table) {
+           const checkboxes = table.querySelectorAll('input[type="checkbox"]');
+           checkboxes.forEach(checkbox => {
+             checkboxStates[checkbox.id] = checkbox.checked;
+           });
+         }
+       });
+       
+       // Try to trigger a search refresh to update the displayed content
+       if (typeof Search === 'function') {
+         console.log("📊 Found Search function, triggering refresh for Person and Lecture tables");
+         Search('Person');
+         Search('Lecture');
+       } else if (typeof search_general === 'function') {
+         search_general();
+       } else if (typeof refresh_results === 'function') {
+         refresh_results();
+       } else {
+         console.log("⚠️ No refresh function found, proceeding with highlighting");
+       }
+       
+       // Add highlighting after content refresh
+       setTimeout(function() {
+         // Restore checkbox states first, then do highlighting
+         console.log("🔄 Restoring checkbox states before highlighting");
+         Object.keys(checkboxStates).forEach(checkboxId => {
+           const checkbox = document.getElementById(checkboxId);
+           if (checkbox) {
+             checkbox.checked = checkboxStates[checkboxId];
+             console.log("✅ Restored checkbox state for:", checkboxId, "to:", checkboxStates[checkboxId]);
+           } else {
+             console.log("❌ Could not find checkbox:", checkboxId);
+           }
+         });
+         
+         console.log("🎯 Targeting content cells for highlighting after content refresh");
+         
+         // Target the person's "Lectures_attended_Person" cell
+         console.log("Looking for person row: <%= person_id %>_Person");
+         const personRowElement_<%= person_id %> = document.getElementById('<%= person_id %>_Person');
+         console.log("Found person row:", personRowElement_<%= person_id %>);
+         if (personRowElement_<%= person_id %>) {
+           const lecturesAttendedCell_<%= person_id %> = personRowElement_<%= person_id %>.querySelector('.Lectures_attended_Person');
+           console.log("Found Lectures_attended_Person cell:", lecturesAttendedCell_<%= person_id %>);
+           if (lecturesAttendedCell_<%= person_id %>) {
+             lecturesAttendedCell_<%= person_id %>.classList.add('cell-updated');
+             setTimeout(() => {
+               lecturesAttendedCell_<%= person_id %>.classList.remove('cell-updated');
+             }, 1500);
+             console.log("✨ Highlighted person's lectures attended cell with updated content");
+           } else {
+             console.log("❌ Could not find Lectures_attended_Person cell");
+           }
+         } else {
+           console.log("❌ Could not find person row: <%= person_id %>_Person");
+         }
+         
+         // Target each lecture's "Students_at_lecture_Lecture" cell
+<%   lecture_ids.each do |lecture_id| %>
+         console.log("Looking for lecture row: <%= lecture_id %>_Lecture");
+         const lectureRowElement_<%= lecture_id %> = document.getElementById('<%= lecture_id %>_Lecture');
+         console.log("Found lecture <%= lecture_id %> row:", lectureRowElement_<%= lecture_id %>);
+         if (lectureRowElement_<%= lecture_id %>) {
+           const studentsAtLectureCell_<%= lecture_id %> = lectureRowElement_<%= lecture_id %>.querySelector('.Students_at_lecture_Lecture');
+           console.log("Found Students_at_lecture_Lecture cell for lecture <%= lecture_id %>:", studentsAtLectureCell_<%= lecture_id %>);
+           if (studentsAtLectureCell_<%= lecture_id %>) {
+             studentsAtLectureCell_<%= lecture_id %>.classList.add('cell-updated');
+             setTimeout(() => {
+               studentsAtLectureCell_<%= lecture_id %>.classList.remove('cell-updated');
+             }, 1500);
+             console.log("✨ Highlighted lecture <%= lecture_id %> students cell with updated content");
+           } else {
+             console.log("❌ Could not find Students_at_lecture_Lecture cell for lecture <%= lecture_id %>");
+           }
+         } else {
+           console.log("❌ Could not find lecture row: <%= lecture_id %>_Lecture");
+         }
+<%   end %>
+       }, 1000); // Wait longer for search refresh to complete
+     }, 100); // Small delay before triggering refresh
+
      alert('<%="#{success_str}"%>');
 <% end %>
 

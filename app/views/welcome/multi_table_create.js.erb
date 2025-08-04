@@ -1,7 +1,17 @@
 wait();
 <% if table_name.length > 0 %>
 <% new_multi_table = MultiTable.new("#{table_name}", search_ctl) %>
-document.getElementById("<%= "multi_change_table_div_#{table_name}" %>").innerHTML = "<%= j render(:partial => "shared/multi_table", :object => new_multi_table) %>";
+console.log("🔧 MULTI_TABLE_CREATE JS EXECUTING - Table: <%= table_name %>");
+console.log("Looking for div: multi_change_table_div_<%= table_name %>");
+const targetDiv = document.getElementById("<%= "multi_change_table_div_#{table_name}" %>");
+console.log("Found target div:", targetDiv);
+if (targetDiv) {
+    targetDiv.innerHTML = "<%= j render(:partial => "shared/multi_table", :object => new_multi_table) %>";
+    console.log("✅ Multi-table content rendered successfully");
+    console.log("Div content after render:", targetDiv.innerHTML.substring(0, 200) + "...");
+} else {
+    console.log("❌ Could not find multi_change_table_div_<%= table_name %>");
+}
 <% else %>
 alert('something went wrong with multi_table_create');
 <% end %>
