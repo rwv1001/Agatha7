@@ -411,6 +411,71 @@ body#field_display_formats ul#menu li ul li a.field_display_formats
 	
 }
 
+/* ActionCable Real-time Update Glow Animation */
+@keyframes cellUpdateGlow {
+  0% {
+    background-color: #ffeb3b;
+    box-shadow: 0 0 5px #ffeb3b;
+    transform: scale(1);
+  }
+  50% {
+    background-color: #ffc107;
+    box-shadow: 0 0 15px #ffc107;
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+    transform: scale(1);
+  }
+}
+
+.cell-updated {
+  animation: cellUpdateGlow 1.5s ease-in-out;
+  transition: all 0.3s ease;
+}
+
+/* For table rows that get updated */
+.row-updated {
+  animation: cellUpdateGlow 1.5s ease-in-out;
+  transition: all 0.3s ease;
+}
+
+/* For individual table cells that get updated (targeted updates) */
+.cell-updated {
+  animation: cellUpdateGlow 1.5s ease-in-out;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* For specific table cells that get updated (ExtendedFilter columns) */
+.extended-filter-updated {
+  animation: cellUpdateGlow 1.5s ease-in-out;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Alternative pulse animation for more subtle effect */
+@keyframes cellUpdatePulse {
+  0% {
+    background-color: #e3f2fd;
+    border: 2px solid #2196f3;
+  }
+  50% {
+    background-color: #bbdefb;
+    border: 2px solid #1976d2;
+  }
+  100% {
+    background-color: transparent;
+    border: 1px solid transparent;
+  }
+}
+
+.cell-updated-subtle {
+  animation: cellUpdatePulse 1.2s ease-in-out;
+  transition: all 0.3s ease;
+}
+
 
 
 

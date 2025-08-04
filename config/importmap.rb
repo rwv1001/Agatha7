@@ -13,14 +13,10 @@ pin "display_format", to: "display_format.js", preload: true
 
 pin "edit", to: "edit.js", preload: true
 pin "group_filters", to: "group_filters.js", preload: true
-pin "search_table_updates", to: "search_table_updates.js", preload: true
-pin "consumer", to: "consumer.js", preload: true
-
 pin "search_ctl", to: "search_ctl.js", preload: true
 pin "template", to: "template.js", preload: true
 
 # ActionCable support
 pin "search_table_updates", to: "search_table_updates.js", preload: true
 pin "consumer", to: "consumer.js", preload: true
-pin "debug_actioncable", to: "debug_actioncable.js", preload: true
 

@@ -1,6 +1,7 @@
-<script type ="text/javascript">
-document.title =  ' <%= raw "#{@table_name}: #{@short_name}"%> '
-</script>
+<% content_for :title, "#{@table_name}: #{@short_name}" %>
+<% content_for :head do %>
+ <%= raw render(:partial => "shared/shared_model_style") %> 
+<% end %>
 
 <div class ="content_class" style="width: 100%">
   <div class ="pad_class">

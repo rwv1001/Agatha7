@@ -79,7 +79,12 @@ Rails.application.configure do
   
   # Allow ActionCable connections from Docker network
   config.action_cable.disable_request_forgery_protection = true
-  config.action_cable.allowed_request_origins = ['http://192.168.1.29:3000', 'http://localhost:3000']
+  config.action_cable.allowed_request_origins = [
+    'http://rwvagatha.duckdns.org:3000', 
+    'https://rwvagatha.duckdns.org:3000',
+    'http://localhost:3000',
+    'http://192.168.1.35:3000'  # Current IP as fallback
+  ]
   
   # Force ActionCable to use WebSocket (not falling back to polling)
   config.action_cable.url = "/cable"
@@ -91,6 +96,7 @@ Rails.application.configure do
   config.hosts << "rwv1111.duckdns.org"
   config.hosts << "rwvagatha.duckdns.org"
   config.hosts << "agatha.bfriars.ox.ac.uk"
+  config.hosts << "192.168.1.35"  # Current IP
 
 
 

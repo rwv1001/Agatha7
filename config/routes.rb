@@ -16,6 +16,22 @@ Rails.application.routes.draw do
         to: "welcome#table_search",
         via: [:get, :post]
 
+  match "welcome/add_external_filter",
+        to: "welcome#add_external_filter",
+        via: [:get, :post]
+
+  match "welcome/update_external_filter",
+        to: "welcome#update_external_filter",
+        via: [:get, :post]
+
+  match "welcome/update_group_filters",
+        to: "welcome#update_group_filters",
+        via: [:get, :post]
+
+  match "welcome/update_formats",
+        to: "welcome#update_formats",
+        via: [:get, :post]
+
   match "welcome/new",
         to: "welcome#new",
         via: [:get, :post]
