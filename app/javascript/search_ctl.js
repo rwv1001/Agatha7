@@ -121,8 +121,12 @@ function invert_selection(table_name, check_str) {
 window.invert_selection = invert_selection;
 
 function setSelectIndices(table_name) {
+  console.log("🔍 setSelectIndices called for table:", table_name);
   const search_results_div = document.getElementById("search_results_" + table_name);
   const specific_div = document.getElementById("order_checks_" + table_name);
+
+  console.log("🔍 search_results_div:", search_results_div);
+  console.log("🔍 specific_div:", specific_div);
 
   // Check if the required elements exist
   if (!search_results_div || !specific_div) {
@@ -135,19 +139,103 @@ function setSelectIndices(table_name) {
     specific_div.removeChild(specific_div.firstChild);
   }
 
+  console.log("🔍 About to copy .check checkboxes");
   insert_specific_div_checks(specific_div, search_results_div, '.check');
 
-  if (table_name === "Person") {
+  if (table_name === "Lecture") {
+    console.log("🔍 About to copy .examcheck and .compulsorycheck for Lecture table");
     insert_specific_div_checks(specific_div, search_results_div, '.examcheck');
     insert_specific_div_checks(specific_div, search_results_div, '.compulsorycheck');
   }
+
+  console.log("🔍 setSelectIndices completed. specific_div now has", specific_div.children.length, "elements");
 }
 window.setSelectIndices = setSelectIndices;
+
+function restoreSelectIndices(table_name, savedCheckboxStates = null) {
+  console.log("🔄 restoreSelectIndices called for table:", table_name);
+  console.log("🔄 savedCheckboxStates:", savedCheckboxStates);
+  
+  const search_results_div = document.getElementById("search_results_" + table_name);
+
+  // Check if the required elements exist
+  if (!search_results_div) {
+    console.warn("restoreSelectIndices: Missing search_results_div for table " + table_name);
+    return;
+  }
+
+  if (savedCheckboxStates && Object.keys(savedCheckboxStates).length > 0) {
+    // Use the passed saved states directly
+    console.log("🔄 Using passed savedCheckboxStates with", Object.keys(savedCheckboxStates).length, "entries");
+    
+    Object.keys(savedCheckboxStates).forEach(function(key) {
+      const checked = savedCheckboxStates[key];
+      
+      // Extract name and value from key like "row_in_list[][2136]"
+      const match = key.match(/^([^[]+\[\])\[([^\]]+)\]$/);
+      console.log("🔄 Restoring checkbox state for key:", key, "checked:", checked, "match:", match);
+      if (match) {
+        const name = match[1];  // This already includes the []
+        const value = match[2];
+        
+        console.log("🔄 Restoring checkbox - name:", name, "value:", value, "checked:", checked);
+        
+        const target_check = search_results_div.querySelector(`input[name="${name}"][value="${value}"]`);
+        if (target_check) {
+          console.log("🔄 Found target checkbox, setting checked =", checked);
+          target_check.checked = checked;
+        } else {
+          console.warn("🔄 Could not find target checkbox for name:", name, "value:", value);
+        }
+      } else {
+        console.warn("🔄 No match found for key:", key);
+      }
+
+    });
+  } else {
+    // Fallback to old method using order_checks div
+    console.log("🔄 No savedCheckboxStates provided, falling back to order_checks div method");
+    const specific_div = document.getElementById("order_checks_" + table_name);
+    
+    console.log("🔄 specific_div:", specific_div);
+    console.log("🔄 specific_div has", specific_div ? specific_div.children.length : 0, "saved elements");
+
+    if (!specific_div) {
+      console.warn("restoreSelectIndices: Missing order_checks div for table " + table_name);
+      return;
+    }
+
+    // Restore checkbox states from specific_div back to search_results_div
+    const saved_checks = specific_div.querySelectorAll('input[type="checkbox"]');
+    console.log("🔄 Found", saved_checks.length, "saved checkboxes to restore");
+    
+    saved_checks.forEach(function(saved_check, index) {
+      const name = saved_check.getAttribute('name');
+      const value = saved_check.getAttribute('value');
+      const checked = saved_check.checked;
+      
+      console.log("🔄 Restoring checkbox", index, "- name:", name, "value:", value, "checked:", checked);
+      
+      if (name && value) {
+        const target_check = search_results_div.querySelector(`input[name="${name}"][value="${value}"]`);
+        if (target_check) {
+          console.log("🔄 Found target checkbox, setting checked =", checked);
+          target_check.checked = checked;
+        } else {
+          console.warn("🔄 Could not find target checkbox for name:", name, "value:", value);
+        }
+      }
+    });
+  }
+  
+  console.log("🔄 restoreSelectIndices completed");
+}
+window.restoreSelectIndices = restoreSelectIndices;
 
 function searchOrder(field_name, table_name) {
     // Special test case for person_id_Person
     if (field_name === 'person_id' && table_name === 'Person') {
-        console.log('🧪 TEST: Calling test_order_toggle for person_id_Person');
+        console.log('🧪 TEST: Calling order_toggle for person_id_Person');
         testOrderToggle(field_name, table_name);
         return;
     }
@@ -190,7 +278,7 @@ function testOrderToggle(field_name, table_name) {
     formData.append('field_name', field_name);
     formData.append('table_name', table_name);
     
-    fetch('/welcome/test_order_toggle', {
+    fetch('/welcome/order_toggle', {
         method: 'POST',
         headers: {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')

@@ -3,11 +3,11 @@
   <input id= <%= raw "order_text_#{search_controller.table_name}" %>
          name="default_order_text" type="text" value="Display Field for ordering" >
   <label name ="order_text_label"> Display Field for ordering </label>
-  <input id= <%="\"order_indices_#{search_controller.table_name}\"" %>
+  <input id= <%= raw "order_indices_#{search_controller.table_name}" %>
          name="default_order_indices" type="text" value="Indices for ordering" >  
 </div>
 
-<div id= <%="\"order_checks_#{search_controller.table_name}\"" %> >
+<div id= <%= raw "order_checks_#{search_controller.table_name}" %> >
 
 </div>
 

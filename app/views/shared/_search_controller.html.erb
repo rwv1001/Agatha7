@@ -44,11 +44,7 @@
   <div>
    <% onclick_str = "Search('#{search_controller.table_name}');return false" %>
     <input type="button" name="search_button"  value="Search" onclick= <%= raw "#{onclick_str}"%> >
-    
-    <!-- Session Test Button -->
-    <input type="button" name="session_test_button" value="Session Test" 
-           onclick="window.open('/session_test/counter', '_blank'); return false;" 
-           style="margin-left: 10px; background-color: #ff6b6b; color: white; padding: 5px 10px; border: none; border-radius: 3px;">
+ 
   </div>
 
   <div style="display:none">

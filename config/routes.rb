@@ -16,8 +16,8 @@ Rails.application.routes.draw do
         to: "welcome#table_search",
         via: [:get, :post]
 
-  match "welcome/test_order_toggle",
-        to: "welcome#test_order_toggle",
+  match "welcome/order_toggle",
+        to: "welcome#order_toggle",
         via: [:get, :post]
 
   match "welcome/add_external_filter",

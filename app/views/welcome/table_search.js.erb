@@ -6,11 +6,25 @@
     if (el) el.innerHTML = html;
   };
 
+  // Save the checkbox states before updating current_filters
+  const orderChecksDiv = document.getElementById("order_checks_<%= table_name %>");
+  const savedCheckboxStates = {};
+  
+  if (orderChecksDiv) {
+    const checkboxes = orderChecksDiv.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+      const key = `${checkbox.name}[${checkbox.value}]`;
+      savedCheckboxStates[key] = checkbox.checked;
+    });
+    console.log("🔄 Saved checkbox states:", savedCheckboxStates);
+  }
+
   updateHTMLById("<%= "possible_filters_div_" + table_name %>", `<%= j render(:partial => 'shared/possible_filters', :object => search_ctl) %>`);
   updateHTMLById("<%= "current_filters_" + table_name %>", `<%= j render(:partial => 'shared/current_filters', :object => search_ctl) %>`);
 
   <% if(params.has_key?("do_search")) %>
     updateHTMLById("<%= "search_results_" + table_name %>", `<%= j render(:partial => 'shared/search_results', :object => search_results) %>`);
+    restoreSelectIndices("<%= table_name %>", savedCheckboxStates);
     resizeX();
   <% end %>
 

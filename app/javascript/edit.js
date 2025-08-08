@@ -824,12 +824,19 @@ window.on_add_attendees = on_add_attendees;
 
 
 function insert_specific_div_checks(specific_div, search_results_div, check_class) {
+    console.log("🔍 insert_specific_div_checks called with check_class:", check_class);
     const checks = search_results_div.querySelectorAll(check_class);
-    checks.forEach(function(check) {
+    console.log("🔍 Found", checks.length, "checkboxes with class", check_class);
+    
+    checks.forEach(function(check, index) {
+        console.log("🔍 Processing checkbox", index, "- name:", check.name, "value:", check.value, "checked:", check.checked);
         const new_elt = check.cloneNode(true);
         new_elt.removeAttribute('id');
         specific_div.appendChild(new_elt);
+        console.log("🔍 Cloned and appended checkbox", index);
     });
+    
+    console.log("🔍 insert_specific_div_checks completed for", check_class);
 }
 window.insert_specific_div_checks = insert_specific_div_checks;
 

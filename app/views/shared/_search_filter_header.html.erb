@@ -14,7 +14,7 @@
       <%= filter.header %>
     <% else %>
 <%= link_to filter.header,
-            welcome_test_order_toggle_path(table_name: table_name, order_text: field_name),
+            welcome_order_toggle_path(table_name: table_name, order_text: field_name),
             method: :post,
             remote: true,
             id: "reorder_#{filter.header}_#{table_name}" %>

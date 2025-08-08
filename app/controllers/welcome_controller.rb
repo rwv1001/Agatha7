@@ -474,8 +474,8 @@ layout "welcome"
      return id_str;
   end
   
-  def test_order_toggle
-    Rails.logger.error("🧪 TEST: test_order_toggle called with params: #{params.inspect}")
+  def order_toggle
+    Rails.logger.error("🧪 TEST: order_toggle called with params: #{params.inspect}")
     
    # unless session[:search_ctls]
     #  InitializeSessionController
@@ -541,7 +541,7 @@ layout "welcome"
     
     respond_to do |format|
       format.json { render json: response_data }
-      format.js { render js: "displayOrderToggleResults(#{response_data.to_json}); setSearchIndices('#{table_name}'); setSelectIndices('#{table_name}'); Search('#{table_name}');" }
+      format.js { render js: "console.log('🔧 ORDER_TOGGLE: About to call functions'); setSearchIndices('#{table_name}'); setSelectIndices('#{table_name}'); Search('#{table_name}');" }
     end
   end
   
@@ -3721,72 +3721,5 @@ end
 
   end
   
-  # Session counter actions for AJAX
-  def increment_counter
-    # Load current counter
-    current_counter = session[:counter] || 0
-    
-    # Increment it
-    new_counter = current_counter + 1
-    
-    # Save back to session
-    session[:counter] = new_counter
-    session[:last_counter_update] = Time.current.to_s
-    
-    Rails.logger.info "🔢 WELCOME INCREMENT - was: #{current_counter}, now: #{new_counter}"
-    
-    respond_to do |format|
-      format.json { 
-        render json: { 
-          counter: new_counter, 
-          last_update: session[:last_counter_update],
-          status: 'success' 
-        } 
-      }
-      format.js {
-        # For Rails UJS, render JavaScript to update the counter display
-        render js: "updateCounterDisplay({counter: #{new_counter}, last_update: '#{session[:last_counter_update]}', status: 'success'});"
-      }
-    end
-  end
   
-  def reset_counter
-    session[:counter] = 0
-    session[:last_counter_update] = Time.current.to_s
-    
-    Rails.logger.info "🔢 WELCOME RESET counter to 0"
-    
-    respond_to do |format|
-      format.json { 
-        render json: { 
-          counter: 0, 
-          last_update: session[:last_counter_update],
-          status: 'success' 
-        } 
-      }
-      format.js {
-        # For Rails UJS, render JavaScript to update the counter display
-        render js: "updateCounterDisplay({counter: 0, last_update: '#{session[:last_counter_update]}', status: 'success'});"
-      }
-    end
-  end
-  
-  def get_counter
-    counter_value = session[:counter] || 0
-    last_update = session[:last_counter_update]
-    
-    respond_to do |format|
-      format.json { 
-        render json: { 
-          counter: counter_value, 
-          last_update: last_update,
-          status: 'success' 
-        } 
-      }
-      format.js {
-        # For Rails UJS, render JavaScript to update the counter display
-        render js: "updateCounterDisplay({counter: #{counter_value}, last_update: '#{last_update}', status: 'success'});"
-      }
-    end
-  end
 end
