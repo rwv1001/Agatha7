@@ -13,10 +13,11 @@
     <% if table_type == :just_filters %>
       <%= filter.header %>
     <% else %>
-      <% on_click_order_string = "searchOrder('#{field_name}','#{table_name}');return false" %>
-      <a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_click_order_string}"%> >
-        <%= filter.header %>
-      </a>
+<%= link_to filter.header,
+            welcome_test_order_toggle_path(table_name: table_name, order_text: field_name),
+            method: :post,
+            remote: true,
+            id: "reorder_#{filter.header}_#{table_name}" %>
     <% end %>
   <% when :filter_string, :fixed_filter_string %>
     <% if filter.class == SearchField %>

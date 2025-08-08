@@ -13,7 +13,7 @@ end
 include FilterHelper
 class WelcomeController < ApplicationController
  
-#skip_before_action :authorize, only: [:index]
+skip_before_action :authorize, only: [:index]
 layout "welcome"
 
 
@@ -90,6 +90,9 @@ layout "welcome"
 
     Rails.logger.debug("WelcomeController:index d");
     Rails.logger.flush
+    
+    # Add session counter for display
+    @session_counter = session[:counter] || 0
   
     respond_to do |format|
       format.html # index.html.erb
@@ -98,6 +101,45 @@ layout "welcome"
     Rails.logger.debug("WelcomeController:index e");
     Rails.logger.flush
       x = 1;
+  end
+  
+  def get_session_counter
+    counter_value = session[:counter] || 0
+    last_update = session[:last_counter_update]
+    
+    render json: {
+      counter: counter_value,
+      last_update: last_update
+    }
+  end
+  
+  def increment_session_counter
+    current_counter = session[:counter] || 0
+    new_counter = current_counter + 1
+    
+    session[:counter] = new_counter
+    session[:last_counter_update] = Time.current.to_s
+    
+    Rails.logger.info "🔢 Welcome: Counter incremented from #{current_counter} to #{new_counter}"
+    
+    render json: {
+      counter: new_counter,
+      last_update: session[:last_counter_update],
+      success: true
+    }
+  end
+  
+  def reset_session_counter
+    session[:counter] = 0
+    session[:last_counter_update] = Time.current.to_s
+    
+    Rails.logger.info "🔢 Welcome: Counter reset to 0"
+    
+    render json: {
+      counter: 0,
+      last_update: session[:last_counter_update],
+      success: true
+    }
   end
   
   def inactive_user_pages(except_page_name)
@@ -281,7 +323,7 @@ layout "welcome"
 
     if(params.has_key?("order_text"))
       order_field_name = params["order_text"];
-      search_ctl.UpdateOrder(order_field_name)      
+      #search_ctl.UpdateOrder(order_field_name)      
     end
     exam_ids = [];
     row_ids = [];
@@ -430,6 +472,77 @@ layout "welcome"
         id_str << id.to_s;
      end
      return id_str;
+  end
+  
+  def test_order_toggle
+    Rails.logger.error("🧪 TEST: test_order_toggle called with params: #{params.inspect}")
+    
+   # unless session[:search_ctls]
+    #  InitializeSessionController
+    #end
+    
+    table_name = params[:table_name] || "Person"   
+    @search_ctls = session[:search_ctls]
+
+    search_ctl = @search_ctls[table_name];
+    order_field_name = params["order_text"];
+    search_ctl.UpdateOrder(order_field_name);
+    
+    #search_ctl = session[:search_ctls][table_name]
+    #if search_ctl.nil?
+     # Rails.logger.error("🧪 TEST: ERROR - No search controller for #{table_name}")
+      #render json: { error: "No search controller found for #{table_name}" }
+      #return
+    #end
+    
+    # Show session data before the call (using symbol keys)
+    session_order_key = :test_search_order_Person
+    session_direction_key = :test_search_direction_Person
+    session_counter_key = :test_toggle_counter_Person
+    #Rails.logger.error("🧪 TEST: Session before - #{session_order_key}: #{session[session_order_key].inspect}")
+    #Rails.logger.error("🧪 TEST: Session before - #{session_direction_key}: #{session[session_direction_key].inspect}")
+    Rails.logger.error("🧪 TEST: Session before - #{session_counter_key}: #{session[session_counter_key].inspect}")
+    
+
+    
+    # Call our test method, passing the session
+    #search_ctl.TestOrderToggle(field_name, session)
+    
+    # Show session data after the call
+    #Rails.logger.error("🧪 TEST: Session after - #{session_order_key}: #{session[session_order_key].inspect}")
+    #Rails.logger.error("🧪 TEST: Session after - #{session_direction_key}: #{session[session_direction_key].inspect}")
+    Rails.logger.error("🧪 TEST: Session after - #{session_counter_key}: #{session[session_counter_key].inspect}")
+  
+        # Read counter from session, increment it, and update session
+    current_counter = session[:test_toggle_counter_Person] || 0
+    new_counter = current_counter + 1
+    
+    # Force session to save using multiple approaches
+    session.delete(:test_toggle_counter_Person)  # Delete first to ensure change is detected
+    session[:test_toggle_counter_Person] = new_counter  # Set new value
+    session[:_force_save] = Time.current.to_f  # Add dummy value to force dirty flag
+    request.session_options[:renew] = true if request.respond_to?(:session_options)  # Force session renewal
+    
+    Rails.logger.error("🧪 TEST: Counter incremented from #{current_counter} to #{session[:test_toggle_counter_Person].inspect}")
+    Rails.logger.error("🧪 TEST: Forced session save using delete-set pattern + dummy value + renewal")
+
+    # Prepare the response data
+    response_data = {
+      table_name: table_name,
+      field_name: order_field_name,
+      session_search_order: session[session_order_key],
+      session_search_direction: session[session_direction_key],
+      toggle_counter: session[session_counter_key],
+      status: 'success'  # Add status field like the working increment counter
+    }
+    
+    Rails.logger.error("🧪 TEST: Returning response: #{response_data}")
+    session[:search_ctls] = @search_ctls
+    
+    respond_to do |format|
+      format.json { render json: response_data }
+      format.js { render js: "displayOrderToggleResults(#{response_data.to_json}); setSearchIndices('#{table_name}'); setSelectIndices('#{table_name}'); Search('#{table_name}');" }
+    end
   end
   
   def table_search
@@ -3606,5 +3719,74 @@ end
         Rails.logger.debug( "import_csv done display filters" );
     Rails.logger.flush
 
+  end
+  
+  # Session counter actions for AJAX
+  def increment_counter
+    # Load current counter
+    current_counter = session[:counter] || 0
+    
+    # Increment it
+    new_counter = current_counter + 1
+    
+    # Save back to session
+    session[:counter] = new_counter
+    session[:last_counter_update] = Time.current.to_s
+    
+    Rails.logger.info "🔢 WELCOME INCREMENT - was: #{current_counter}, now: #{new_counter}"
+    
+    respond_to do |format|
+      format.json { 
+        render json: { 
+          counter: new_counter, 
+          last_update: session[:last_counter_update],
+          status: 'success' 
+        } 
+      }
+      format.js {
+        # For Rails UJS, render JavaScript to update the counter display
+        render js: "updateCounterDisplay({counter: #{new_counter}, last_update: '#{session[:last_counter_update]}', status: 'success'});"
+      }
+    end
+  end
+  
+  def reset_counter
+    session[:counter] = 0
+    session[:last_counter_update] = Time.current.to_s
+    
+    Rails.logger.info "🔢 WELCOME RESET counter to 0"
+    
+    respond_to do |format|
+      format.json { 
+        render json: { 
+          counter: 0, 
+          last_update: session[:last_counter_update],
+          status: 'success' 
+        } 
+      }
+      format.js {
+        # For Rails UJS, render JavaScript to update the counter display
+        render js: "updateCounterDisplay({counter: 0, last_update: '#{session[:last_counter_update]}', status: 'success'});"
+      }
+    end
+  end
+  
+  def get_counter
+    counter_value = session[:counter] || 0
+    last_update = session[:last_counter_update]
+    
+    respond_to do |format|
+      format.json { 
+        render json: { 
+          counter: counter_value, 
+          last_update: last_update,
+          status: 'success' 
+        } 
+      }
+      format.js {
+        # For Rails UJS, render JavaScript to update the counter display
+        render js: "updateCounterDisplay({counter: #{counter_value}, last_update: '#{last_update}', status: 'success'});"
+      }
+    end
   end
 end

@@ -1591,6 +1591,8 @@ class SearchController
   end
 
   def UpdateOrder(order_field_name)
+
+    Rails.logger.debug("🧪 TEST: UpdateOrder called for '#{order_field_name}', search_direction: #{@search_direction.inspect}")
     order_index = @hash_to_index[order_field_name]
     if(order_index == @search_order[0])
       if @search_direction[0] == :asc
@@ -1609,6 +1611,82 @@ class SearchController
         @order_updated = true;
       end
     end
+    Rails.logger.debug("🧪 TEST: UpdateOrder after update search_direction: #{@search_direction.inspect}")
+  end
+
+  def TestOrderToggle(order_field_name, session)
+    Rails.logger.error("🧪 TEST: TestOrderToggle called for '#{order_field_name}'")
+    
+    # Use symbol keys for persistence (hardcoded for Person table)
+    session_order_key = :test_search_order_Person
+    session_direction_key = :test_search_direction_Person
+    
+    
+    # Initialize or load from session
+    if session[session_order_key].nil? || session[session_direction_key].nil?
+      Rails.logger.error("🧪 TEST: Initializing session data from controller state")
+      session[session_order_key] = @search_order.dup
+      session[session_direction_key] = @search_direction.dup
+      
+    end
+    
+    # Increment the counter
+    
+    
+    # Work with session data directly
+    search_order = session[session_order_key]
+    search_direction = session[session_direction_key]
+    
+    Rails.logger.error("🧪 TEST: Loaded search_order from session = #{search_order.inspect}")
+    Rails.logger.error("🧪 TEST: Loaded search_direction from session = #{search_direction.inspect}")
+    
+    order_index = @hash_to_index[order_field_name]
+    Rails.logger.error("🧪 TEST: order_index for '#{order_field_name}' = #{order_index}")
+    
+    if order_index.nil?
+      Rails.logger.error("🧪 TEST: ERROR - order_index is nil!")
+      return
+    end
+    
+    if(order_index == search_order[0])
+      if search_direction[0] == :asc
+        search_direction[0] = :desc
+        Rails.logger.error("🧪 TEST: Toggled primary sort from ASC to DESC")
+      else
+        search_direction[0] = :asc
+        Rails.logger.error("🧪 TEST: Toggled primary sort from DESC to ASC")
+      end
+    else
+      old_pos = search_order.index(order_index)
+      Rails.logger.error("🧪 TEST: Moving field from position #{old_pos} to primary position")
+      if(old_pos !=nil)
+        search_dir = search_direction[old_pos];
+        search_order.delete_at(old_pos);
+        search_direction.delete_at(old_pos);
+        search_order.insert(0,order_index);
+        search_direction.insert(0,search_dir);
+        Rails.logger.error("🧪 TEST: Moved to primary position with direction #{search_dir}")
+      else
+        Rails.logger.error("🧪 TEST: Field not found in current order, adding as primary")
+        search_order.insert(0,order_index);
+        search_direction.insert(0,:asc);
+      end
+    end
+    
+    # Save back to session
+    session[session_order_key] = search_order
+    session[session_direction_key] = search_direction
+    
+    Rails.logger.error("🧪 TEST: Saved search_order to session = #{search_order.inspect}")
+    Rails.logger.error("🧪 TEST: Saved search_direction to session = #{search_direction.inspect}")
+    
+    
+    # Also update the controller state for consistency
+    @search_order = search_order.dup
+    @search_direction = search_direction.dup
+    
+    Rails.logger.error("🧪 TEST: Final search_order = #{@search_order.inspect}")
+    Rails.logger.error("🧪 TEST: Final search_direction = #{@search_direction.inspect}")
   end
 
   def UpdateOrder2(order_index)

@@ -124,6 +124,12 @@ function setSelectIndices(table_name) {
   const search_results_div = document.getElementById("search_results_" + table_name);
   const specific_div = document.getElementById("order_checks_" + table_name);
 
+  // Check if the required elements exist
+  if (!search_results_div || !specific_div) {
+    console.warn("setSelectIndices: Missing required elements for table " + table_name);
+    return;
+  }
+
   // Clear all children from specific_div
   while (specific_div.firstChild) {
     specific_div.removeChild(specific_div.firstChild);
@@ -139,6 +145,13 @@ function setSelectIndices(table_name) {
 window.setSelectIndices = setSelectIndices;
 
 function searchOrder(field_name, table_name) {
+    // Special test case for person_id_Person
+    if (field_name === 'person_id' && table_name === 'Person') {
+        console.log('🧪 TEST: Calling test_order_toggle for person_id_Person');
+        testOrderToggle(field_name, table_name);
+        return;
+    }
+    
     wait();
     const order_element_str = "order_text_" + table_name;
 
@@ -168,6 +181,67 @@ function searchOrder(field_name, table_name) {
     Rails.fire(elem, 'submit');;
 }
 window.searchOrder = searchOrder;
+
+function testOrderToggle(field_name, table_name) {
+    console.log('🧪 TEST: testOrderToggle called with field_name=' + field_name + ', table_name=' + table_name);
+    
+    // Make AJAX call using FormData like the working increment counter
+    const formData = new FormData();
+    formData.append('field_name', field_name);
+    formData.append('table_name', table_name);
+    
+    fetch('/welcome/test_order_toggle', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('🧪 TEST: Response received:', data);
+        
+        // Display the results on the page
+        displayOrderToggleResults(data);
+    })
+    .catch(error => {
+        console.error('🧪 TEST: Error:', error);
+    });
+}
+window.testOrderToggle = testOrderToggle;
+
+function displayOrderToggleResults(data) {
+    // Find or create a display area for our test results
+    let displayDiv = document.getElementById('order_toggle_test_results');
+    if (!displayDiv) {
+        displayDiv = document.createElement('div');
+        displayDiv.id = 'order_toggle_test_results';
+        displayDiv.style.cssText = 'background: #ffffcc; border: 2px solid #cccc00; padding: 10px; margin: 10px; font-family: monospace;';
+        
+        // Insert at the top of the search results area
+        const searchResults = document.querySelector('#search_results_Person, [class*="search_results"]');
+        if (searchResults && searchResults.parentNode) {
+            searchResults.parentNode.insertBefore(displayDiv, searchResults);
+        } else {
+            // Fallback: add to body
+            document.body.insertBefore(displayDiv, document.body.firstChild);
+        }
+    }
+    
+    displayDiv.innerHTML = `
+        <h3>🧪 Order Toggle Test Results</h3>
+        <p><strong>🔢 Toggle Counter:</strong> ${data.toggle_counter || 0}</p>
+        <p><strong>Field:</strong> ${data.field_name}</p>
+        <p><strong>Table:</strong> ${data.table_name}</p>
+        <p><strong>Field Index:</strong> ${data.hash_to_index || 'N/A (commented out)'}</p>
+        <p><strong>Controller Search Order:</strong> [${data.controller_search_order ? data.controller_search_order.join(', ') : 'N/A (commented out)'}]</p>
+        <p><strong>Controller Search Direction:</strong> [${data.controller_search_direction ? data.controller_search_direction.join(', ') : 'N/A (commented out)'}]</p>
+        <p><strong>🔑 Session Search Order:</strong> [${data.session_search_order ? data.session_search_order.join(', ') : 'null'}]</p>
+        <p><strong>🔑 Session Search Direction:</strong> [${data.session_search_direction ? data.session_search_direction.join(', ') : 'null'}]</p>
+        <p><em>Time: ${new Date().toLocaleTimeString()}</em></p>
+    `;
+}
+window.displayOrderToggleResults = displayOrderToggleResults;
 
 function disableSubmitters() {
 

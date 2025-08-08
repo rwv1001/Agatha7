@@ -14,7 +14,7 @@ class AdminController < ApplicationController
     
     
     
-     if session[:valid_ip] == false
+     if !session.key?(:valid_ip) || session[:valid_ip] == false
       Rails.logger.debug "AdminController:login b"
          current_ip = request.remote_ip
          if current_ip =~ /(127\.0\.0\.1|163\.1\.170\..*|192\.168\.1\..*|10\.100\.1\..*|129\.67\..*\..*)/

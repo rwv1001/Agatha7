@@ -85,6 +85,34 @@
         <%= link_to '(Logout)', :controller => :admin, :action => 'logout'%>
       </p>
     </div>
+    
+    <!-- Session Counter Display -->
+    <div style="clear:both; background-color: #f0f8ff; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <strong>Session Counter:</strong> 
+          <span id="session-counter-value" style="font-size: 1.2em; color: #007cba; font-weight: bold;"><%= @session_counter %></span>
+          <span id="session-counter-update" style="font-size: 0.8em; color: #666; margin-left: 10px;">
+            <% if session[:last_counter_update] %>
+              Last updated: <%= session[:last_counter_update] %>
+            <% end %>
+          </span>
+        </div>
+        <div>
+          <%= link_to "➕ Increment", "/welcome/increment_counter", 
+                      method: :post, remote: true, id: "increment-counter-link",
+                      style: "background: #28a745; color: white; text-decoration: none; padding: 5px 10px; margin: 0 2px; border-radius: 3px; display: inline-block;" %>
+          <button id="reset-counter-btn" 
+                  style="background: #dc3545; color: white; border: none; padding: 5px 10px; margin: 0 2px; border-radius: 3px; cursor: pointer;">
+            🔄 Reset
+          </button>
+          <button id="refresh-counter-btn" 
+                  style="background: #17a2b8; color: white; border: none; padding: 5px 10px; margin: 0 2px; border-radius: 3px; cursor: pointer;">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+    </div>
     <div id="first_menu_div"> </div>
     <div style ="width: 150px; position:  absolute;bottom:0;">
       <p style="text-align: center; font-size: 25%;"> </p>
@@ -474,5 +502,79 @@
     <div id="administrator_div"></div>
   <%  end %>
 </div>
+
+<script>
+// Session Counter AJAX Functions
+function updateCounterDisplay(data) {
+  document.getElementById('session-counter-value').textContent = data.counter;
+  if (data.last_update) {
+    document.getElementById('session-counter-update').textContent = 'Last updated: ' + data.last_update;
+  }
+}
+
+function incrementCounter() {
+  fetch('/welcome/increment_counter', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      updateCounterDisplay(data);
+      console.log('🔢 Counter incremented to:', data.counter);
+    }
+  })
+  .catch(error => {
+    console.error('Error incrementing counter:', error);
+  });
+}
+
+function resetCounter() {
+  fetch('/welcome/reset_counter', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      updateCounterDisplay(data);
+      console.log('🔢 Counter reset to:', data.counter);
+    }
+  })
+  .catch(error => {
+    console.error('Error resetting counter:', error);
+  });
+}
+
+function refreshCounter() {
+  fetch('/welcome/get_counter')
+  .then(response => response.json())
+  .then(data => {
+    updateCounterDisplay(data);
+    console.log('🔢 Counter refreshed:', data.counter);
+  })
+  .catch(error => {
+    console.error('Error refreshing counter:', error);
+  });
+}
+
+// Add event listeners when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Increment is now handled by link_to with remote: true
+  document.getElementById('reset-counter-btn').addEventListener('click', resetCounter);
+  document.getElementById('refresh-counter-btn').addEventListener('click', refreshCounter);
+  
+  console.log('🔢 Session counter controls initialized');
+});
+
+// Auto-refresh counter every 30 seconds to test persistence
+setInterval(refreshCounter, 30000);
+</script>>
 
 

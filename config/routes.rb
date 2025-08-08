@@ -16,6 +16,10 @@ Rails.application.routes.draw do
         to: "welcome#table_search",
         via: [:get, :post]
 
+  match "welcome/test_order_toggle",
+        to: "welcome#test_order_toggle",
+        via: [:get, :post]
+
   match "welcome/add_external_filter",
         to: "welcome#add_external_filter",
         via: [:get, :post]
@@ -31,6 +35,11 @@ Rails.application.routes.draw do
   match "welcome/update_formats",
         to: "welcome#update_formats",
         via: [:get, :post]
+        
+  # Session counter actions for welcome page
+  get "welcome/get_counter", to: "welcome#get_counter"
+  post "welcome/increment_counter", to: "welcome#increment_counter"
+  post "welcome/reset_counter", to: "welcome#reset_counter"
 
   match "welcome/multi_table_create",
         to: "welcome#multi_table_create",
@@ -65,6 +74,11 @@ Rails.application.routes.draw do
         to: "people#clear_filter",
         via: [:get, :post]
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  
+  # Session test routes
+  get "session_test/counter", to: "session_test#counter"
+  post "session_test/increment", to: "session_test#increment"
+  post "session_test/reset", to: "session_test#reset"
   
   # RESTful resources with custom actions
   %w[

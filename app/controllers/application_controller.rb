@@ -30,7 +30,7 @@ protected
 Rails.logger.debug "ApplicationController:authorize a"
 
         current_ip = request.remote_ip 
-        if session[:current_ip] != current_ip #force logout if ip has changed
+        if !session.key?(:current_ip) || session[:current_ip] != current_ip #force logout if ip has changed
           Rails.logger.debug "ApplicationController:authorize b"
            session[:current_ip] = current_ip
 	   session[:valid_ip] = false

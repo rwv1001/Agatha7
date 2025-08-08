@@ -1,0 +1,53 @@
+<div class="session-test-container" style="max-width: 600px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+  <h1>🔢 Cookie Store Session Persistence Test</h1>
+  
+  <div class="counter-display" style="background: #f0f0f0; padding: 20px; margin: 20px 0; text-align: center; border-radius: 4px;">
+    <h2>Current Counter Value: <span style="color: #007cba; font-size: 2em;"><%= @counter_value %></span></h2>
+    <% if @last_update %>
+      <p><strong>Last Updated:</strong> <%= @last_update %></p>
+    <% end %>
+  </div>
+  
+  <div class="test-instructions" style="background: #e7f3ff; padding: 15px; margin: 20px 0; border-radius: 4px;">
+    <h3>Test Instructions:</h3>
+    <ol>
+      <li>Click "Increment Counter" several times</li>
+      <li>Refresh the page to see if the counter persists</li>
+      <li>Close the browser tab and reopen the URL</li>
+      <li>Check if the counter value is maintained across requests</li>
+    </ol>
+  </div>
+  
+  <div class="buttons" style="text-align: center; margin: 20px 0;">
+    <%= form_with url: session_test_increment_path, method: :post, local: true, style: "display: inline-block; margin: 10px;" do |f| %>
+      <%= f.submit "➕ Increment Counter", class: "btn btn-primary", style: "padding: 10px 20px; font-size: 16px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer;" %>
+    <% end %>
+    
+    <%= form_with url: session_test_reset_path, method: :post, local: true, style: "display: inline-block; margin: 10px;" do |f| %>
+      <%= f.submit "🔄 Reset Counter", class: "btn btn-secondary", style: "padding: 10px 20px; font-size: 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;" %>
+    <% end %>
+  </div>
+  
+  <div class="test-results" style="background: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 4px;">
+    <h3>What to Look For:</h3>
+    <ul>
+      <li><strong>✅ Success:</strong> Counter persists after page refresh and browser restart</li>
+      <li><strong>❌ Failure:</strong> Counter resets to 0 unexpectedly</li>
+      <li><strong>📋 Logs:</strong> Check Docker logs for session persistence messages</li>
+    </ul>
+  </div>
+  
+  <div class="navigation" style="text-align: center; margin-top: 30px;">
+    <%= link_to "🏠 Back to Main App", root_path, style: "color: #007cba; text-decoration: none; font-weight: bold;" %>
+  </div>
+</div>
+
+<script>
+// Auto-refresh every 5 seconds to test persistence
+setTimeout(function() {
+  document.body.style.opacity = '0.7';
+  setTimeout(function() {
+    window.location.reload();
+  }, 1000);
+}, 30000); // Refresh after 30 seconds
+</script>
