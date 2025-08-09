@@ -901,3 +901,23 @@ function group_restriction(table_name) {
   group_restriction_timeout(table_name, do_update);
 }
 window.group_restriction = group_restriction;
+
+function refreshExternalFilterSelects(table_name) {
+  console.log("🔄 Refreshing external filter selects for table:", table_name);
+  
+  // Find all external filter argument selections for this table
+  const externalFilterSelects = document.querySelectorAll(`#external_filters_${table_name} .external_filter_argument_selection`);
+  console.log("🔄 Found", externalFilterSelects.length, "external filter selects to refresh");
+  
+  externalFilterSelects.forEach(select => {
+    // Only trigger the onchange event if it exists to reload options
+    if (select.onchange) {
+      console.log("🔄 Triggering onchange for select:", select.id);
+      // Add a small delay to prevent conflicts
+      setTimeout(() => {
+        select.onchange();
+      }, 50);
+    }
+  });
+}
+window.refreshExternalFilterSelects = refreshExternalFilterSelects;

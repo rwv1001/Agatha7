@@ -1,18 +1,165 @@
-alert('<%="#{success_str}#{error_str}"%>');
-<% if deleted_ids.length>0 %>
-    
-    on_del('<%="#{table_name}"%>', [<%="#{deleted_ids}"%>]);
-    
-    <%  Rails.logger.info("RWV delete_array deleted_ids = #{deleted_ids}"); %>
-    
-    <% if delete_hash_str.empty? %>
-        <%  Rails.logger.info("RWV delete_array hash empty"); %>
-    <% else %>   
-        <%  Rails.logger.info("RWV delete_array delete_hash_str length = #{delete_hash_str.length}"); %>
-        <% delete_hash_str.each do |delete_table, delete_ids_str| %>
-            <%  Rails.logger.info("RWV delete_array delete_table=#{delete_table}, delete_ids_str = #{delete_ids_str}"); %>
-            on_del('<%="#{delete_table.to_s}"%>', [<%="#{delete_ids_str}"%>]);
+// Delete operation response
+try {
+    alert('<%="#{success_str}#{error_str}"%>');
+    console.log("🗑️ Delete operation completed for table:", "<%=table_name%>");
+    console.log("🗑️ Deleted IDs:", "<%=deleted_ids%>");
+
+    <% if deleted_ids.length > 0 %>
+        
+        on_del('<%="#{table_name}"%>', [<%="#{deleted_ids}"%>]);
+        
+        <%  Rails.logger.info("RWV delete_array deleted_ids = #{deleted_ids}"); %>
+        
+        <% if delete_hash_str.empty? %>
+            <%  Rails.logger.info("RWV delete_array hash empty"); %>
+        <% else %>   
+            <%  Rails.logger.info("RWV delete_array delete_hash_str length = #{delete_hash_str.length}"); %>
+            <% delete_hash_str.each do |delete_table, delete_ids_str| %>
+                <%  Rails.logger.info("RWV delete_array delete_table=#{delete_table}, delete_ids_str = #{delete_ids_str}"); %>
+                on_del('<%="#{delete_table.to_s}"%>', [<%="#{delete_ids_str}"%>]);
+            <% end %>
         <% end %>
+        
+        // Update group member counts if any groupable items were deleted
+        <% 
+        # Define all model classes that can have groups
+        groupable_models = %w[Person Lecture Course Attendee Tutorial TutorialSchedule Institution User Term Day Location WillingLecturer WillingTutor EmailTemplate AgathaEmail]
+        %>
+        <% if groupable_models.include?(table_name) %>
+            // Trigger refreshes of both Group and Group<%= table_name %> tables
+            setTimeout(function() {
+                try {
+                    console.log("🎯 Triggering Group and Group<%= table_name %> table refreshes after <%= table_name.downcase %> deletion");
+                    
+                    let groupRefreshTriggered = false;
+                    let groupModelRefreshTriggered = false;
+                    
+                    // First, refresh the Group table to update member counts
+                    const groupSearchResults = document.getElementById('search_results_Group');
+                    if (groupSearchResults) {
+                        console.log("Found Group table, triggering refresh to update member counts");
+                        
+                        // Find and click the correct Group search button (not Group<%= table_name %>)
+                        const groupSearchButtons = [
+                            document.querySelector('input[onclick="Search(\'Group\');return false"]'),
+                            document.querySelector('input[onclick*="Search(\'Group\')"]'),
+                            document.querySelector('#search_button_Group'),
+                            document.querySelector('input[value="Search"][onclick*="Group"]:not([onclick*="Group<%= table_name %>"])')
+                        ];
+                        
+                        for (let button of groupSearchButtons) {
+                            if (button && !groupRefreshTriggered) {
+                                const onclick = button.getAttribute('onclick') || '';
+                                // Make sure we're clicking the Group search, not Group<%= table_name %>
+                                if (onclick.includes("Search('Group')") && !onclick.includes("Group<%= table_name %>")) {
+                                    console.log("Found correct Group search button, clicking to refresh:", button);
+                                    button.click();
+                                    groupRefreshTriggered = true;
+                                    break;
+                                } else {
+                                    console.log("Skipping Group button with wrong onclick:", onclick);
+                                }
+                            }
+                        }
+                        
+                        // Try calling Search function directly for Group if button not found
+                        if (!groupRefreshTriggered && typeof Search === 'function') {
+                            console.log("Calling Search('Group') directly");
+                            Search('Group');
+                            groupRefreshTriggered = true;
+                        }
+                    }
+                    
+                    // Second, refresh the Group<%= table_name %> table to remove deleted <%= table_name.downcase %>'s memberships  
+                    const groupModelSearchResults = document.getElementById('search_results_Group<%= table_name %>');
+                    if (groupModelSearchResults) {
+                        console.log("Found Group<%= table_name %> table, triggering refresh to remove deleted <%= table_name.downcase %>'s memberships");
+                        
+                        // Find and click the Group<%= table_name %> search button
+                        const groupModelSearchButtons = [
+                            document.querySelector('input[onclick="Search(\'Group<%= table_name %>\');return false"]'),
+                            document.querySelector('input[onclick*="Search(\'Group<%= table_name %>\')"]'),
+                            document.querySelector('#search_button_Group<%= table_name %>'),
+                            document.querySelector('input[value="Search"][onclick*="Group<%= table_name %>"]')
+                        ];
+                        
+                        for (let button of groupModelSearchButtons) {
+                            if (button && !groupModelRefreshTriggered) {
+                                const onclick = button.getAttribute('onclick') || '';
+                                if (onclick.includes("Search('Group<%= table_name %>')")) {
+                                    console.log("Found Group<%= table_name %> search button, clicking to refresh:", button);
+                                    button.click();
+                                    groupModelRefreshTriggered = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Try calling Search function directly for Group<%= table_name %> if button not found
+                        if (!groupModelRefreshTriggered && typeof Search === 'function') {
+                            console.log("Calling Search('Group<%= table_name %>') directly");
+                            Search('Group<%= table_name %>');
+                            groupModelRefreshTriggered = true;
+                        }
+                    }
+                    
+                    // Provide feedback about what was refreshed
+                    console.log("✅ Table refreshes triggered:", {
+                        Group: groupRefreshTriggered,
+                        'Group<%= table_name %>': groupModelRefreshTriggered
+                    });
+                    
+                    // Add visual feedback to group member count cells after Group table refresh
+                    if (groupRefreshTriggered) {
+                        setTimeout(() => {
+                            try {
+                                console.log("Adding visual feedback to group member count cells");
+                                
+                                // Target only actual group data rows in the search results table
+                                const groupTable = document.getElementById('search_results_table_Group');
+                                if (groupTable) {
+                                    const groupDataRows = groupTable.querySelectorAll('tr[id$="_Group"]');
+                                    const actualGroupRows = Array.from(groupDataRows).filter(row => {
+                                        const id = row.id.replace('_Group', '');
+                                        return /^\d+$/.test(id); // Only numeric IDs (actual data rows)
+                                    });
+                                    
+                                    console.log("Found", actualGroupRows.length, "actual group data rows in search results");
+                                    
+                                    actualGroupRows.forEach(function(groupRow) {
+                                        const membersCell = groupRow.querySelector('.Number_of_group_members_Group');
+                                        if (membersCell) {
+                                            membersCell.classList.add('cell-updated');
+                                            setTimeout(() => {
+                                                membersCell.classList.remove('cell-updated');
+                                            }, 1500);
+                                            console.log("✨ Highlighted group member count cell for group:", groupRow.id, "Current count:", membersCell.textContent.trim());
+                                        }
+                                    });
+                                } else {
+                                    console.log("❌ Could not find search_results_table_Group");
+                                }
+                            } catch (error) {
+                                console.error("❌ Error in group cell highlighting:", error);
+                            }
+                        }, 800); // Wait for Group refresh to complete
+                    }
+                } catch (error) {
+                    console.error("❌ Error in group table refresh:", error);
+                }
+            }, 100);
+        <% else %>
+            console.log("ℹ️ <%= table_name %> is not a groupable model, skipping group refresh");
+        <% end %>
+    <% else %>
+        console.log("ℹ️ No items were deleted, skipping group refresh");
     <% end %>
-<% end %>
-unwait();  
+    
+} catch (error) {
+    console.error("❌ Error in delete operation response:", error);
+} finally {
+    // Always call unwait to ensure UI is unlocked
+    if (typeof unwait === 'function') {
+        unwait();
+    }
+}  

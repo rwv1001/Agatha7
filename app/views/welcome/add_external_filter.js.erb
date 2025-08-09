@@ -3,4 +3,10 @@ document.querySelector('#external_filters_<%= table_name %>').insertAdjacentHTML
     "<%= j render(partial: 'shared/external_filter', object: external_filter) %>"
 );
 resizeExternalFilters('<%= table_name %>');
+
+// Refresh external filter selects to ensure they're properly populated
+if (typeof refreshExternalFilterSelects === 'function') {
+  refreshExternalFilterSelects('<%= table_name %>');
+}
+
 unwait();

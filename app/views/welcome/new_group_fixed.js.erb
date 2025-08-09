@@ -20,15 +20,15 @@
 
     <% if ids && ids.any? %>
       // Update Groups_in_<%= table_name %> cells for each added member
-      <% ids.each_with_index do |person_id, index| %>
+      <% ids.each do |person_id| %>
         console.log("Looking for <%= table_name.downcase %> row: <%= person_id %>_<%= table_name %>");
-        const personRowElement<%= index %> = document.getElementById('<%= person_id %>_<%= table_name %>');
-        if (personRowElement<%= index %>) {
-          const groupsCell<%= index %> = personRowElement<%= index %>.querySelector('.Groups_in_<%= table_name %>');
-          if (groupsCell<%= index %>) {
-            groupsCell<%= index %>.classList.add('cell-updated');
+        const <%= table_name.downcase %>RowElement_<%= person_id %> = document.getElementById('<%= person_id %>_<%= table_name %>');
+        if (<%= table_name.downcase %>RowElement_<%= person_id %>) {
+          const groupsCell_<%= person_id %> = <%= table_name.downcase %>RowElement_<%= person_id %>.querySelector('.Groups_in_<%= table_name %>');
+          if (groupsCell_<%= person_id %>) {
+            groupsCell_<%= person_id %>.classList.add('cell-updated');
             setTimeout(() => {
-              groupsCell<%= index %>.classList.remove('cell-updated');
+              groupsCell_<%= person_id %>.classList.remove('cell-updated');
             }, 1500);
             console.log("✨ Highlighted <%= table_name.downcase %> <%= person_id %>'s groups cell");
           }
@@ -86,51 +86,18 @@
       }
 
       const newOptionStr = "<%= search_ctl_group.GetShortField(new_row.id) %>";
-      
-      // Update existing select options and add new ones with RTL styling
-      const selectElements = document.getElementsByClassName("Group_select");
-      let optionFound = false;
-      
-      for (let i = 0; i < selectElements.length; i++) {
-        const selectElt = selectElements[i];
-        
-        // Check if option already exists and update it
-        for (let j = 0; j < selectElt.options.length; j++) {
-          const option = selectElt.options[j];
-          if (option.value == <%= new_row.id %>) {
-            option.text = newOptionStr;
-            option.style.direction = "rtl";
-            optionFound = true;
-          }
-        }
-        
-        // If option doesn't exist, add it with RTL styling
-        if (!optionFound && newOptionStr.length > 0) {
-          const newOption = document.createElement("option");
-          newOption.value = <%= new_row.id %>;
-          newOption.text = newOptionStr;
-          newOption.style.direction = "rtl";
-          
-          // Insert in alphabetical order
-          let inserted = false;
-          for (let j = 0; j < selectElt.options.length; j++) {
-            const option = selectElt.options[j];
-            if (option.text.trim().toLowerCase() > newOptionStr.trim().toLowerCase()) {
-              selectElt.insertBefore(newOption, option);
-              inserted = true;
-              break;
-            }
-          }
-          if (!inserted) {
-            selectElt.appendChild(newOption);
-          }
-        }
-      }
+      select_update("Group", <%= new_row.id %>, newOptionStr);
     })();
   <% end %>
 
   recolour("Group");
   action_select_no_js();
+
+  // Refresh external filters for all tables to ensure new group appears in selects
+  if (typeof refreshExternalFilterSelects === 'function') {
+    refreshExternalFilterSelects("Person");
+    refreshExternalFilterSelects("Group");
+  }
 
   // Update external filter selects for Person tables that reference Group
   <% if table_name == "Person" %>
@@ -149,7 +116,6 @@
         const newOption = document.createElement('option');
         newOption.value = '<%= new_group_id %>';
         newOption.text = '<%= group_name %>';
-        newOption.style.direction = 'rtl';
         select.appendChild(newOption);
       }
     });

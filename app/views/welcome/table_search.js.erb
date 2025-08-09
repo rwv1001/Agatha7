@@ -30,5 +30,11 @@
 
   action_select_no_js();
   resizeFilters();
+  
+  // Refresh external filter selects to ensure they're properly populated
+  if (typeof refreshExternalFilterSelects === 'function') {
+    refreshExternalFilterSelects("<%= table_name %>");
+  }
+  
   unwait();
 })();

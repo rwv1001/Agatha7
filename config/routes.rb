@@ -49,6 +49,10 @@ Rails.application.routes.draw do
         to: "welcome#new",
         via: [:get, :post]
 
+  match "welcome/delete",
+        to: "welcome#delete",
+        via: [:get, :post]
+
   match "welcome/select_action",
         to: "welcome#select_action",
         via: [:get, :post]
