@@ -1,6 +1,78 @@
 // ActionCable Search Table Updates
 import consumer from "./consumer";
 
+// Initialize external filters on page load
+function initializeExternalFilters() {
+  console.log("🔧 Initializing external filters on page load...");
+  
+  // Find all external filter tables
+  const externalFilterTables = document.querySelectorAll('[id^="external_filters_"]');
+  console.log("🔧 Found", externalFilterTables.length, "external filter tables");
+  
+  externalFilterTables.forEach(function(table) {
+    const tableName = table.id.replace('external_filters_', '');
+    console.log("🔧 Processing external filters for table:", tableName);
+    
+    // Find all external filter rows in this table
+    const filterRows = table.querySelectorAll('[id^="external_filter_"]');
+    console.log("🔧 Found", filterRows.length, "external filter rows for", tableName);
+    
+    filterRows.forEach(function(filterRow, rowIndex) {
+      console.log("🔧 Processing external filter row:", filterRow.id);
+      
+      // Find all select elements in this filter row
+      const selectElements = filterRow.querySelectorAll('select');
+      console.log("🔧 Found", selectElements.length, "select elements in filter row");
+      
+      selectElements.forEach(function(select, selectIndex) {
+        console.log("🔧 Processing select element:", select.id);
+        
+        // For group selection elements, trigger change to populate dependent selects
+        if (select.classList.contains('Group_select')) {
+          console.log("🔧 Initializing group selection:", select.id);
+          setTimeout(function() {
+            if (select.onchange) {
+              console.log("🔧 Triggering onchange for group select:", select.id);
+              select.onchange();
+            } else {
+              console.log("🔧 Dispatching change event for group select:", select.id);
+              const event = new Event('change', { bubbles: true });
+              select.dispatchEvent(event);
+            }
+          }, (rowIndex * 200) + (selectIndex * 100)); // Stagger initialization
+        }
+        
+        // For argument selection elements that are empty, try to populate them
+        if (select.classList.contains('external_filter_argument_selection')) {
+          console.log("🔧 Checking argument selection:", select.id, "Options count:", select.options.length);
+          
+          if (select.options.length <= 1) { // Only default option or empty
+            console.log("🔧 Argument selection needs population, looking for group selector");
+            
+            // Find the corresponding group selector in the same filter row
+            const groupSelector = filterRow.querySelector('select.Group_select');
+            if (groupSelector) {
+              console.log("🔧 Found group selector, will trigger after group initialization");
+              setTimeout(function() {
+                if (groupSelector.onchange) {
+                  console.log("🔧 Triggering group selector to populate argument selection");
+                  groupSelector.onchange();
+                }
+              }, (rowIndex * 200) + (selectIndex * 100) + 50); // Slightly after group selector
+            } else {
+              console.log("⚠️ No group selector found for argument selection:", select.id);
+            }
+          } else {
+            console.log("✅ Argument selection already has options:", select.options.length);
+          }
+        }
+      });
+    });
+  });
+  
+  console.log("✅ External filter initialization completed");
+}
+
 // Fallback function to get ActionCable consumer across browsers
 function getActionCableConsumer() {
   // Try multiple ways to get the consumer for cross-browser compatibility
@@ -20,6 +92,9 @@ function getActionCableConsumer() {
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log("🚀 DOM loaded, initializing ActionCable...");
+  
+  // Initialize external filters on page load
+  initializeExternalFilters();
   
   const actionCableConsumer = getActionCableConsumer();
   

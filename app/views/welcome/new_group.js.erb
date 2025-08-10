@@ -2,12 +2,12 @@
 <% if existing_group.nil? %>
   <% eval("#{table_name}.set_controller(search_ctl)") %>
   <% updated_objects = search_ctl.GetUpdateObjects(table_name, ["id"], ids) %>
-  <% updated_objects.each do |row| %>
+  <% updated_objects.each_with_index do |row, row_index| %>
     (function(){
-      const el = document.getElementById("<%= "#{row.id}_#{table_name}" %>");
-      if (el) {
+      const el_<%= row.id %>_<%= row_index %> = document.getElementById("<%= "#{row.id}_#{table_name}" %>");
+      if (el_<%= row.id %>_<%= row_index %>) {
         // replaceWith: swap the element's outerHTML
-        el.outerHTML = "<%= j render(partial: 'shared/search_results_row_button', object: row) %>";
+        el_<%= row.id %>_<%= row_index %>.outerHTML = "<%= j render(partial: 'shared/search_results_row_button', object: row) %>";
       }
     })();
   <% end %>
@@ -38,126 +38,133 @@
 
     // Update Number_of_group_members_Group cell for the new group
     console.log("Looking for new group row: <%= new_group_id %>_Group");
-    const newGroupRowElement = document.getElementById('<%= new_group_id %>_Group');
-    if (newGroupRowElement) {
-      const membersCell = newGroupRowElement.querySelector('.Number_of_group_members_Group');
-      if (membersCell) {
-        membersCell.classList.add('cell-updated');
+    const newGroupRowElement_<%= new_group_id %> = document.getElementById('<%= new_group_id %>_Group');
+    if (newGroupRowElement_<%= new_group_id %>) {
+      const membersCell_<%= new_group_id %> = newGroupRowElement_<%= new_group_id %>.querySelector('.Number_of_group_members_Group');
+      if (membersCell_<%= new_group_id %>) {
+        membersCell_<%= new_group_id %>.classList.add('cell-updated');
         setTimeout(() => {
-          membersCell.classList.remove('cell-updated');
+          membersCell_<%= new_group_id %>.classList.remove('cell-updated');
         }, 1500);
         console.log("✨ Highlighted new group's member count cell");
       }
     }
   }, 100);
 
+  // Force a complete refresh of the Group table to ensure proper display
+  setTimeout(function() {
+    console.log("🔄 Forcing complete Group table refresh to display new group properly");
+    
+    // Find and trigger the Group search to refresh the entire table
+    let groupRefreshTriggered_<%= new_group_id %> = false;
+    
+    const groupSearchButtons_<%= new_group_id %> = [
+      document.querySelector('input[onclick="Search(\'Group\');return false"]'),
+      document.querySelector('input[onclick*="Search(\'Group\')"]'),
+      document.querySelector('#search_button_Group'),
+      document.querySelector('input[value="Search"][onclick*="Group"]:not([onclick*="GroupPerson"]):not([onclick*="GroupCourse"]):not([onclick*="GroupLecture"])')
+    ];
+    
+    for (let button of groupSearchButtons_<%= new_group_id %>) {
+      if (button && !groupRefreshTriggered_<%= new_group_id %>) {
+        const onclick_<%= new_group_id %> = button.getAttribute('onclick') || '';
+        // Make sure we're clicking the Group search, not GroupPerson, GroupCourse, etc.
+        if (onclick_<%= new_group_id %>.includes("Search('Group')") && !onclick_<%= new_group_id %>.includes("Group<%= table_name %>")) {
+          console.log("Found Group search button, clicking to refresh:", button);
+          button.click();
+          groupRefreshTriggered_<%= new_group_id %> = true;
+          break;
+        }
+      }
+    }
+    
+    // Try calling Search function directly for Group if button not found
+    if (!groupRefreshTriggered_<%= new_group_id %> && typeof Search === 'function') {
+      console.log("Calling Search('Group') directly to refresh table");
+      Search('Group');
+      groupRefreshTriggered_<%= new_group_id %> = true;
+    }
+    
+    if (groupRefreshTriggered_<%= new_group_id %>) {
+      console.log("✅ Group table refresh triggered successfully");
+      
+      // After refresh, highlight the new group row
+      setTimeout(() => {
+        const newGroupRow_<%= new_group_id %> = document.getElementById('<%= new_group_id %>_Group');
+        if (newGroupRow_<%= new_group_id %>) {
+          newGroupRow_<%= new_group_id %>.classList.add('cell-updated');
+          setTimeout(() => {
+            newGroupRow_<%= new_group_id %>.classList.remove('cell-updated');
+          }, 2000);
+          console.log("✨ Highlighted newly created group row");
+        }
+      }, 500);
+    } else {
+      console.log("❌ Could not trigger Group table refresh");
+    }
+  }, 200);
+
+  // Update external filter selects with the new group option
   <% table_name = "Group" %>
   <% eval("#{table_name}.set_controller(search_ctl_group)") %>
-  <% updated_objects = search_ctl_group.GetUpdateObjects(table_name, ["id"], [new_group_id]) %>
-  <% updated_objects.each do |row| %>
-    (function(){
-      const el = document.getElementById("<%= "#{row.id}_#{table_name}" %>");
-      if (el) {
-        el.outerHTML = "<%= j render(partial: 'shared/search_results_row_button', object: row) %>";
+  
+  // Get the properly formatted group name for select options
+  const newOptionStr_<%= new_group_id %> = "<%= j group_name %>";
+  console.log("🎯 Adding new group option to selects:", newOptionStr_<%= new_group_id %>);
+  
+  // Update existing select options and add new ones with RTL styling
+  const selectElements_<%= new_group_id %> = document.getElementsByClassName("Group_select");
+  
+  for (let i = 0; i < selectElements_<%= new_group_id %>.length; i++) {
+    const selectElt_<%= new_group_id %> = selectElements_<%= new_group_id %>[i];
+    
+    // Check if option already exists
+    let optionFound_<%= new_group_id %> = false;
+    for (let j = 0; j < selectElt_<%= new_group_id %>.options.length; j++) {
+      const option_<%= new_group_id %> = selectElt_<%= new_group_id %>.options[j];
+      if (option_<%= new_group_id %>.value == <%= new_group_id %>) {
+        option_<%= new_group_id %>.text = newOptionStr_<%= new_group_id %>;
+        option_<%= new_group_id %>.style.direction = "rtl";
+        optionFound_<%= new_group_id %> = true;
+        break;
       }
-    })();
-  <% end %>
-
-  <% results_table_name    = "search_results_table_Group" %>
-  <% current_filter_name   = "current_filters_Group" %>
-  document.getElementById("<%= current_filter_name %>").style.display = "none";
-
-  <% eval("#{table_name}.set_controller(search_ctl_group)") %>
-  <% select_string = search_ctl.get_sql_id_string([new_group_id]) %>
-  <% new_rows = Group.find_by_sql(select_string) %>
-  <% new_rows.each do |new_row| %>
-    (function(){
-      const resultsTable = document.getElementById("<%= results_table_name %>");
-      const rowHtml      = "<%= j render(partial: 'shared/search_results_row_button', object: new_row) %>";
-      if (resultsTable) {
-        // insertAfter last row
-        const lastTr = resultsTable.querySelector("tr:last-child");
-        if (lastTr) lastTr.insertAdjacentHTML("afterend", rowHtml);
-      } else {
-        // replace entire results container
-        document.getElementById("search_results_<%= table_name %>").innerHTML =
-          "<%= j render(partial: 'shared/search_results', object: SearchResults.new([new_row], :search_results, search_ctl_group)) %>";
-        resizeX();
-      }
-
-      const newOptionStr = "<%= search_ctl_group.GetShortField(new_row.id) %>";
+    }
+    
+    // If option doesn't exist, add it with RTL styling
+    if (!optionFound_<%= new_group_id %> && newOptionStr_<%= new_group_id %>.length > 0) {
+      const newOption_<%= new_group_id %> = document.createElement("option");
+      newOption_<%= new_group_id %>.value = <%= new_group_id %>;
+      newOption_<%= new_group_id %>.text = newOptionStr_<%= new_group_id %>;
+      newOption_<%= new_group_id %>.style.direction = "rtl";
       
-      // Update existing select options and add new ones with RTL styling
-      const selectElements = document.getElementsByClassName("Group_select");
-      let optionFound = false;
-      
-      for (let i = 0; i < selectElements.length; i++) {
-        const selectElt = selectElements[i];
-        
-        // Check if option already exists and update it
-        for (let j = 0; j < selectElt.options.length; j++) {
-          const option = selectElt.options[j];
-          if (option.value == <%= new_row.id %>) {
-            option.text = newOptionStr;
-            option.style.direction = "rtl";
-            optionFound = true;
-          }
-        }
-        
-        // If option doesn't exist, add it with RTL styling
-        if (!optionFound && newOptionStr.length > 0) {
-          const newOption = document.createElement("option");
-          newOption.value = <%= new_row.id %>;
-          newOption.text = newOptionStr;
-          newOption.style.direction = "rtl";
-          
-          // Insert in alphabetical order
-          let inserted = false;
-          for (let j = 0; j < selectElt.options.length; j++) {
-            const option = selectElt.options[j];
-            if (option.text.trim().toLowerCase() > newOptionStr.trim().toLowerCase()) {
-              selectElt.insertBefore(newOption, option);
-              inserted = true;
-              break;
-            }
-          }
-          if (!inserted) {
-            selectElt.appendChild(newOption);
-          }
+      // Insert in alphabetical order
+      let inserted_<%= new_group_id %> = false;
+      for (let j = 0; j < selectElt_<%= new_group_id %>.options.length; j++) {
+        const option_<%= new_group_id %> = selectElt_<%= new_group_id %>.options[j];
+        if (option_<%= new_group_id %>.text.trim().toLowerCase() > newOptionStr_<%= new_group_id %>.trim().toLowerCase()) {
+          selectElt_<%= new_group_id %>.insertBefore(newOption_<%= new_group_id %>, option_<%= new_group_id %>);
+          inserted_<%= new_group_id %> = true;
+          break;
         }
       }
-    })();
-  <% end %>
+      if (!inserted_<%= new_group_id %>) {
+        selectElt_<%= new_group_id %>.appendChild(newOption_<%= new_group_id %>);
+      }
+      console.log("✅ Added new group option to select element");
+    }
+  }
 
   recolour("Group");
   action_select_no_js();
 
-  // Update external filter selects for Person tables that reference Group
-  <% if table_name == "Person" %>
-    // Update Group-related external filters
-    const groupSelects = document.querySelectorAll('.Group_select');
-    groupSelects.forEach(select => {
-      // Find and add the new group option if not already present
-      let optionExists = false;
-      for (let option of select.options) {
-        if (option.value == '<%= new_group_id %>') {
-          optionExists = true;
-          break;
-        }
-      }
-      if (!optionExists) {
-        const newOption = document.createElement('option');
-        newOption.value = '<%= new_group_id %>';
-        newOption.text = '<%= group_name %>';
-        newOption.style.direction = 'rtl';
-        select.appendChild(newOption);
-      }
-    });
-
-    // Update GroupPerson-related external filters
-    const groupPersonSelects = document.querySelectorAll('.GroupPerson_select');
-    groupPersonSelects.forEach(select => {
-      // Force refresh of GroupPerson selects since new group members were added
+  // Update external filter selects for tables that reference Group
+  <% if ["Person", "Course", "Lecture", "Attendee", "Tutorial", "TutorialSchedule", "Institution", "User", "Term", "Day", "Location", "WillingLecturer", "WillingTutor", "EmailTemplate", "AgathaEmail"].include?(table_name) %>
+    console.log("🔧 Updating external filters for <%= table_name %> group creation");
+    
+    // Update Group<%= table_name %>-related external filters since new group members were added
+    const group<%= table_name %>Selects = document.querySelectorAll('.Group<%= table_name %>_select');
+    group<%= table_name %>Selects.forEach(select => {
+      // Force refresh of Group<%= table_name %> selects since new group members were added
       if (select.onchange) {
         select.onchange();
       }

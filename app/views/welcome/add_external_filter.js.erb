@@ -4,9 +4,53 @@ document.querySelector('#external_filters_<%= table_name %>').insertAdjacentHTML
 );
 resizeExternalFilters('<%= table_name %>');
 
-// Refresh external filter selects to ensure they're properly populated
-if (typeof refreshExternalFilterSelects === 'function') {
-  refreshExternalFilterSelects('<%= table_name %>');
-}
+// Ensure the new external filter's select elements are properly initialized
+setTimeout(function() {
+  console.log("🔧 Initializing new external filter for <%= table_name %>, filter ID <%= external_filter.id %>");
+  
+  // Find all select elements in the newly added external filter
+  const newFilterRow = document.getElementById('external_filter_<%= external_filter.class_name %>_<%= external_filter.id %>');
+  if (newFilterRow) {
+    const selectElements = newFilterRow.querySelectorAll('select');
+    console.log("🔧 Found", selectElements.length, "select elements in new filter");
+    
+    selectElements.forEach(function(select, index) {
+      console.log("🔧 Initializing select element:", select.id);
+      
+      // For group selection elements, trigger change to populate dependent selects
+      if (select.classList.contains('Group_select')) {
+        console.log("🔧 Triggering group selection change for:", select.id);
+        if (select.onchange) {
+          select.onchange();
+        } else {
+          // If no onchange handler, trigger change event
+          const event = new Event('change', { bubbles: true });
+          select.dispatchEvent(event);
+        }
+      }
+      
+      // For argument selection elements, ensure they have proper options
+      if (select.classList.contains('external_filter_argument_selection')) {
+        console.log("🔧 Checking argument selection options for:", select.id);
+        if (select.options.length <= 1) { // Only has default option or empty
+          console.log("🔧 Argument selection has no options, attempting to populate");
+          
+          // Try to find and trigger a related group selector
+          const groupSelector = newFilterRow.querySelector('select.Group_select');
+          if (groupSelector && groupSelector.onchange) {
+            console.log("🔧 Triggering group selector to populate argument selection");
+            groupSelector.onchange();
+          }
+        }
+      }
+    });
+  }
+  
+  // Refresh external filter selects to ensure they're properly populated
+  if (typeof refreshExternalFilterSelects === 'function') {
+    console.log("🔄 Refreshing external filter selects for <%= table_name %>");
+    refreshExternalFilterSelects('<%= table_name %>');
+  }
+}, 100);
 
 unwait();

@@ -14,7 +14,7 @@
   <div  style="float: left;width:27em;" >
     <% for elt_id in (0..(num_elts-1)) %>
 <% Rails.logger.info("external_filter.html.erb 04 external_filter.group_selector = #{external_filter.group_selector} #{class_name}_#{filter_id}_#{elt_id}, filter_tag = #{current_elts[elt_id].external_filter.tag}") %>
-      <div id =<%= raw "external_filter_selection_#{class_name}_#{filter_id}_#{elt_id}"%> class="external_filter_element" style ="position:relative; min-width: 120px; overflow: hidden; background: #fff; border: 1px solid #000; "  >
+      <div id =<%= raw "external_filter_selection_#{class_name}_#{filter_id}_#{elt_id}"%> class="external_filter_element" style ="position:relative; min-width: 120px; height: 19px; overflow: hidden; background: #fff; border: 1px solid #000; "  >
         <% if external_filter.group_selector %>
 
           <%= raw  render(:partial =>"shared/external_group_selection", :object => current_elts[elt_id]) %>
@@ -32,7 +32,7 @@
   <% Rails.logger.info("external_filter.html.erb 06") %>
   <% if external_filter.allow_multiple_arguments %>
   <% Rails.logger.info("external_filter.html.erb 07") %>
-  <div class="add_external_filter_element" style="float: right; padding-top: 0px; height: 100px" ><a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_add_string }"%> >+</a></div>
+  <div class="add_external_filter_element" style="float: right; padding-top: 0px; height: 17px" ><a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_add_string }"%> >+</a></div>
   <% end %>
   <% Rails.logger.info("external_filter.html.erb 08") %>
   <div  style="float: right;" > &nbsp;  </div>
