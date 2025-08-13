@@ -436,7 +436,7 @@ body#field_display_formats ul#menu li ul li a.field_display_formats
 }
 
 /* For table rows that get updated */
-.row-updated {
+.row-updated, .highlight-updated {
   animation: cellUpdateGlow 1.5s ease-in-out;
   transition: all 0.3s ease;
 }
@@ -473,6 +473,13 @@ body#field_display_formats ul#menu li ul li a.field_display_formats
 
 .cell-updated-subtle {
   animation: cellUpdatePulse 1.2s ease-in-out;
+  transition: all 0.3s ease;
+}
+
+/* For rows that were involved in an operation but may not have visible changes */
+.row-involved {
+  border-left: 3px solid #007cba;
+  background-color: rgba(0, 124, 186, 0.05);
   transition: all 0.3s ease;
 }
 

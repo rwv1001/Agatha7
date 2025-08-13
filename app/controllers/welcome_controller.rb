@@ -1876,60 +1876,69 @@ do
 
     @search_ctls = session[:search_ctls];
     
-    # Disable ActionCable broadcasting to avoid row-level highlighting conflicts
-    # The frontend will handle targeted cell updates directly
-    # if error_str.empty? && @search_ctls
-    #   begin
-    #     # Broadcast person row update
-    #     person_table_search_ctl = @search_ctls["Person"]
-    #     if person_table_search_ctl
-    #       Person.set_controller(person_table_search_ctl)
-    #       updated_person = person_table_search_ctl.GetUpdateObjects("Person", "id", [person_id.to_i])
-    #       if updated_person.any?
-    #         ActionCable.server.broadcast("search_table_updates", {
-    #           action: "update_search_rows",
-    #           data: {
-    #             "Person" => {
-    #               updated_objects: updated_person.map do |person|
-    #                 {
-    #                   id: person.id,
-    #                   html: render_to_string(partial: 'shared/search_results_row_button', object: person),
-    #                   short_field: person.short_field
-    #                 }
-    #               end
-    #             }
-    #           }
-    #         })
-    #       end
-    #     end
-    #     
-    #     # Broadcast lecture row updates
-    #     lecture_table_search_ctl = @search_ctls["Lecture"]
-    #     if lecture_table_search_ctl && lecture_ids.any?
-    #       Lecture.set_controller(lecture_table_search_ctl)
-    #       updated_lectures = lecture_table_search_ctl.GetUpdateObjects("Lecture", "id", lecture_ids.map(&:to_i))
-    #       if updated_lectures.any?
-    #         ActionCable.server.broadcast("search_table_updates", {
-    #           action: "update_search_rows", 
-    #           data: {
-    #             "Lecture" => {
-    #               updated_objects: updated_lectures.map do |lecture|
-    #                 {
-    #                   id: lecture.id,
-    #                   html: render_to_string(partial: 'shared/search_results_row_button', object: lecture),
-    #                   short_field: lecture.short_field
-    #                 }
-    #               end
-    #             }
-    #           }
-    #         })
-    #       end
-    #     end
-    #   rescue => e
-    #     Rails.logger.error "ActionCable broadcast failed in make_attendee: #{e.message}"
-    #     # Continue without ActionCable if it fails
-    #   end
-    # end
+    # ActionCable invalidation notification for make_attendee
+    if error_str.empty? && lecture_ids.any?
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for make_attendee operation")
+        
+        # Build affected relationships for attendee addition
+        affected_relationships = []
+        
+        # Person row updated (shows new lecture attendance)
+        affected_relationships << {
+          table: "Person",
+          operation: "update",
+          ids: [person_id.to_i],
+          reason: "attendance_added",
+          source_operation: "make_attendee"
+        }
+        
+        # Lecture rows updated (show new attendee counts)
+        affected_relationships << {
+          table: "Lecture", 
+          operation: "update",
+          ids: lecture_ids.map(&:to_i),
+          reason: "attendee_count_change",
+          source_operation: "make_attendee"
+        }
+        
+        # New Attendee records created
+        affected_relationships << {
+          table: "Attendee",
+          operation: "create",
+          ids: [], # New records, so no specific IDs yet
+          reason: "new_attendee_records",
+          source_operation: "make_attendee",
+          related_person_id: person_id.to_i,
+          related_lecture_ids: lecture_ids.map(&:to_i)
+        }
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for make_attendee")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids].length} records): #{rel[:reason]}")
+        end
+        
+        # Broadcast the invalidation notification
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            operation: "make_attendee",
+            person_id: person_id.to_i,
+            lecture_ids: lecture_ids.map(&:to_i)
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for make_attendee operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in make_attendee: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
+      end
+    end
     
     respond_to do |format|
       format.js { render "make_attendee", :locals => { :error_str => error_str, :search_ctls => @search_ctls, :person_id => person_id, :lecture_ids => lecture_ids, :compulsory_ids => compulsory_ids, :exam_ids => exam_ids, :success_str => success_str } }
@@ -2027,7 +2036,36 @@ do
       end
     end
 
-    
+    # ActionCable invalidation notifications for attendance changes
+    if error_str.empty?
+      Rails.logger.info("ActionCable: Broadcasting invalidation for add_to_lectures")
+      
+      # Invalidate tables that might show attendance data
+      affected_tables = [
+        'Attendee',
+        'AttendeeWithLecture', 
+        'AttendeeWithPerson',
+        'AttendeeWithLectureWithPerson',
+        'AttendeeWithPersonWithLecture',
+        'Person',
+        'PersonWithGroups',
+        'Lecture',
+        'LectureWithAttendees'
+      ]
+      
+      affected_tables.each do |table_name|
+        ActionCable.server.broadcast(
+          "search_table_channel", 
+          {
+            type: "data_invalidated",
+            table_name: table_name,
+            reason: "attendance_updated",
+            method: "add_to_lectures"
+          }
+        )
+        Rails.logger.info("ActionCable: Invalidated #{table_name} for attendance update")
+      end
+    end
 
     @search_ctls = session[:search_ctls];
     respond_to do |format|
@@ -2635,7 +2673,8 @@ do
 
   def delete_array(ids, table_name)
     dependencies_present = check_dependencies(ids, table_name)
-
+    Rails.logger.info("RWV delete_array BEGIN");
+    Rails.logger.info("RWV delete_array dependencies_present: #{dependencies_present.inspect}");
 
     delete_hash = {}
     delete_hash_str ={}
@@ -2644,31 +2683,40 @@ do
     deleted_ids = "";
     num_deletes = 0;
     num_ids = ids.length;
+    ids_for_deletion = [];
     for id_count in (0..(num_ids -1))
       do_delete = true;
       
       current_dependencies = dependencies_present[id_count];
+      Rails.logger.info("RWV delete_array current_dependencies: #{current_dependencies.inspect}");
       if table_name == "User" && ids[id_count] == session[:user_id]
         do_delete = false;
         error_str = "You cannot delete your user account whilst you are logged in. "
       elsif current_dependencies.length >0
         if  current_dependencies.has_key?("WillingTutor") || current_dependencies.has_key?("WillingLecturer") ||current_dependencies.has_key?("Group") || current_dependencies.has_key?("MaxTutorial") || current_dependencies.has_key?("User") || current_dependencies.has_key?("TutorialSchedule") || current_dependencies.has_key?("Lecture") ||  current_dependencies.has_key?("Term") ||current_dependencies.has_key?("Person")||current_dependencies.has_key?("AgathaEmail") ||current_dependencies.has_key?("AgathaFile")
           do_delete = false;
+          Rails.logger.info("RWV delete_array do_delete = false for current_dependencies: #{current_dependencies.inspect}");
         elsif  table_name == "AgathaFile" && current_dependencies.has_key?("EmailAttachment")
           do_delete = false;
+          Rails.logger.info("RWV delete_array do_delete = false for AgathaFile}");
         elsif table_name == "Lecture" && current_dependencies.has_key?("Attendee")
           do_delete = false;
+          Rails.logger.info("RWV delete_array do_delete = false for Lecture");
         elsif table_name == "TutorialSchedule" && current_dependencies.has_key?("Tutorial") && current_dependencies["Tutorial"].length >1
           do_delete = false;
+          Rails.logger.info("RWV delete_array do_delete = false for TutorialSchedule with multiple Tutorials");
         elsif table_name == "Person" && current_dependencies.has_key?("TutorialSchedule")
           do_delete = false;
+          Rails.logger.info("RWV delete_array do_delete = false for Person with TutorialSchedule");
         else
           do_delete = true;
-          
+          Rails.logger.info("RWV delete_array do_delete = true for current_dependencies: #{current_dependencies.inspect}");
         end
       end
       if do_delete
         delete_tutorial_schedule = false;
+        ids_for_deletion << ids[id_count];
+        Rails.logger.info("RWV delete_array added #{ids[id_count]} to ids_for_deletion: #{ids_for_deletion.inspect}");
         num_deletes = num_deletes +1;
         if table_name == "Tutorial"
           tutorial = Tutorial.find(ids[id_count]);
@@ -2697,11 +2745,8 @@ do
             tutorial_schedules.each do |tutorial_schedule|
               tutorial_schedule_ids << tutorial_schedule.id;
             end
-          end
-          
-        end
-
-        
+          end          
+        end        
         current_dependencies.each do |dependent_table, dependent_ids|
           if(delete_hash.has_key?(dependent_table) == false)          
             delete_hash[dependent_table] ={}
@@ -2710,10 +2755,6 @@ do
             delete_hash[dependent_table][dependent_id]=true;
           end
         end
-        current_obj_str = "#{table_name}.find(#{ids[id_count]})"
-        object = eval(current_obj_str);
-        
-        object.destroy;
         
         if deleted_ids.length >0
           deleted_ids << ", ";
@@ -2731,21 +2772,20 @@ do
            end
            tutorial_schedule_id_str << tutorial_schedule_id.to_s
           end
-           tutorial_dependencies = check_dependencies(tutorial_schedule_ids, "TutorialSchedule")[0];
-           tutorial_dependencies.each do |dependent_table, dependent_ids|
-          if(delete_hash.has_key?(dependent_table) == false)
-            delete_hash[dependent_table] ={}
-          end
-          dependent_ids.each do |dependent_id|
-            delete_hash[dependent_table][dependent_id]=true;
-          end
-          tutorial_schedules = TutorialSchedule.find_by_sql("SELECT * FROM tutorial_schedules WHERE id IN (#{tutorial_schedule_id_str})");
+          tutorial_dependencies = check_dependencies(tutorial_schedule_ids, "TutorialSchedule")[0];
+          tutorial_dependencies.each do |dependent_table, dependent_ids|
+            if(delete_hash.has_key?(dependent_table) == false)
+              delete_hash[dependent_table] ={}
+            end
+            dependent_ids.each do |dependent_id|
+              delete_hash[dependent_table][dependent_id]=true;
+            end
+            tutorial_schedules = TutorialSchedule.find_by_sql("SELECT * FROM tutorial_schedules WHERE id IN (#{tutorial_schedule_id_str})");
 
-          tutorial_schedules.each do |tutorial_schedule|
-            tutorial_schedule.destroy;
+            tutorial_schedules.each do |tutorial_schedule|
+              tutorial_schedule.destroy;
+            end
           end
-        end
-
         end
       else
         current_dependencies.each do |dependent_table, dependent_ids|
@@ -2761,11 +2801,22 @@ do
           id_str << ". ";
           error_str << id_str ;
         end       
-      end
+      end      
     end
+    Rails.logger.info("RWV delete_array ids_for_deletion: #{ids_for_deletion.inspect}");
+    join_model_class = "Group#{table_name}".constantize
+    group_ids = join_model_class
+      .where("#{table_name.downcase}_id": ids_for_deletion)
+      .distinct
+      .pluck(:group_id)
+    Rails.logger.info("RWV delete_array group_ids: #{group_ids.inspect}");
+
+    affected_groups = Group.where(id: group_ids)
+    model_class = table_name.constantize
+    model_class.where(id: ids_for_deletion).destroy_all
+
     @pluralize_num =num_deletes  ;
     if num_deletes >0
-
       success_str << "#{table_name} with " + pl("id") + " = #{deleted_ids} " + pl("was")+" DELETED. "
 
       delete_hash.each do |delete_table, id_hash|
@@ -2777,15 +2828,112 @@ do
           delete_hash_str[delete_table] << id_key.to_s;
 
         end
-      end
-
-     
-
-
-
-
+      end     
     end
    Rails.logger.info("RWV deleted_ids = #{deleted_ids.inspect}");
+
+    # Add ActionCable broadcasts for cross-tab data invalidation notifications
+    # This new approach tells each client what data might have changed, then each client
+    # refreshes their own data with their own filters and display preferences
+    if num_deletes > 0
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for delete operation")
+        
+        # Build a comprehensive list of table relationships that might be affected
+        affected_relationships = []
+        
+        # Direct deletions
+        affected_relationships << {
+          table: table_name,
+          operation: "delete",
+          ids: ids_for_deletion,
+          reason: "direct_deletion"
+        }
+        
+        # Group member count changes for groupable models
+        groupable_models = %w[Person Lecture Course Attendee Tutorial TutorialSchedule Institution User Term Day Location WillingLecturer WillingTutor EmailTemplate AgathaEmail]
+        if groupable_models.include?(table_name) && affected_groups.any?
+          affected_relationships << {
+            table: "Group",
+            operation: "update",
+            ids: affected_groups.pluck(:id),
+            reason: "member_count_change",
+            source_table: table_name,
+            source_operation: "delete"
+          }
+        end
+        
+        # Dependent table deletions
+        delete_hash_str.each do |dependent_table, dependent_ids_str|
+          dependent_ids = dependent_ids_str.split(", ").map(&:to_i)
+          affected_relationships << {
+            table: dependent_table,
+            operation: "delete",
+            ids: dependent_ids,
+            reason: "dependent_deletion",
+            source_table: table_name
+          }
+        end
+        
+        # Lecture attendance count changes when Person is deleted
+        if table_name == "Person"
+          # Find lectures that had attendees from the deleted people
+          lecture_ids = Attendee.where(person_id: ids_for_deletion).distinct.pluck(:lecture_id)
+          if lecture_ids.any?
+            affected_relationships << {
+              table: "Lecture",
+              operation: "update",
+              ids: lecture_ids,
+              reason: "attendance_count_change",
+              source_table: table_name,
+              source_operation: "delete"
+            }
+          end
+        end
+        
+        # Tutorial enrollment count changes when Person is deleted
+        if table_name == "Person"
+          # Find tutorial schedules that had enrollments from the deleted people
+          tutorial_schedule_ids = Tutorial.where(person_id: ids_for_deletion).distinct.pluck(:tutorial_schedule_id)
+          if tutorial_schedule_ids.any?
+            affected_relationships << {
+              table: "TutorialSchedule", 
+              operation: "update",
+              ids: tutorial_schedule_ids,
+              reason: "enrollment_count_change",
+              source_table: table_name,
+              source_operation: "delete"
+            }
+          end
+        end
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids].length} records): #{rel[:reason]}")
+        end
+        
+        # Broadcast the invalidation notification
+        # Each client will receive this and decide what to refresh based on their current view
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            table: table_name,
+            operation: "delete",
+            ids: ids_for_deletion
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast data invalidation notification")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in delete_array: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
+      end
+    end
 
 
     respond_to do |format|
@@ -2808,6 +2956,7 @@ do
       end
 =end      
     end
+    Rails.logger.info("RWV delete_array END");
     
   end
 

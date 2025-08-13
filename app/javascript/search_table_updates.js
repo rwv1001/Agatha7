@@ -92,6 +92,7 @@ function getActionCableConsumer() {
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log("🚀 DOM loaded, initializing ActionCable...");
+  console.log("🔍 Checking for ActionCable consumer availability...");
   
   // Initialize external filters on page load
   initializeExternalFilters();
@@ -100,15 +101,23 @@ document.addEventListener('DOMContentLoaded', function() {
   
   if (!actionCableConsumer) {
     console.error("❌ Failed to initialize ActionCable consumer");
+    console.error("❌ Available objects:", {
+      consumer: typeof consumer,
+      window_actionCableConsumer: typeof window.actionCableConsumer,
+      window_consumer: typeof window.consumer,
+      window_ActionCable: typeof window.ActionCable
+    });
     return;
   }
   
   console.log("✅ ActionCable consumer available:", actionCableConsumer);
+  console.log("🔗 Attempting to create SearchTableChannel subscription...");
   
   // Subscribe to search table updates
   const searchTableChannel = actionCableConsumer.subscriptions.create("SearchTableChannel", {
     connected() {
       console.log("✅ Connected to SearchTableChannel - ActionCable working!");
+      console.log("🎯 ActionCable connection established successfully");
     },
 
     disconnected() {
@@ -117,9 +126,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     received(data) {
       console.log("📡 Received ActionCable message:", data);
+      console.log("📡 Message action type:", data.action);
+      
       if (data.action === 'update_search_rows') {
         console.log("🎯 Processing update_search_rows action");
         this.handleSearchTableUpdate(data);
+      } else if (data.action === 'remove_search_rows') {
+        console.log("🗑️ Processing remove_search_rows action");
+        this.handleSearchRowRemovals(data);
+      } else if (data.action === 'data_invalidation') {
+        console.log("🔄 Processing data_invalidation action");
+        console.log("🔄 Invalidation data:", data);
+        this.handleDataInvalidation(data);
       } else {
         console.log("⚠️ Unknown action received:", data.action);
       }
@@ -145,6 +163,23 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log(`📊 Row ${rowData.id} returned ${changedCells} changed cells`);
             tableChangedCells += changedCells;
             console.log(`📈 Table ${tableName} total changed cells now: ${tableChangedCells}`);
+            
+            // Special handling for Group table member count updates
+            if (tableName === 'Group' && updateType === 'group_member_count_update') {
+              console.log(`🎯 Applying special highlighting for Group member count update on group ${rowData.id}`);
+              const groupRowElement = document.getElementById(`${rowData.id}_Group`);
+              if (groupRowElement) {
+                // Specifically highlight the Number_of_group_members_Group cell
+                const membersCell = groupRowElement.querySelector('.Number_of_group_members_Group');
+                if (membersCell) {
+                  console.log(`✨ Highlighting group member count cell for group ${rowData.id}`);
+                  membersCell.classList.add('cell-updated');
+                  setTimeout(() => {
+                    membersCell.classList.remove('cell-updated');
+                  }, 2000); // Longer highlight for cross-tab updates
+                }
+              }
+            }
           });
         }
 
@@ -455,6 +490,418 @@ document.addEventListener('DOMContentLoaded', function() {
           window.select_update(tableName, newRowData.id, newRowData.short_field);
         }
       });
+    },
+    
+    handleSearchRowRemovals(data) {
+      console.log("🗑️ Handling search row removals:", data);
+      const editedTableName = data.edited_table_name;
+      const searchControllers = data.search_controllers;
+      
+      // Process removals for each search controller
+      Object.keys(searchControllers).forEach(tableName => {
+        const controllerData = searchControllers[tableName];
+        const deletedIds = controllerData.deleted_ids || [];
+        
+        console.log(`🗑️ Removing ${deletedIds.length} rows from ${tableName} table`);
+        
+        deletedIds.forEach(deletedId => {
+          const rowId = `${deletedId}_${tableName}`;
+          const rowElement = document.getElementById(rowId);
+          
+          if (rowElement) {
+            console.log(`🗑️ Removing row element: ${rowId}`);
+            
+            // Add fade-out effect before removal
+            rowElement.style.transition = 'opacity 0.5s ease-out';
+            rowElement.style.opacity = '0.3';
+            
+            setTimeout(() => {
+              rowElement.remove();
+              console.log(`✅ Successfully removed row: ${rowId}`);
+            }, 500);
+          } else {
+            console.log(`⚠️ Row element ${rowId} not found for removal`);
+          }
+        });
+      });
+    },
+
+    handleDataInvalidation(data) {
+      console.log("🔄 Handling data invalidation:", data);
+      
+      // Process each affected relationship that needs updating
+      if (data.affected_relationships && Array.isArray(data.affected_relationships)) {
+        data.affected_relationships.forEach(relationship => {
+          console.log(`📋 Processing invalidation for relationship:`, relationship);
+          const tableName = relationship.table || relationship.table_name;
+          const affectedIds = relationship.ids || relationship.affected_ids || [];
+          const operation = relationship.operation;
+          const reason = relationship.reason;
+          
+          console.log(`🔄 Table: ${tableName}, affected IDs:`, affectedIds);
+          console.log(`🔄 Operation: ${operation}, Reason: ${reason}`);
+          
+          // Store the invalidation context for use after refresh
+          const invalidationContext = {
+            operation: operation,
+            reason: reason,
+            sourceOperation: relationship.source_operation,
+            triggeredBy: data.triggered_by
+          };
+          
+          this.refreshTableWithContext(tableName, affectedIds, invalidationContext);
+        });
+      } else {
+        console.log("⚠️ No affected_relationships found in data:", data);
+      }
+    },
+
+    refreshTable(tableName, affectedRowIds = []) {
+      console.log(`🔄 Refreshing table: ${tableName} with affected rows:`, affectedRowIds);
+      
+      // Find the search results div for this table
+      const searchResultsDiv = document.getElementById(`search_results_${tableName}`);
+      if (!searchResultsDiv) {
+        console.log(`⚠️ No search results div found for table: ${tableName} (looking for search_results_${tableName})`);
+        return;
+      }
+
+      // Store current checkbox states before refresh
+      const currentCheckboxes = {};
+      searchResultsDiv.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        currentCheckboxes[checkbox.value] = checkbox.checked;
+      });
+      
+      // IMPORTANT: Capture the current cell values for comparison after refresh
+      const beforeRefreshData = {};
+      affectedRowIds.forEach(rowId => {
+        const rowElement = document.getElementById(`${rowId}_${tableName}`);
+        if (rowElement) {
+          const cells = Array.from(rowElement.querySelectorAll('td'));
+          beforeRefreshData[rowId] = cells.map(cell => ({
+            innerHTML: cell.innerHTML.trim(),
+            textContent: (cell.textContent || '').trim()
+          }));
+          console.log(`📸 Captured before-state for row ${rowId}:`, beforeRefreshData[rowId].length, 'cells');
+        }
+      });
+      
+      // Find the search button for this table
+      const searchButton = document.querySelector(`input[onclick*="Search('${tableName}')"]`);
+      if (searchButton) {
+        console.log(`🔄 Triggering refresh for ${tableName} via search button click`);
+        
+        // Store checkbox states for restoration after refresh
+        if (window.savedCheckboxStates) {
+          window.savedCheckboxStates[tableName] = currentCheckboxes;
+        } else {
+          window.savedCheckboxStates = { [tableName]: currentCheckboxes };
+        }
+        
+        searchButton.click();
+        
+        // After the search completes, compare before/after values and highlight only changed cells
+        setTimeout(() => {
+          this.compareAndHighlightChanges(tableName, affectedRowIds, beforeRefreshData);
+        }, 1500); // Increased delay to allow search to complete
+      } else {
+        console.log(`⚠️ No search button found for table: ${tableName}`);
+        console.log(`Looking for: input[onclick*="Search('${tableName}')"]`);
+        
+        // Try to find any search-related buttons as fallback
+        const allSearchButtons = document.querySelectorAll('input[onclick*="Search"]');
+        console.log(`Found ${allSearchButtons.length} search buttons:`, 
+          Array.from(allSearchButtons).map(btn => btn.getAttribute('onclick')));
+      }
+    },
+
+    refreshTableWithContext(tableName, affectedRowIds = [], invalidationContext = {}) {
+      console.log(`🔄 Refreshing table with context: ${tableName} with affected rows:`, affectedRowIds);
+      console.log(`🔄 Invalidation context:`, invalidationContext);
+      
+      // Find the search results div for this table
+      const searchResultsDiv = document.getElementById(`search_results_${tableName}`);
+      if (!searchResultsDiv) {
+        console.log(`⚠️ No search results div found for table: ${tableName} (looking for search_results_${tableName})`);
+        return;
+      }
+
+      // Store current checkbox states before refresh
+      const currentCheckboxes = {};
+      searchResultsDiv.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        currentCheckboxes[checkbox.value] = checkbox.checked;
+      });
+      
+      // Find the search button for this table
+      const searchButton = document.querySelector(`input[onclick*="Search('${tableName}')"]`);
+      if (searchButton) {
+        console.log(`🔄 Triggering refresh for ${tableName} via search button click`);
+        
+        // Store checkbox states for restoration after refresh
+        if (window.savedCheckboxStates) {
+          window.savedCheckboxStates[tableName] = currentCheckboxes;
+        } else {
+          window.savedCheckboxStates = { [tableName]: currentCheckboxes };
+        }
+        
+        searchButton.click();
+        
+        // After the search completes, highlight based on the operation context
+        setTimeout(() => {
+          this.highlightBasedOnOperation(tableName, affectedRowIds, invalidationContext);
+        }, 1500); // Increased delay to allow search to complete
+      } else {
+        console.log(`⚠️ No search button found for table: ${tableName}`);
+        console.log(`Looking for: input[onclick*="Search('${tableName}')"]`);
+        
+        // Try to find any search-related buttons as fallback
+        const allSearchButtons = document.querySelectorAll('input[onclick*="Search"]');
+        console.log(`Found ${allSearchButtons.length} search buttons:`, 
+          Array.from(allSearchButtons).map(btn => btn.getAttribute('onclick')));
+      }
+    },
+
+    highlightAffectedRows(tableName, rowIds) {
+      if (!rowIds || rowIds.length === 0) return;
+      
+      console.log(`✨ Checking for specific cell changes in ${tableName} for rows:`, rowIds);
+      
+      rowIds.forEach(rowId => {
+        // Find the specific row using the standard ID pattern
+        const rowElement = document.getElementById(`${rowId}_${tableName}`);
+        
+        if (rowElement) {
+          console.log(`🔍 Found row ${rowId}_${tableName}, checking for changed cells`);
+          
+          // Check if any cells in this row have been marked as updated during the refresh
+          const updatedCells = rowElement.querySelectorAll('.cell-updated');
+          
+          if (updatedCells.length > 0) {
+            console.log(`✨ Found ${updatedCells.length} cells already marked as updated in row ${rowId}`);
+            // The cells are already highlighted by the updateChangedCells method
+            // No additional highlighting needed
+          } else {
+            console.log(`ℹ️ No cells marked as updated in row ${rowId} - this may be a new row or unchanged data`);
+            
+            // For truly new rows (like when creating attendees), we can add a subtle border highlight
+            // to indicate the row was involved in the operation without being too aggressive
+            rowElement.classList.add('row-involved');
+            setTimeout(() => {
+              rowElement.classList.remove('row-involved');
+            }, 2000);
+          }
+        } else {
+          console.log(`⚠️ Could not find row element for ID: ${rowId}_${tableName}`);
+        }
+      });
+    },
+
+    compareAndHighlightChanges(tableName, affectedRowIds, beforeRefreshData) {
+      console.log(`🔍 Comparing before/after values for ${tableName} rows:`, affectedRowIds);
+      
+      affectedRowIds.forEach(rowId => {
+        const rowElement = document.getElementById(`${rowId}_${tableName}`);
+        const beforeData = beforeRefreshData[rowId];
+        
+        if (rowElement && beforeData) {
+          const afterCells = Array.from(rowElement.querySelectorAll('td'));
+          let changedCellCount = 0;
+          
+          afterCells.forEach((cell, cellIndex) => {
+            if (cellIndex < beforeData.length) {
+              const beforeCell = beforeData[cellIndex];
+              const afterInnerHTML = cell.innerHTML.trim();
+              const afterTextContent = (cell.textContent || '').trim();
+              
+              // Compare both HTML and text content to catch all types of changes
+              const htmlChanged = beforeCell.innerHTML !== afterInnerHTML;
+              const textChanged = beforeCell.textContent !== afterTextContent;
+              
+              if (htmlChanged || textChanged) {
+                console.log(`🎯 Cell ${cellIndex} in row ${rowId} changed`);
+                console.log(`   Before: "${beforeCell.textContent}" -> After: "${afterTextContent}"`);
+                
+                // Highlight only the changed cell
+                cell.classList.add('cell-updated');
+                setTimeout(() => {
+                  cell.classList.remove('cell-updated');
+                }, 2000);
+                
+                changedCellCount++;
+              }
+            }
+          });
+          
+          if (changedCellCount > 0) {
+            console.log(`✨ Highlighted ${changedCellCount} changed cells in row ${rowId}`);
+          } else {
+            console.log(`ℹ️ No visible changes detected in row ${rowId} after refresh`);
+            // Add subtle indication that this row was involved in the operation
+            rowElement.classList.add('row-involved');
+            setTimeout(() => {
+              rowElement.classList.remove('row-involved');
+            }, 1500);
+          }
+        } else {
+          if (!rowElement) {
+            console.log(`⚠️ Could not find row element for comparison: ${rowId}_${tableName}`);
+          }
+          if (!beforeData) {
+            console.log(`⚠️ No before-data captured for row: ${rowId}`);
+          }
+        }
+      });
+    },
+
+    highlightBasedOnOperation(tableName, affectedRowIds, invalidationContext) {
+      console.log(`🎯 Highlighting based on operation for ${tableName}:`, invalidationContext);
+      
+      const { operation, reason, sourceOperation, triggeredBy } = invalidationContext;
+      console.log(`🔍 Operation details: sourceOperation="${sourceOperation}", operation="${operation}", reason="${reason}"`);
+      
+      affectedRowIds.forEach(rowId => {
+        const rowElement = document.getElementById(`${rowId}_${tableName}`);
+        
+        if (rowElement) {
+          console.log(`🔍 Processing row ${rowId} for operation ${sourceOperation}/${operation}`);
+          
+          // Determine which cells to highlight based on the operation type
+          let cellsToHighlight = [];
+          
+          if (sourceOperation === 'make_attendee') {
+            if (tableName === 'Person' && reason === 'attendance_added') {
+              // Highlight lecture/course related cells in Person table - be specific about attendance, not teaching
+              cellsToHighlight = this.findCellsByExactPattern(rowElement, [
+                'Lectures_attended_Person',  // Exact match for lectures attended
+                'Courses_in_Person'    // Exact match for courses attended
+              ]);
+            } else if (tableName === 'Lecture' && reason === 'attendee_count_change') {
+              // Highlight attendee count cells in Lecture table
+              cellsToHighlight = this.findCellsByPattern(rowElement, [
+                'Number_of_attendees', 'attendee', 'count', 'students'
+              ]);
+            }
+          } else if (sourceOperation === 'delete' || sourceOperation === 'delete_array' || 
+                     (operation === 'delete') || (operation === 'update' && tableName === 'Group')) {
+            console.log(`🗑️ Processing delete/update operation for ${tableName} table`);
+            
+            // Handle group member deletion or group updates
+            if (tableName === 'Group') {
+              console.log(`🎯 Looking for group member count cells in Group table for row ${rowId}`);
+              // For Group table, highlight the member count cell
+              cellsToHighlight = this.findCellsByExactPattern(rowElement, [
+                'Number_of_group_members_Group'
+              ]);
+            } else {
+              // For other tables, highlight group-related cells
+              cellsToHighlight = this.findCellsByPattern(rowElement, [
+                'Groups_in_', 'Number_of_group_members', 'group'
+              ]);
+            }
+          } else {
+            console.log(`⚠️ Unhandled operation combination: sourceOperation="${sourceOperation}", operation="${operation}", reason="${reason}"`);
+          }
+          
+          if (cellsToHighlight.length > 0) {
+            console.log(`✨ Highlighting ${cellsToHighlight.length} operation-specific cells in row ${rowId}`);
+            cellsToHighlight.forEach(cell => {
+              cell.classList.add('cell-updated');
+              setTimeout(() => {
+                cell.classList.remove('cell-updated');
+              }, 2500); // Slightly longer for cross-user updates
+            });
+          } else {
+            // Fallback: add subtle row indication
+            console.log(`ℹ️ No specific cells found, adding subtle row indication for ${rowId}`);
+            rowElement.classList.add('row-involved');
+            setTimeout(() => {
+              rowElement.classList.remove('row-involved');
+            }, 2000);
+          }
+        } else {
+          console.log(`⚠️ Could not find row element for operation highlighting: ${rowId}_${tableName}`);
+        }
+      });
+    },
+
+    findCellsByPattern(rowElement, patterns) {
+      const matchingCells = [];
+      const cells = Array.from(rowElement.querySelectorAll('td'));
+      
+      console.log(`🔍 Searching for pattern matches in ${cells.length} cells`);
+      console.log(`🔍 Looking for patterns: [${patterns.join(', ')}]`);
+      
+      cells.forEach((cell, cellIndex) => {
+        // Check if the cell has a class that matches any pattern
+        const cellClasses = Array.from(cell.classList);
+        const cellText = (cell.textContent || '').toLowerCase();
+        
+        console.log(`   Cell ${cellIndex}: classes = [${cellClasses.join(', ')}], text = "${cellText.substring(0, 50)}..."`);
+        
+        const matches = patterns.some(pattern => {
+          const patternLower = pattern.toLowerCase();
+          
+          // Check class names for pattern
+          const classMatch = cellClasses.some(className => {
+            const match = className.toLowerCase().includes(patternLower);
+            if (match) {
+              console.log(`     ✅ Class match: "${className}" contains "${patternLower}"`);
+            }
+            return match;
+          });
+          
+          // Check text content for pattern (but be more selective)
+          const textMatch = cellText.includes(patternLower) && cellText.length > 5; // Avoid matching single words
+          if (textMatch) {
+            console.log(`     ✅ Text match: content contains "${patternLower}"`);
+          }
+          
+          return classMatch || textMatch;
+        });
+        
+        if (matches) {
+          matchingCells.push(cell);
+        }
+      });
+      
+      console.log(`🔍 Found ${matchingCells.length} cells matching patterns [${patterns.join(', ')}]`);
+      return matchingCells;
+    },
+
+    findCellsByExactPattern(rowElement, exactClassNames) {
+      const matchingCells = [];
+      const cells = Array.from(rowElement.querySelectorAll('td'));
+      
+      console.log(`🔍 Searching for exact class matches in ${cells.length} cells`);
+      console.log(`🔍 Looking for exact classes: [${exactClassNames.join(', ')}]`);
+      
+      cells.forEach((cell, cellIndex) => {
+        // Check if the cell has an exact class match
+        const cellClasses = Array.from(cell.classList);
+        console.log(`   Cell ${cellIndex}: classes = [${cellClasses.join(', ')}]`);
+        
+        const matches = exactClassNames.some(exactClassName => {
+          const hasExactMatch = cellClasses.includes(exactClassName);
+          if (hasExactMatch) {
+            console.log(`     ✅ Found exact match: "${exactClassName}"`);
+          }
+          return hasExactMatch;
+        });
+        
+        if (matches) {
+          console.log(`🎯 Found exact class match: ${cellClasses.join(', ')} contains one of [${exactClassNames.join(', ')}]`);
+          matchingCells.push(cell);
+        }
+      });
+      
+      // If no exact matches found, try a more flexible approach
+      if (matchingCells.length === 0) {
+        console.log(`⚠️ No exact matches found, trying flexible pattern matching...`);
+        return this.findCellsByPattern(rowElement, exactClassNames);
+      }
+      
+      console.log(`🔍 Found ${matchingCells.length} cells with exact class matches [${exactClassNames.join(', ')}]`);
+      return matchingCells;
     }
   });
 
