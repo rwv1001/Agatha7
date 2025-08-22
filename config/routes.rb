@@ -35,6 +35,8 @@ Rails.application.routes.draw do
   match "welcome/update_formats",
         to: "welcome#update_formats",
         via: [:get, :post]
+
+  get "welcome/fetch_updated_rows", to: "welcome#fetch_updated_rows"
         
   # Session counter actions for welcome page
   get "welcome/get_counter", to: "welcome#get_counter"

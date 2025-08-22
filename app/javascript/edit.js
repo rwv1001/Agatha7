@@ -319,8 +319,10 @@ function on_checkbox_click(row_id, type_name, class_name)
             console.log(`🔍 DEBUG: Looking for all checkboxes in row ${row_id}:`);
             const allCheckboxes = document.querySelectorAll(`input[type="checkbox"]`);
             const rowCheckboxes = Array.from(allCheckboxes).filter(cb => cb.id && cb.id.includes(row_id));
-            rowCheckboxes.forEach(cb => console.log(`   Found checkbox: ID="${cb.id}", name="${cb.name}", class="${cb.className}"`));
-            
+            rowCheckboxes.forEach(cb => {
+               // console.log(`   Found checkbox: ID="${cb.id}", name="${cb.name}", class="${cb.className}"`);
+            });
+
             const select_box_id = class_name + "_check_"+row_id;
             const select_box = document.getElementById(select_box_id);
             console.log(`🎯 Looking for select box with ID: ${select_box_id}`);
@@ -829,11 +831,11 @@ function insert_specific_div_checks(specific_div, search_results_div, check_clas
     console.log("🔍 Found", checks.length, "checkboxes with class", check_class);
     
     checks.forEach(function(check, index) {
-        console.log("🔍 Processing checkbox", index, "- name:", check.name, "value:", check.value, "checked:", check.checked);
+       // console.log("🔍 Processing checkbox", index, "- name:", check.name, "value:", check.value, "checked:", check.checked);
         const new_elt = check.cloneNode(true);
         new_elt.removeAttribute('id');
         specific_div.appendChild(new_elt);
-        console.log("🔍 Cloned and appended checkbox", index);
+       // console.log("🔍 Cloned and appended checkbox", index);
     });
     
     console.log("🔍 insert_specific_div_checks completed for", check_class);

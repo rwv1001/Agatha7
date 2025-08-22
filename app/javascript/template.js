@@ -302,6 +302,11 @@ var displayPageCl;
 var option_hash = new MyHash();
 var displayPageCl = new MyHash();
 
+// Make these variables global so they can be accessed from other scripts
+window.displayPageCl = displayPageCl;
+window.option_hash = option_hash;
+window.old_page_name = old_page_name;
+
 var sub_menu_hash = new MyHash();
 function load_pages() {
 
@@ -1396,6 +1401,10 @@ function display_select_action(table_name, option_id, do_js) {
 
   old_page_name = table_name;
   old_option_id = option_id;
+  
+  // Update global reference
+  window.old_page_name = old_page_name;
+  
   separate_resizing();
 
 }
@@ -1520,7 +1529,7 @@ function getBarPositionScale() {
 
 
 function end_drag() {
-  console.log("end_drag");
+//  console.log("end_drag");
 
   scrollHandler();
 

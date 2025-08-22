@@ -64,7 +64,7 @@ function centerSeparator() {
   const separator = document.getElementById('black_bar_separator_div');
   
   const left_black_bar = Math.floor((getOuterWidth('content_div') - getOuterWidth('black_bar_separator_div')) / 2 + 0.5);
-  console.log('centerSeparator: left_black_bar=', left_black_bar);
+  // console.log('centerSeparator: left_black_bar=', left_black_bar);
   separator.style.left = left_black_bar + "px";
 }
 document.addEventListener('turbo:load', function () {
@@ -110,7 +110,7 @@ document.addEventListener('turbo:load', function () {
       const containerWidth = container.clientWidth; // Container's inner width
       const separatorWidth = separator.offsetWidth; // Separator's total width
 
-      console.log('Starting drag: startingLeft=', startingLeft, 'containerWidth=', containerWidth, 'separatorWidth=', separatorWidth);
+      // console.log('Starting drag: startingLeft=', startingLeft, 'containerWidth=', containerWidth, 'separatorWidth=', separatorWidth);
 
       function onMouseMove(event) {
         const delta = event.clientX - startingMouseX; // Distance moved
@@ -119,7 +119,7 @@ document.addEventListener('turbo:load', function () {
         const maxLeft = containerWidth - separatorWidth;
         newLeft = Math.max(0, Math.min(maxLeft, newLeft));
         separator.style.left = `${newLeft}px`; // Update position
-        console.log('Dragging: newLeft=', newLeft, 'maxLeft=', maxLeft);
+        // console.log('Dragging: newLeft=', newLeft, 'maxLeft=', maxLeft);
       }
 
       function onMouseUp(event) {

@@ -11,6 +11,7 @@ class Dependency
 end
 
 include FilterHelper
+include SearchTableBroadcastHelper
 class WelcomeController < ApplicationController
  
 skip_before_action :authorize, only: [:index]
@@ -1938,6 +1939,8 @@ do
         Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for make_attendee due to error or no lectures");
     end
     
     respond_to do |format|
@@ -2040,30 +2043,29 @@ do
     if error_str.empty?
       Rails.logger.info("ActionCable: Broadcasting invalidation for add_to_lectures")
       
-      # Invalidate tables that might show attendance data
-      affected_tables = [
-        'Attendee',
-        'AttendeeWithLecture', 
-        'AttendeeWithPerson',
-        'AttendeeWithLectureWithPerson',
-        'AttendeeWithPersonWithLecture',
-        'Person',
-        'PersonWithGroups',
-        'Lecture',
-        'LectureWithAttendees'
-      ]
-      
-      affected_tables.each do |table_name|
-        ActionCable.server.broadcast(
-          "search_table_channel", 
-          {
-            type: "data_invalidated",
-            table_name: table_name,
-            reason: "attendance_updated",
-            method: "add_to_lectures"
-          }
-        )
-        Rails.logger.info("ActionCable: Invalidated #{table_name} for attendance update")
+      # Broadcast proper search table updates for affected objects
+      if people_ids.present? && lecture_id.present?
+        lecture = Lecture.find(lecture_id) rescue nil
+        
+        if lecture
+          # Broadcast updates for the people and lecture that were modified
+          people_ids.each do |person_id|
+            person = Person.find(person_id) rescue nil
+            if person
+              # Broadcast person update (attendance status changed)
+              broadcast_search_table_update('Person', person, ['lectures_attended_in_term'], [person_id], session[:search_ctls])
+            end
+          end
+          
+          # Broadcast lecture update (attendee list changed)
+          broadcast_search_table_update('Lecture', lecture, ['attendees'], [lecture_id], session[:search_ctls])
+          
+          # Also broadcast any attendee objects that were created
+          new_attendees = Attendee.where(person_id: people_ids, lecture_id: lecture_id)
+          new_attendees.each do |attendee|
+            broadcast_search_table_update('Attendee', attendee, ['person_id', 'lecture_id'], [attendee.id], session[:search_ctls])
+          end
+        end
       end
     end
 
@@ -3870,5 +3872,81 @@ end
 
   end
   
+  def fetch_updated_rows
+    Rails.logger.info("RWV fetch_updated_rows called with params: #{params.inspect}")
+    
+    table_name = params[:table_name]
+    row_ids = params[:row_ids]&.split(',')&.map(&:to_i) || []
+    
+    if table_name.blank? || row_ids.empty?
+      render json: { error: 'Missing table_name or row_ids' }, status: :bad_request
+      return
+    end
+    
+    begin
+      # Get the existing search controller from session (which has the proper filters and setup)
+      unless session[:search_ctls]
+        InitializeSessionController
+      end
+      
+      search_controller = session[:search_ctls][table_name]
+      
+      if search_controller.nil?
+        render json: { error: "No search controller found for table #{table_name}" }, status: :not_found
+        return
+      end
+      
+      # Get the model class
+      model_class = table_name.constantize
+      
+      # Set the search controller on the model class so the partial can access it
+      model_class.set_controller(search_controller)
+      
+      # Apply the same filtering logic as the search controller
+      # Use the search controller's eval string to get filtered results
+      eval_str = search_controller.get_eval_string2()
+      Rails.logger.info("RWV fetch_updated_rows: Using eval string: #{eval_str}")
+      
+      filtered_results = eval(eval_str)
+      
+      # Find the requested rows among the filtered results only
+      
+      
+      rows = filtered_results.select { |r| row_ids.include?(r.id) }
+     
+     
+      Rails.logger.info("RWV fetch_updated_rows: #{row_ids.size} requested, #{rows.size} matched filters for #{table_name}")
+      
+      # Generate HTML for each row using the same logic as the search results
+      updated_rows = rows.map do |row|
+        # Use the search controller's row rendering logic
+        row_html = render_to_string(
+          partial: 'shared/search_results_row_button',
+          object: row,
+          formats: [:html]
+        )
+        
+        {
+          id: row.id,
+          html: row_html.strip
+        }
+      end
+      
+      respond_to do |format|
+        format.json { 
+          render json: {
+            success: true,
+            table_name: table_name,
+            rows: updated_rows
+          }
+        }
+      end
+      
+    rescue => e
+      Rails.logger.error("RWV Error in fetch_updated_rows: #{e.message}")
+      Rails.logger.error("RWV #{e.backtrace.first(5).join("\n")}")
+      render json: { error: e.message }, status: :internal_server_error
+    end
+  end
   
 end

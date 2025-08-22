@@ -128,19 +128,30 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log("📡 Received ActionCable message:", data);
       console.log("📡 Message action type:", data.action);
       
-      if (data.action === 'update_search_rows') {
-        console.log("🎯 Processing update_search_rows action");
-        this.handleSearchTableUpdate(data);
-      } else if (data.action === 'remove_search_rows') {
-        console.log("🗑️ Processing remove_search_rows action");
-        this.handleSearchRowRemovals(data);
-      } else if (data.action === 'data_invalidation') {
-        console.log("🔄 Processing data_invalidation action");
+      if (data.action === 'data_invalidation') {
+        console.log("🔄 Processing data_invalidation action (NEW SYSTEM)");
         console.log("🔄 Invalidation data:", data);
         this.handleDataInvalidation(data);
+      } else if (data.action === 'update_search_rows') {
+        console.log("🎯 Processing update_search_rows action (LEGACY SYSTEM)");
+        // Only process legacy updates if there's no data_invalidation in progress
+        if (!this.hasRecentDataInvalidation()) {
+          this.handleSearchTableUpdate(data);
+        } else {
+          console.log("⏭️ Skipping legacy update - data_invalidation already handled this");
+        }
+      } else if (data.action === 'remove_search_rows') {
+        console.log("�️ Processing remove_search_rows action");
+        this.handleSearchRowRemovals(data);
       } else {
         console.log("⚠️ Unknown action received:", data.action);
       }
+    },
+
+    hasRecentDataInvalidation() {
+      // Check if we've had a data_invalidation message in the last 5 seconds
+      if (!this.lastDataInvalidation) return false;
+      return (Date.now() - this.lastDataInvalidation) < 5000;
     },
 
     handleSearchTableUpdate(data) {
@@ -164,22 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tableChangedCells += changedCells;
             console.log(`📈 Table ${tableName} total changed cells now: ${tableChangedCells}`);
             
-            // Special handling for Group table member count updates
-            if (tableName === 'Group' && updateType === 'group_member_count_update') {
-              console.log(`🎯 Applying special highlighting for Group member count update on group ${rowData.id}`);
-              const groupRowElement = document.getElementById(`${rowData.id}_Group`);
-              if (groupRowElement) {
-                // Specifically highlight the Number_of_group_members_Group cell
-                const membersCell = groupRowElement.querySelector('.Number_of_group_members_Group');
-                if (membersCell) {
-                  console.log(`✨ Highlighting group member count cell for group ${rowData.id}`);
-                  membersCell.classList.add('cell-updated');
-                  setTimeout(() => {
-                    membersCell.classList.remove('cell-updated');
-                  }, 2000); // Longer highlight for cross-tab updates
-                }
-              }
-            }
+            // NOTE: Special Group highlighting is disabled - let the unified system handle all highlighting
           });
         }
 
@@ -200,9 +196,9 @@ document.addEventListener('DOMContentLoaded', function() {
           });
         }
 
-        // Skip recolour entirely when doing targeted cell updates - the cell-level highlighting is handled by updateChangedCells
+        // Skip recolour entirely when doing targeted cell updates - highlighting is handled centrally
         if (tableChangedCells > 0) {
-          console.log(`✨ Completed targeted cell updates for table ${tableName} (${tableChangedCells} content changes) - skipping row-level recolor`);
+          console.log(`✅ Completed targeted cell updates for table ${tableName} (${tableChangedCells} content changes)`);
         } else if (tableChangedCells === 0) {
           console.log(`⏭️ Skipping recolor for ${tableName} - no content changes detected`);
         }
@@ -327,11 +323,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update the cell content
             currentCell.innerHTML = newCell.innerHTML;
             
-            // Add highlight effect to the changed cell
-            currentCell.classList.add('cell-updated');
-            setTimeout(() => {
-              currentCell.classList.remove('cell-updated');
-            }, 1500);
+            // NOTE: Highlighting is now handled centrally in applyRowUpdates method
+            // No need to highlight here to avoid conflicts
             
             changedCellCount++;
           }
@@ -529,6 +522,14 @@ document.addEventListener('DOMContentLoaded', function() {
     handleDataInvalidation(data) {
       console.log("🔄 Handling data invalidation:", data);
       
+      // Track that we're handling data invalidation to prevent legacy system conflicts
+      this.lastDataInvalidation = Date.now();
+      
+      // Initialize circuit breaker to prevent infinite loops
+      if (!this.refreshAttempts) {
+        this.refreshAttempts = new Map();
+      }
+      
       // Process each affected relationship that needs updating
       if (data.affected_relationships && Array.isArray(data.affected_relationships)) {
         data.affected_relationships.forEach(relationship => {
@@ -540,6 +541,22 @@ document.addEventListener('DOMContentLoaded', function() {
           
           console.log(`🔄 Table: ${tableName}, affected IDs:`, affectedIds);
           console.log(`🔄 Operation: ${operation}, Reason: ${reason}`);
+          
+          // Create a unique key for this refresh attempt
+          const refreshKey = `${tableName}_${affectedIds.join(',')}_${operation}_${reason}`;
+          const now = Date.now();
+          
+          // Check if we've attempted this refresh recently (within 10 seconds)
+          if (this.refreshAttempts.has(refreshKey)) {
+            const lastAttempt = this.refreshAttempts.get(refreshKey);
+            if (now - lastAttempt < 3000) {
+              console.log(`🚫 Skipping refresh - attempted too recently for ${refreshKey}`);
+              return;
+            }
+          }
+          
+          // Record this refresh attempt
+          this.refreshAttempts.set(refreshKey, now);
           
           // Store the invalidation context for use after refresh
           const invalidationContext = {
@@ -619,6 +636,324 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log(`🔄 Refreshing table with context: ${tableName} with affected rows:`, affectedRowIds);
       console.log(`🔄 Invalidation context:`, invalidationContext);
       
+      // For make_attendee operations, ONLY use targeted updates - never fall back to full refresh
+      const sourceOperation = invalidationContext.sourceOperation;
+      const isAttendeeOperation = sourceOperation === 'make_attendee' || 
+                                  invalidationContext.reason === 'attendance_added' ||
+                                  invalidationContext.reason === 'attendee_count_change';
+      
+      if (isAttendeeOperation) {
+        console.log(`🎯 Attendee operation detected - using ONLY targeted updates, no fallback to full refresh`);
+        if (affectedRowIds.length > 0) {
+          this.updateSpecificRows(tableName, affectedRowIds, invalidationContext);
+          return;
+        } else {
+          console.log(`ℹ️ No specific row IDs for attendee operation - skipping update for ${tableName}`);
+          return;
+        }
+      }
+      
+      // Initialize circuit breaker for targeted updates (for non-attendee operations)
+      if (!this.targetedUpdateAttempts) {
+        this.targetedUpdateAttempts = new Map();
+      }
+      
+      // Create a unique key for this targeted update attempt
+      const updateKey = `${tableName}_${affectedRowIds.join(',')}_targeted`;
+      const now = Date.now();
+      
+      // Check if we've attempted targeted updates for this recently (within 30 seconds)
+      if (this.targetedUpdateAttempts.has(updateKey)) {
+        const lastAttempt = this.targetedUpdateAttempts.get(updateKey);
+        if (now - lastAttempt < 30000) {
+          console.log(`🚫 Skipping targeted updates - attempted too recently, using full refresh instead`);
+          // Skip to full table refresh
+        } else {
+          // Clear old attempt and try targeted updates
+          this.targetedUpdateAttempts.delete(updateKey);
+          
+          // For cross-tab/cross-user updates, try targeted row updates first
+          if (affectedRowIds.length > 0 && affectedRowIds.length <= 10) {
+            console.log(`🎯 Attempting targeted row updates for ${affectedRowIds.length} specific rows`);
+            this.targetedUpdateAttempts.set(updateKey, now);
+            this.updateSpecificRows(tableName, affectedRowIds, invalidationContext);
+            return;
+          }
+        }
+      } else {
+        // First attempt - try targeted updates
+        if (affectedRowIds.length > 0 && affectedRowIds.length <= 10) {
+          console.log(`🎯 Attempting targeted row updates for ${affectedRowIds.length} specific rows`);
+          this.targetedUpdateAttempts.set(updateKey, now);
+          this.updateSpecificRows(tableName, affectedRowIds, invalidationContext);
+          return;
+        }
+      }
+      
+      // Fallback to full table refresh for larger changes or circuit breaker triggered
+      // (This will only happen for non-attendee operations)
+      console.log(`🔄 Falling back to full table refresh for non-attendee operation`);
+      
+      // Find the search results div for this table
+      const searchResultsDiv = document.getElementById(`search_results_${tableName}`);
+      if (!searchResultsDiv) {
+        console.log(`⚠️ No search results div found for table: ${tableName} (looking for search_results_${tableName})`);
+        return;
+      }
+
+      // Store current checkbox states before refresh
+      const currentCheckboxes = {};
+      searchResultsDiv.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        currentCheckboxes[checkbox.value] = checkbox.checked;
+      });
+      
+      // IMPORTANT: Capture the current cell values for comparison after refresh
+      const beforeRefreshData = {};
+      affectedRowIds.forEach(rowId => {
+        const rowElement = document.getElementById(`${rowId}_${tableName}`);
+        if (rowElement) {
+          const cells = Array.from(rowElement.querySelectorAll('td'));
+          beforeRefreshData[rowId] = cells.map(cell => ({
+            innerHTML: cell.innerHTML.trim(),
+            textContent: (cell.textContent || '').trim()
+          }));
+          console.log(`📸 Captured before-state for row ${rowId}:`, beforeRefreshData[rowId].length, 'cells');
+        }
+      });
+      
+      // Find the search button for this table
+      const searchButton = document.querySelector(`input[onclick*="Search('${tableName}')"]`);
+      if (searchButton) {
+        console.log(`🔄 Found Search function, triggering refresh for ${tableName} table`);
+        
+        // Store checkbox states for restoration after refresh
+        if (window.savedCheckboxStates) {
+          window.savedCheckboxStates[tableName] = currentCheckboxes;
+        } else {
+          window.savedCheckboxStates = { [tableName]: currentCheckboxes };
+        }
+        
+        searchButton.click();
+        
+        // After the search completes, compare before/after values and highlight only changed cells
+        setTimeout(() => {
+          this.compareAndHighlightChanges(tableName, affectedRowIds, beforeRefreshData);
+        }, 1500); // Increased delay to allow search to complete
+      } else {
+        console.log(`⚠️ No search button found for table: ${tableName}`);
+        console.log(`Looking for: input[onclick*="Search('${tableName}')"]`);
+        
+        // Try to find any search-related buttons as fallback
+        const allSearchButtons = document.querySelectorAll('input[onclick*="Search"]');
+        console.log(`Found ${allSearchButtons.length} search buttons:`, 
+          Array.from(allSearchButtons).map(btn => btn.getAttribute('onclick')));
+      }
+    },
+
+    updateSpecificRows(tableName, affectedRowIds, invalidationContext) {
+      console.log(`🎯 Updating specific rows in ${tableName}: ${affectedRowIds.join(', ')}`);
+      
+      // Check if this is an attendee operation
+      const sourceOperation = invalidationContext.sourceOperation;
+      const isAttendeeOperation = sourceOperation === 'make_attendee' || 
+                                  invalidationContext.reason === 'attendance_added' ||
+                                  invalidationContext.reason === 'attendee_count_change';
+      
+      // Capture before state for comparison
+      const beforeRefreshData = {};
+      affectedRowIds.forEach(rowId => {
+        const rowElement = document.getElementById(`${rowId}_${tableName}`);
+        if (rowElement) {
+          const cells = Array.from(rowElement.querySelectorAll('td'));
+          beforeRefreshData[rowId] = cells.map(cell => ({
+            innerHTML: cell.innerHTML.trim(),
+            textContent: (cell.textContent || '').trim()
+          }));
+          console.log(`📸 Captured before-state for targeted update of row ${rowId}:`, beforeRefreshData[rowId].length, 'cells');
+        }
+      });
+      
+      // Make AJAX request to fetch updated row data
+      const params = new URLSearchParams();
+      params.append('table_name', tableName);
+      params.append('row_ids', affectedRowIds.join(','));
+      params.append('action', 'fetch_rows');
+      
+      console.log(`🌐 Fetching updated row data for ${tableName} rows: ${affectedRowIds.join(', ')}`);
+      
+      fetch(`/welcome/fetch_updated_rows?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => {
+        console.log(`📡 Received response for row updates:`, response.status);
+        if (!response.ok) {
+          console.log(`❌ HTTP Error ${response.status}: ${response.statusText}`);
+          response.text().then(text => {
+            console.log(`❌ Error response body:`, text);
+          });
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log(`✅ Received updated row data:`, data);
+        this.applyRowUpdates(tableName, data.rows, beforeRefreshData);
+      })
+      .catch(error => {
+        console.log(`❌ Failed to fetch specific rows for ${tableName} (IDs: ${affectedRowIds.join(', ')}):`, error);
+        
+        if (isAttendeeOperation) {
+          console.log(`🚫 Attendee operation failed - NOT falling back to full refresh to preserve checkboxes`);
+          console.log(`ℹ️ Adding subtle indication that these rows were affected by the operation`);
+          
+          // For attendee operations, just add a subtle visual indication without disturbing checkboxes
+          affectedRowIds.forEach(rowId => {
+            const rowElement = document.getElementById(`${rowId}_${tableName}`);
+            if (rowElement) {
+              rowElement.classList.add('row-involved');
+              setTimeout(() => {
+                rowElement.classList.remove('row-involved');
+              }, 2000);
+            }
+          });
+        } else {
+          // For non-attendee operations, allow fallback to full refresh
+          console.log(`🔄 Non-attendee operation failed, falling back to full refresh`);
+          
+          // Clear the targeted update attempt to prevent repeated failures
+          const updateKey = `${tableName}_${affectedRowIds.join(',')}_targeted`;
+          if (this.targetedUpdateAttempts) {
+            this.targetedUpdateAttempts.delete(updateKey);
+          }
+          
+          // Fallback to full table refresh
+          this.performFullTableRefresh(tableName, affectedRowIds, beforeRefreshData);
+        }
+      });
+    },
+
+    applyRowUpdates(tableName, updatedRows, beforeRefreshData) {
+      console.log(`🔄 Applying updates to ${updatedRows.length} rows in ${tableName}`);
+      
+      updatedRows.forEach(rowData => {
+        const rowId = rowData.id;
+        const rowElement = document.getElementById(`${rowId}_${tableName}`);
+        
+        if (rowElement && rowData.html) {
+          console.log(`🔄 Updating row ${rowId}_${tableName} with new HTML`);
+          
+          // PRESERVE CHECKBOX STATES before replacing content
+          const checkboxStates = {};
+          const checkboxes = rowElement.querySelectorAll('input[type="checkbox"]');
+          checkboxes.forEach(checkbox => {
+            if (checkbox.id) {
+              checkboxStates[checkbox.id] = checkbox.checked;
+              console.log(`💾 Preserving checkbox state: ${checkbox.id} = ${checkbox.checked}`);
+            }
+          });
+          
+          // Parse the new HTML
+          const tempDiv = document.createElement('table');
+          tempDiv.innerHTML = rowData.html.trim();
+          const newRowElement = tempDiv.querySelector('tr');
+          
+          if (newRowElement) {
+            // Do the comparison BEFORE replacing the content
+            const beforeData = beforeRefreshData[rowId];
+            const changedCellIndices = [];
+            
+            if (beforeData) {
+              console.log(`🔍 Comparing row ${rowId} BEFORE replacing content`);
+              
+              // Get current (before) cells for comparison
+              const currentCells = Array.from(rowElement.querySelectorAll('td'));
+              const newCells = Array.from(newRowElement.querySelectorAll('td'));
+              
+              console.log(`🔍 Row has ${currentCells.length} current cells, ${newCells.length} new cells`);
+              
+              // Compare and track differences
+              let changedCellCount = 0;
+              newCells.forEach((newCell, cellIndex) => {
+                if (cellIndex < currentCells.length && cellIndex < beforeData.length) {
+                  const currentCell = currentCells[cellIndex];
+                  const beforeCell = beforeData[cellIndex];
+                  
+                  const newInnerHTML = newCell.innerHTML.trim();
+                  const beforeInnerHTML = beforeCell.innerHTML.trim();
+                  
+                  // Normalize content for comparison
+                  const newNorm = this.normalizeContent(newInnerHTML);
+                  const beforeNorm = this.normalizeContent(beforeInnerHTML);
+                  
+                  if (newNorm !== beforeNorm) {
+                    console.log(`🎯 Cell ${cellIndex} changed!`);
+                    console.log(`   BEFORE: "${beforeInnerHTML}"`);
+                    console.log(`   AFTER:  "${newInnerHTML}"`);
+                    
+                    changedCellCount++;
+                    changedCellIndices.push(cellIndex);
+                  }
+                }
+              });
+              
+              if (changedCellCount > 0) {
+                console.log(`✨ Row ${rowId} has ${changedCellCount} changed cells - will be highlighted`);
+              } else {
+                console.log(`ℹ️ Row ${rowId} updated but no visible changes detected`);
+              }
+            }
+            
+            // Now replace the row content
+            rowElement.innerHTML = newRowElement.innerHTML;
+            
+            // IMMEDIATELY HIDE CELLS that should be hidden (before highlighting)
+            this.hideCellsBasedOnCurrentDisplay(rowElement, tableName);
+            
+            // RESTORE CHECKBOX STATES after replacing content
+            Object.keys(checkboxStates).forEach(checkboxId => {
+              const restoredCheckbox = document.getElementById(checkboxId);
+              if (restoredCheckbox) {
+                restoredCheckbox.checked = checkboxStates[checkboxId];
+                console.log(`✅ Restored checkbox state: ${checkboxId} = ${checkboxStates[checkboxId]}`);
+              }
+            });
+            
+            // AFTER replacing content and hiding cells, highlight the changed cells
+            if (changedCellIndices.length > 0) {
+              setTimeout(() => {
+                const updatedCells = Array.from(rowElement.querySelectorAll('td'));
+                changedCellIndices.forEach(cellIndex => {
+                  if (cellIndex < updatedCells.length) {
+                    const cellToHighlight = updatedCells[cellIndex];
+                    console.log(`✨ Highlighting cell ${cellIndex} in updated row ${rowId}`);
+                    cellToHighlight.classList.add('cell-updated');
+                    setTimeout(() => {
+                      cellToHighlight.classList.remove('cell-updated');
+                    }, 10000);
+                  }
+                });
+              }, 50); // Small delay to ensure hiding is applied first
+            }
+          } else {
+            console.log(`⚠️ Could not parse new row HTML for ${rowId}, applying subtle indication`);
+            rowElement.classList.add('row-involved');
+            setTimeout(() => {
+              rowElement.classList.remove('row-involved');
+            }, 1500);
+          }          
+        } else {
+          console.log(`⚠️ Could not update row ${rowId}_${tableName} - element not found or no HTML provided`);
+        }
+      });
+    },
+
+    performFullTableRefresh(tableName, affectedRowIds, beforeRefreshData) {
+      console.log(`🔄 Performing full table refresh for ${tableName} (circuit breaker fallback)`);
+      
       // Find the search results div for this table
       const searchResultsDiv = document.getElementById(`search_results_${tableName}`);
       if (!searchResultsDiv) {
@@ -646,18 +981,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         searchButton.click();
         
-        // After the search completes, highlight based on the operation context
+        // After the search completes, highlight the affected rows with a subtle indication
+        // Note: Full refresh replaces all content, so before/after comparison isn't meaningful
         setTimeout(() => {
-          this.highlightBasedOnOperation(tableName, affectedRowIds, invalidationContext);
-        }, 1500); // Increased delay to allow search to complete
+          affectedRowIds.forEach(rowId => {
+            const rowElement = document.getElementById(`${rowId}_${tableName}`);
+            if (rowElement) {
+              rowElement.classList.add('row-involved');
+              setTimeout(() => {
+                rowElement.classList.remove('row-involved');
+              }, 2000);
+            }
+          });
+        }, 1500);
       } else {
         console.log(`⚠️ No search button found for table: ${tableName}`);
-        console.log(`Looking for: input[onclick*="Search('${tableName}')"]`);
-        
-        // Try to find any search-related buttons as fallback
-        const allSearchButtons = document.querySelectorAll('input[onclick*="Search"]');
-        console.log(`Found ${allSearchButtons.length} search buttons:`, 
-          Array.from(allSearchButtons).map(btn => btn.getAttribute('onclick')));
       }
     },
 
@@ -703,35 +1041,59 @@ document.addEventListener('DOMContentLoaded', function() {
         const rowElement = document.getElementById(`${rowId}_${tableName}`);
         const beforeData = beforeRefreshData[rowId];
         
+        console.log(`\n📊 === DETAILED COMPARISON FOR ROW ${rowId}_${tableName} ===`);
+        
         if (rowElement && beforeData) {
           const afterCells = Array.from(rowElement.querySelectorAll('td'));
           let changedCellCount = 0;
           
+          console.log(`🔍 Row has ${afterCells.length} cells, comparing with ${beforeData.length} before-cells`);
+          
           afterCells.forEach((cell, cellIndex) => {
+            const cellClasses = Array.from(cell.classList).join(', ');
+            console.log(`\n🔍 Cell ${cellIndex} (classes: "${cellClasses}"):`);
+            
             if (cellIndex < beforeData.length) {
               const beforeCell = beforeData[cellIndex];
               const afterInnerHTML = cell.innerHTML.trim();
               const afterTextContent = (cell.textContent || '').trim();
               
+              // Normalize content for better comparison
+              const beforeHTMLNorm = this.normalizeContent(beforeCell.innerHTML);
+              const afterHTMLNorm = this.normalizeContent(afterInnerHTML);
+              const beforeTextNorm = this.normalizeContent(beforeCell.textContent);
+              const afterTextNorm = this.normalizeContent(afterTextContent);
+              
+              console.log(`   📋 BEFORE HTML: "${beforeCell.innerHTML}"`);
+              console.log(`   📋 AFTER  HTML: "${afterInnerHTML}"`);
+              console.log(`   📋 BEFORE TEXT: "${beforeCell.textContent}"`);
+              console.log(`   📋 AFTER  TEXT: "${afterTextContent}"`);
+              console.log(`   📋 BEFORE HTML (normalized): "${beforeHTMLNorm}"`);
+              console.log(`   📋 AFTER  HTML (normalized): "${afterHTMLNorm}"`);
+              console.log(`   📋 BEFORE TEXT (normalized): "${beforeTextNorm}"`);
+              console.log(`   📋 AFTER  TEXT (normalized): "${afterTextNorm}"`);
+              
               // Compare both HTML and text content to catch all types of changes
-              const htmlChanged = beforeCell.innerHTML !== afterInnerHTML;
-              const textChanged = beforeCell.textContent !== afterTextContent;
+              const htmlChanged = beforeHTMLNorm !== afterHTMLNorm;
+              const textChanged = beforeTextNorm !== afterTextNorm;
               
               if (htmlChanged || textChanged) {
-                console.log(`🎯 Cell ${cellIndex} in row ${rowId} changed`);
-                console.log(`   Before: "${beforeCell.textContent}" -> After: "${afterTextContent}"`);
+                console.log(`   🎯 *** CELL ${cellIndex} CHANGED! ***`);
+                console.log(`   🎯 HTML changed: ${htmlChanged}, Text changed: ${textChanged}`);
                 
-                // Highlight only the changed cell
-                cell.classList.add('cell-updated');
-                setTimeout(() => {
-                  cell.classList.remove('cell-updated');
-                }, 2000);
+                // NOTE: Cell highlighting is now handled centrally in applyRowUpdates
+                // This method is only used for full table refresh comparison
                 
                 changedCellCount++;
+              } else {
+                console.log(`   ✅ Cell ${cellIndex} unchanged`);
               }
+            } else {
+              console.log(`   ⚠️ Cell ${cellIndex} has no corresponding before-data`);
             }
           });
           
+          console.log(`\n📊 === SUMMARY FOR ROW ${rowId} ===`);
           if (changedCellCount > 0) {
             console.log(`✨ Highlighted ${changedCellCount} changed cells in row ${rowId}`);
           } else {
@@ -771,10 +1133,12 @@ document.addEventListener('DOMContentLoaded', function() {
           if (sourceOperation === 'make_attendee') {
             if (tableName === 'Person' && reason === 'attendance_added') {
               // Highlight lecture/course related cells in Person table - be specific about attendance, not teaching
-              cellsToHighlight = this.findCellsByExactPattern(rowElement, [
-                'Lectures_attended_Person',  // Exact match for lectures attended
-                'Courses_in_Person'    // Exact match for courses attended
+              // Use pattern matching to catch variations like "Lectures_attended_in_term_Person"
+              cellsToHighlight = this.findCellsByPattern(rowElement, [
+                'Lectures_attended',  // Pattern match for lectures attended (will catch Lectures_attended_in_term_Person)
+                'Courses_in_Person'   // Exact match for courses attended
               ]);
+              console.log(`🎯 Looking for lecture attendance cells in Person table for row ${rowId}`);
             } else if (tableName === 'Lecture' && reason === 'attendee_count_change') {
               // Highlight attendee count cells in Lecture table
               cellsToHighlight = this.findCellsByPattern(rowElement, [
@@ -803,13 +1167,9 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           
           if (cellsToHighlight.length > 0) {
-            console.log(`✨ Highlighting ${cellsToHighlight.length} operation-specific cells in row ${rowId}`);
-            cellsToHighlight.forEach(cell => {
-              cell.classList.add('cell-updated');
-              setTimeout(() => {
-                cell.classList.remove('cell-updated');
-              }, 2500); // Slightly longer for cross-user updates
-            });
+            console.log(`✨ Found ${cellsToHighlight.length} operation-specific cells in row ${rowId}`);
+            console.log(`ℹ️ NOTE: Cell highlighting is now handled centrally in applyRowUpdates method`);
+            console.log(`ℹ️ These cells will be highlighted when the row update is applied`);
           } else {
             // Fallback: add subtle row indication
             console.log(`ℹ️ No specific cells found, adding subtle row indication for ${rowId}`);
@@ -902,7 +1262,83 @@ document.addEventListener('DOMContentLoaded', function() {
       
       console.log(`🔍 Found ${matchingCells.length} cells with exact class matches [${exactClassNames.join(', ')}]`);
       return matchingCells;
-    }
+    },
+
+    hideCellsBasedOnCurrentDisplay(rowElement, tableName) {
+      console.log(`🔧 Applying proper display classes for updated row in table ${tableName}`);
+      
+      // Get the current page view configuration from the global variables
+      if (typeof window.displayPageCl === 'undefined' || typeof window.old_page_name === 'undefined') {
+        console.log(`⚠️ Display configuration not available, skipping class updates`);
+        return;
+      }
+      
+      // Use the current page being displayed (e.g., "Person" for Make attendee action)
+      const currentPageName = window.old_page_name;
+      console.log(`🔧 Current page being displayed: ${currentPageName}`);
+      
+      // Get the current option ID from the action_select DOM element for the current page
+      const selectStr = "action_select_" + currentPageName;
+      const selectElement = document.getElementById(selectStr);
+      
+      if (!selectElement) {
+        console.log(`⚠️ No action select element found for ${currentPageName} (looking for ${selectStr}), skipping class updates`);
+        return;
+      }
+      
+      const currentOptionId = parseInt(selectElement.value);
+      console.log(`🔧 Found current option ID from DOM element ${selectStr}: ${currentOptionId}`);
+      
+      // Get the page views for the current page
+      const pageViews = window.displayPageCl.get(currentPageName);
+      if (!pageViews || currentOptionId >= pageViews.length) {
+        console.log(`⚠️ No page view found for ${currentPageName} option ${currentOptionId}, skipping class updates`);
+        return;
+      }
+      
+      const currentPageView = pageViews[currentOptionId];
+      console.log(`🔧 Using page view: ${currentPageView.page_name} - ${currentPageView.option_name} (option ${currentOptionId})`);
+      
+      // Find the display div configuration for the table we're updating
+      // For "Make attendee", this could be welcome_Person or welcome_Lecture
+      let targetDisplayDiv = null;
+      currentPageView.display_divs.forEach(displayDiv => {
+        if (displayDiv.div_id === `welcome_${tableName}`) {
+          targetDisplayDiv = displayDiv;
+        }
+      });
+      
+      if (!targetDisplayDiv) {
+        console.log(`⚠️ No display div found for welcome_${tableName} in current page view, skipping class updates`);
+        console.log(`⚠️ Available display divs: ${currentPageView.display_divs.map(d => d.div_id).join(', ')}`);
+        return;
+      }
+      
+      console.log(`🔧 Found display div config for welcome_${tableName}:`);
+      console.log(`   Visible classes: [${targetDisplayDiv.visible_classes.join(', ')}]`);
+      console.log(`   Invisible classes: [${targetDisplayDiv.invisible_classes.join(', ')}]`);
+      
+      // Apply the invisible classes (hide them)
+      targetDisplayDiv.invisible_classes.forEach(invisibleClass => {
+        const elementsToHide = rowElement.querySelectorAll(invisibleClass);
+        elementsToHide.forEach(element => {
+          element.style.display = 'none';
+          console.log(`🔧 Hidden element with class: ${invisibleClass}`);
+        });
+      });
+      
+      // Apply the visible classes (show them)
+      targetDisplayDiv.visible_classes.forEach(visibleClass => {
+        const elementsToShow = rowElement.querySelectorAll(visibleClass);
+        elementsToShow.forEach(element => {
+          element.style.display = '';
+          console.log(`🔧 Shown element with class: ${visibleClass}`);
+        });
+      });
+      
+      console.log(`✅ Applied display classes for ${tableName} updated row based on current page view ${currentPageName} option ${currentOptionId}`);
+    },
+
   });
 
   // Store the channel reference globally if needed
