@@ -636,8 +636,17 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log(`🔄 Refreshing table with context: ${tableName} with affected rows:`, affectedRowIds);
       console.log(`🔄 Invalidation context:`, invalidationContext);
       
-      // For make_attendee operations, ONLY use targeted updates - never fall back to full refresh
+      const operation = invalidationContext.operation;
       const sourceOperation = invalidationContext.sourceOperation;
+      
+      // Handle DELETE operations - remove rows from the table
+      if (operation === 'delete') {
+        console.log(`🗑️ DELETE operation detected for ${tableName} - removing ${affectedRowIds.length} rows`);
+        this.removeTableRows(tableName, affectedRowIds, invalidationContext);
+        return;
+      }
+      
+      // For make_attendee operations, ONLY use targeted updates - never fall back to full refresh
       const isAttendeeOperation = sourceOperation === 'make_attendee' || 
                                   invalidationContext.reason === 'attendance_added' ||
                                   invalidationContext.reason === 'attendee_count_change';
@@ -665,7 +674,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Check if we've attempted targeted updates for this recently (within 30 seconds)
       if (this.targetedUpdateAttempts.has(updateKey)) {
         const lastAttempt = this.targetedUpdateAttempts.get(updateKey);
-        if (now - lastAttempt < 30000) {
+        if (now - lastAttempt < 3000) {
           console.log(`🚫 Skipping targeted updates - attempted too recently, using full refresh instead`);
           // Skip to full table refresh
         } else {
@@ -1267,9 +1276,13 @@ document.addEventListener('DOMContentLoaded', function() {
     hideCellsBasedOnCurrentDisplay(rowElement, tableName) {
       console.log(`🔧 Applying proper display classes for updated row in table ${tableName}`);
       
+      // FIRST: Check for manually deleted columns by comparing with existing rows
+      this.hideDeletedColumns(rowElement, tableName);
+      
+      // SECOND: Apply PageView-based visibility for multi-table actions
       // Get the current page view configuration from the global variables
       if (typeof window.displayPageCl === 'undefined' || typeof window.old_page_name === 'undefined') {
-        console.log(`⚠️ Display configuration not available, skipping class updates`);
+        console.log(`⚠️ Display configuration not available, skipping PageView class updates`);
         return;
       }
       
@@ -1282,7 +1295,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const selectElement = document.getElementById(selectStr);
       
       if (!selectElement) {
-        console.log(`⚠️ No action select element found for ${currentPageName} (looking for ${selectStr}), skipping class updates`);
+        console.log(`⚠️ No action select element found for ${currentPageName} (looking for ${selectStr}), skipping PageView class updates`);
         return;
       }
       
@@ -1292,7 +1305,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Get the page views for the current page
       const pageViews = window.displayPageCl.get(currentPageName);
       if (!pageViews || currentOptionId >= pageViews.length) {
-        console.log(`⚠️ No page view found for ${currentPageName} option ${currentOptionId}, skipping class updates`);
+        console.log(`⚠️ No page view found for ${currentPageName} option ${currentOptionId}, skipping PageView class updates`);
         return;
       }
       
@@ -1309,7 +1322,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       
       if (!targetDisplayDiv) {
-        console.log(`⚠️ No display div found for welcome_${tableName} in current page view, skipping class updates`);
+        console.log(`⚠️ No display div found for welcome_${tableName} in current page view, skipping PageView class updates`);
         console.log(`⚠️ Available display divs: ${currentPageView.display_divs.map(d => d.div_id).join(', ')}`);
         return;
       }
@@ -1336,7 +1349,112 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
       
-      console.log(`✅ Applied display classes for ${tableName} updated row based on current page view ${currentPageName} option ${currentOptionId}`);
+      console.log(`✅ Applied PageView display classes for ${tableName} updated row based on current page view ${currentPageName} option ${currentOptionId}`);
+    },
+
+    hideDeletedColumns(rowElement, tableName) {
+      console.log(`🔧 Checking for manually deleted columns in ${tableName} table`);
+      
+      // Find the search results table to see which columns are currently visible
+      const searchResultsDiv = document.getElementById(`search_results_${tableName}`);
+      if (!searchResultsDiv) {
+        console.log(`⚠️ No search results div found for ${tableName}, skipping deleted column check`);
+        return;
+      }
+      
+      // Find an existing row to use as a template for visibility
+      const existingRow = searchResultsDiv.querySelector('tr[id*="_' + tableName + '"]');
+      if (!existingRow) {
+        console.log(`⚠️ No existing rows found in ${tableName} table, skipping deleted column check`);
+        return;
+      }
+      
+      // Get the cells from both the existing row and the new row
+      const existingCells = Array.from(existingRow.querySelectorAll('td'));
+      const newCells = Array.from(rowElement.querySelectorAll('td'));
+      
+      console.log(`🔧 Comparing visibility: existing row has ${existingCells.length} cells, new row has ${newCells.length} cells`);
+      
+      // Apply the same visibility state from existing cells to new cells
+      existingCells.forEach((existingCell, index) => {
+        if (index < newCells.length) {
+          const newCell = newCells[index];
+          const isHidden = existingCell.style.display === 'none' || 
+                          getComputedStyle(existingCell).display === 'none';
+          
+          if (isHidden) {
+            newCell.style.display = 'none';
+            console.log(`🔧 Hidden cell ${index} in new row (matching existing row visibility)`);
+          } else {
+            // Ensure it's visible (remove any display:none)
+            if (newCell.style.display === 'none') {
+              newCell.style.display = '';
+              console.log(`🔧 Showed cell ${index} in new row (matching existing row visibility)`);
+            }
+          }
+        }
+      });
+      
+      // Also check the header cells for additional visibility rules
+      const headerRow = searchResultsDiv.querySelector('tr th');
+      if (headerRow) {
+        const headerCells = Array.from(headerRow.parentElement.querySelectorAll('th'));
+        console.log(`🔧 Also checking ${headerCells.length} header cells for visibility rules`);
+        
+        headerCells.forEach((headerCell, index) => {
+          if (index < newCells.length) {
+            const newCell = newCells[index];
+            const isHeaderHidden = headerCell.style.display === 'none' || 
+                                  getComputedStyle(headerCell).display === 'none';
+            
+            if (isHeaderHidden && newCell.style.display !== 'none') {
+              newCell.style.display = 'none';
+              console.log(`🔧 Hidden cell ${index} in new row (header is hidden)`);
+            }
+          }
+        });
+      }
+      
+      console.log(`✅ Applied deleted column visibility rules for ${tableName} updated row`);
+    },
+
+    removeTableRows(tableName, rowIds, invalidationContext = {}) {
+      console.log(`🗑️ Removing ${rowIds.length} rows from ${tableName} table:`, rowIds);
+      
+      rowIds.forEach(rowId => {
+        const rowElementId = `${rowId}_${tableName}`;
+        const rowElement = document.getElementById(rowElementId);
+        
+        if (rowElement) {
+          console.log(`🗑️ Removing row element: ${rowElementId}`);
+          
+          // Add fade-out effect before removal
+          rowElement.style.transition = 'opacity 0.5s ease-out';
+          rowElement.style.opacity = '0.3';
+          
+          setTimeout(() => {
+            rowElement.remove();
+            console.log(`✅ Successfully removed row: ${rowElementId}`);
+            
+            // Re-stripe the table rows after removal
+            this.restripeTableRows(tableName);
+          }, 500);
+        } else {
+          console.log(`⚠️ Row element ${rowElementId} not found for removal`);
+        }
+      });
+    },
+
+    restripeTableRows(tableName) {
+      // Re-apply alternating row colors after row deletion
+      const searchResultsDiv = document.getElementById(`search_results_${tableName}`);
+      if (searchResultsDiv) {
+        const rows = searchResultsDiv.querySelectorAll('tr[id*="_' + tableName + '"]');
+        rows.forEach((row, index) => {
+          row.style.background = index % 2 === 0 ? '#CCCCCC' : '#EEEEEE';
+        });
+        console.log(`🎨 Re-striped ${rows.length} rows in ${tableName} table`);
+      }
     },
 
   });

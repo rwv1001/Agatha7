@@ -20,6 +20,11 @@ Rails.application.routes.draw do
         to: "welcome#order_toggle",
         via: [:get, :post]
 
+  match "welcome/delete_column",
+        to: "welcome#delete_column",
+        via: [:get, :post],
+        as: "welcome_delete_column"
+
   match "welcome/add_external_filter",
         to: "welcome#add_external_filter",
         via: [:get, :post]

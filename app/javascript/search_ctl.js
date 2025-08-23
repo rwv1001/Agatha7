@@ -27,6 +27,30 @@ function deleteColumn(field_name, table_name) {
 
   const class_name = field_name + "_" + table_name;
 
+  // Before removing elements, capture the current display filter state
+  const currentHeaders = Array.from(document.querySelectorAll(`#current_filters_${table_name} th`));
+  const remainingIndices = [];
+  
+  currentHeaders.forEach(function(th) {
+    // Extract the filter index from the class name or data attribute
+    const classList = Array.from(th.classList);
+    classList.forEach(function(className) {
+      // Look for pattern like "field_name_TableName" but exclude the one we're removing
+      if (className !== class_name && className.includes('_' + table_name)) {
+        // Try to find the corresponding index in the display indices
+        const fieldPart = className.replace('_' + table_name, '');
+        // Look for any hidden input or data that maps field names to indices
+        const indexInput = document.querySelector(`input[name*="${fieldPart}"][name*="index"]`);
+        if (indexInput) {
+          const index = parseInt(indexInput.value, 10);
+          if (!isNaN(index) && !remainingIndices.includes(index)) {
+            remainingIndices.push(index);
+          }
+        }
+      }
+    });
+  });
+
   // Remove matching <td> elements
   document.querySelectorAll("td." + class_name).forEach(function (td) {
     td.remove();
@@ -40,6 +64,30 @@ function deleteColumn(field_name, table_name) {
   const num_filters_obj = document.getElementById("all_display_indices_" + table_name);
   let num_filters = parseInt(num_filters_obj.value, 10) - 1;
   num_filters_obj.value = num_filters;
+
+  // Create a hidden input to pass the updated display filter information
+  const form_id = "search_form_" + table_name;
+  const form = document.getElementById(form_id);
+  
+  // Remove any existing update_display_filters input
+  const existingInput = form.querySelector('input[name="update_display_filters"]');
+  if (existingInput) {
+    existingInput.remove();
+  }
+  
+  // Add a hidden input to trigger display filter update
+  const updateInput = document.createElement('input');
+  updateInput.type = 'hidden';
+  updateInput.name = 'update_display_filters';
+  updateInput.value = 'true';
+  form.appendChild(updateInput);
+  
+  // Also pass information about which column was removed
+  const removedColumnInput = document.createElement('input');
+  removedColumnInput.type = 'hidden';
+  removedColumnInput.name = 'removed_column';
+  removedColumnInput.value = field_name;
+  form.appendChild(removedColumnInput);
 
   if (num_filters <= 1) {
     const search_div = document.getElementById("search_results_" + table_name);
@@ -60,7 +108,6 @@ function deleteColumn(field_name, table_name) {
   const do_search_element = document.getElementById("do_search_" + table_name);
   do_search_element.setAttribute("name", "do_not_search");
 
-  const form_id = "search_form_" + table_name;
   const elem = document.getElementById(form_id);
   Rails.fire(elem, 'submit');
 }

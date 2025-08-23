@@ -83,7 +83,9 @@ Rails.application.configure do
     'http://rwvagatha.duckdns.org:3000', 
     'https://rwvagatha.duckdns.org:3000',
     'http://localhost:3000',
-    'http://192.168.1.35:3000'  # Current IP as fallback
+    'http://192.168.1.35:3000',
+    'http://192.168.1.84:3000',
+    'http://10.67.236.196:3000'  # Current IP as fallback
   ]
   
   # Force ActionCable to use WebSocket (not falling back to polling)
@@ -97,6 +99,9 @@ Rails.application.configure do
   config.hosts << "rwvagatha.duckdns.org"
   config.hosts << "agatha.bfriars.ox.ac.uk"
   config.hosts << "192.168.1.35"  # Current IP
+  config.hosts << "192.168.1.84" 
+  config.hosts << "10.67.236.196"  # Current IP as fallback
+
 
 
 

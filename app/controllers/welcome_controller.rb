@@ -546,6 +546,139 @@ layout "welcome"
     end
   end
   
+  # Extract the common logic for handling display filter updates (column removal)
+  def handle_display_filter_update(search_ctl, table_name, logger_prefix = "")
+    return unless params.has_key?("update_display_filters") && params["update_display_filters"] == "true"
+    
+    Rails.logger.info("#{logger_prefix} Processing display filter update for #{table_name}")
+    
+    return unless params.has_key?("removed_column")
+    
+    removed_field = params["removed_column"]
+    Rails.logger.info("#{logger_prefix} Removing column: #{removed_field} from #{table_name}")
+    
+    # Find the index of the removed field in the current filter indices
+    field_index_to_remove = nil
+    Rails.logger.debug("#{logger_prefix} Current filter indices: #{search_ctl.current_filter_indices}")
+    extended_filter_tags = search_ctl.extended_filters.map { |ef| ef.filter_object.tag }
+    Rails.logger.debug("#{logger_prefix} extended_filters tags: #{extended_filter_tags}")
+
+    search_ctl.current_filter_indices.each_with_index do |filter_index, position|
+      # Get the field name from the available_fields array using the filter_index
+      if filter_index < extended_filter_tags.length
+        field_name_from_index = extended_filter_tags[filter_index]
+        if field_name_from_index == removed_field
+          field_index_to_remove = position
+          break
+        else
+          Rails.logger.debug("#{logger_prefix} field at index #{filter_index}: #{field_name_from_index} not equal to removed_field: #{removed_field}")
+        end
+      else
+        Rails.logger.warn("#{logger_prefix} Filter index #{filter_index} out of bounds for available_fields in #{table_name}")
+      end
+    end
+    
+    if field_index_to_remove
+      Rails.logger.info("#{logger_prefix} Found field #{removed_field} at position #{field_index_to_remove}, removing from current_filter_indices")
+      search_ctl.current_filter_indices.delete_at(field_index_to_remove)
+      
+      # Save the updated display filter configuration to the database
+      search_ctl.updateFilters(search_ctl.current_filter_indices, true)  # Pass current indices and update_display=true
+      Rails.logger.info("#{logger_prefix} Updated display filters for #{table_name}, new indices: #{search_ctl.current_filter_indices}")
+    else
+      Rails.logger.warn("#{logger_prefix} Could not find field #{removed_field} in current filter indices")
+    end
+  end
+
+  def delete_column
+    Rails.logger.info("🗑️ DELETE_COLUMN: called with params: #{params.inspect}")
+    
+    table_name = params[:table_name] || "Person"   
+    field_name = params[:field_name]
+    
+    # Set up parameters that would normally be sent by the form submission
+    # These parameters are needed for update_search_controller and table_search to work properly
+    params[:table_change_text] = table_name
+    params[:do_not_search] = "0"  # This will prevent the actual search from running
+    params[:update_display_filters] = "true"  # Signal that we're updating display filters
+    params[:removed_column] = field_name  # The field being removed
+    
+    Rails.logger.info("🗑️ DELETE_COLUMN: Setting up table_search parameters")
+    Rails.logger.info("🗑️ DELETE_COLUMN: table_name=#{table_name}, field_name=#{field_name}")
+    
+    # Initialize and update controllers
+    unless session[:search_ctls]
+      InitializeSessionController
+    end
+    update_search_controller
+    update_external_filters
+    
+    search_ctl = session[:search_ctls][table_name]
+    search_ctl.user_id = session[:user_id]
+    
+    # Use the extracted method to handle display filter updates
+    handle_display_filter_update(search_ctl, table_name, "🗑️ DELETE_COLUMN:")
+    
+    # Update filters from database to ensure consistency
+    search_ctl.UpdateFiltersFromDB()
+    
+    # Generate JavaScript for DOM manipulation only (no form submission)
+    class_name = "#{field_name}_#{table_name}"
+    js_code = <<~JAVASCRIPT
+      (function() {
+        console.log('🗑️ DELETE_COLUMN: Starting DOM cleanup for #{field_name} in #{table_name}');
+        
+        const className = "#{class_name}";
+
+        // Remove matching <td> elements
+        document.querySelectorAll("td." + className).forEach(function (td) {
+          td.remove();
+        });
+
+        // Remove matching <th> elements  
+        document.querySelectorAll("th." + className).forEach(function (th) {
+          th.remove();
+        });
+
+        // Update the filter count
+        const num_filters_obj = document.getElementById("all_display_indices_#{table_name}");
+        if (num_filters_obj) {
+          let num_filters = parseInt(num_filters_obj.value, 10) - 1;
+          num_filters_obj.value = num_filters;
+
+          // If only 1 or fewer filters remain, remove the X buttons
+          if (num_filters <= 1) {
+            const search_div = document.getElementById("search_results_#{table_name}");
+            const current_div = document.getElementById("current_filters_#{table_name}");
+
+            if (search_div) {
+              const x_elements_search = search_div.querySelector('.remove_column');
+              if (x_elements_search !== null) {
+                x_elements_search.remove();
+              }
+            }
+
+            if (current_div) {
+              const x_elements_current = current_div.querySelector('.remove_column');
+              if (x_elements_current !== null) {
+                x_elements_current.remove();
+              }
+            }
+          }
+        }
+        
+        console.log('🗑️ DELETE_COLUMN: DOM cleanup completed, backend state updated');
+      })();
+    JAVASCRIPT
+    
+    Rails.logger.info("🗑️ DELETE_COLUMN: Column removal processed server-side, returning DOM cleanup JavaScript")
+    
+    respond_to do |format|
+      format.json { render json: { status: 'success', table_name: table_name, field_name: field_name } }
+      format.js { render js: js_code }
+    end
+  end
+  
   def table_search
   Rails.logger.debug("RWV WelcomeController:table_search a");
 #     RubyProf.start
@@ -559,6 +692,10 @@ layout "welcome"
     search_ctl = @search_ctls[table_name];
     
     search_ctl.user_id = session[:user_id];
+    
+    # Use the extracted method to handle display filter updates (column deletion)
+    handle_display_filter_update(search_ctl, table_name, "RWV")
+    
     if(params.has_key?("do_search"))
       eval_str = search_ctl.get_eval_string2();
       Rails.logger.debug( "TABLE SEARCH: before eval(#{eval_str})" );
@@ -2814,6 +2951,25 @@ do
     Rails.logger.info("RWV delete_array group_ids: #{group_ids.inspect}");
 
     affected_groups = Group.where(id: group_ids)
+    
+    # Extract relationship data BEFORE destroying records
+    deleted_attendees = nil
+    lecture_ids_from_attendees = []
+    person_ids_from_attendees = []
+    
+    if table_name == "Attendee"
+      Rails.logger.info("RWV Processing Attendee deletions - extracting relationship data before deletion")
+      deleted_attendees = Attendee.where(id: ids_for_deletion)
+      Rails.logger.info("RWV Found #{deleted_attendees.count} attendees to delete")
+      
+      lecture_ids_from_attendees = deleted_attendees.distinct.pluck(:lecture_id)
+      person_ids_from_attendees = deleted_attendees.distinct.pluck(:person_id)
+      
+      Rails.logger.info("RWV Extracted lecture_ids: #{lecture_ids_from_attendees.inspect}")
+      Rails.logger.info("RWV Extracted person_ids: #{person_ids_from_attendees.inspect}")
+    end
+    
+    # Now destroy the records
     model_class = table_name.constantize
     model_class.where(id: ids_for_deletion).destroy_all
 
@@ -2909,9 +3065,46 @@ do
           end
         end
         
+        # Lecture attendance and Person attendance changes when Attendee is deleted
+        if table_name == "Attendee"
+          Rails.logger.info("RWV Processing Attendee deletions - using extracted relationship data")
+          
+          if lecture_ids_from_attendees.any?
+            affected_relationships << {
+              table: "Lecture",
+              operation: "update", 
+              ids: lecture_ids_from_attendees,
+              reason: "attendance_count_change",
+              source_table: table_name,
+              source_operation: "delete"
+            }
+            Rails.logger.info("RWV Added Lecture relationship to affected_relationships")
+          else
+            Rails.logger.info("RWV No lecture_ids found - skipping Lecture relationship")
+          end
+          
+          if person_ids_from_attendees.any?
+            affected_relationships << {
+              table: "Person",
+              operation: "update",
+              ids: person_ids_from_attendees,
+              reason: "attendance_removed",
+              source_table: table_name,
+              source_operation: "delete"
+            }
+            Rails.logger.info("RWV Added Person relationship to affected_relationships")
+          else
+            Rails.logger.info("RWV No person_ids found - skipping Person relationship")
+          end
+        else
+          Rails.logger.info("RWV Not processing Attendee deletions - table_name is: #{table_name}")
+        end
+        
         Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships")
-        affected_relationships.each do |rel|
-          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids].length} records): #{rel[:reason]}")
+        Rails.logger.info("RWV Complete affected_relationships array:")
+        affected_relationships.each_with_index do |rel, index|
+          Rails.logger.info("RWV  [#{index}] #{rel[:table]} #{rel[:operation]} (#{rel[:ids].length} records): #{rel[:reason]}")
+          Rails.logger.info("RWV      IDs: #{rel[:ids].inspect}")
         end
         
         # Broadcast the invalidation notification

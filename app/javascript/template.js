@@ -349,6 +349,10 @@ function load_pages() {
     [new DisplayDiv("welcome_Person", "first_div_1", ["two_column_div"], ["content_div"], [".add-cell", ".dummy-cell"], ""),
     new DisplayDiv("Person_action_div", "first_menu_div", [], [], [], ""),
     new DisplayDiv("welcome_Lecture", "first_div_2", [], ["Lecture_action_div"], [".add_attendee_options", ".add_to_lecture_title", ".toadd-cell", ".select-cell", ".exam-cell", ".compulsory-cell"], " set_action_class('Person','Lecture','add_to_lectures')")]));
+  person_page_views.push(new PageView("people", "Person", "Remove attendee", true,
+    [new DisplayDiv("welcome_Person", "first_div_1", ["two_column_div"], ["content_div"], [".add-cell", ".dummy-cell"], ""),
+    new DisplayDiv("Person_action_div", "first_menu_div", [], [], [], ""),
+    new DisplayDiv("welcome_Lecture", "first_div_2", [], ["Lecture_action_div"], [".add_attendee_options", ".add_to_lecture_title", ".toadd-cell", ".select-cell"], " set_action_class('Person','Lecture','remove_from_lectures')")]));
   person_page_views.push(new PageView("people", "Person", "Add to groups", true,
     [new DisplayDiv("welcome_Person", "first_div_1", ["two_column_div"], ["content_div"], [".add-cell", ".dummy-cell"], "group_unrestriction()"),
     new DisplayDiv("Person_action_div", "first_menu_div", [], [], [], ""),

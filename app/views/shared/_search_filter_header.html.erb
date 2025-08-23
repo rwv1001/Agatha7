@@ -48,9 +48,13 @@
           
           <%  raw id_str_x = "id = #{class_id_name}_x" %>
           <% if row_type == :filter_string && !filter.primary && num_filters > 1 %>
-                     <% on_click_string = "deleteColumn('#{field_name}','#{table_name}');return false" %>
-                     <div  style="position:absolute;  float:right;top:0; right:0;   height: 100%;    background: #AAAAAA;    border-left: 1px solid;    border-color: #000000;" <%= id_str_x %>
-                     class="remove_column"><a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_click_string}"%> >X</a> </div>
+                     <%= link_to "X", 
+                         welcome_delete_column_path(table_name: table_name, field_name: field_name),
+                         method: :post,
+                         remote: true,
+                         class: "remove_column",
+                         style: "position:absolute; float:right; top:0; right:0; height: 100%; background: #AAAAAA; border-left: 1px solid; border-color: #000000; text-decoration: none; color: black; padding: 0 5px;",
+                         id: "#{class_id_name}_x" %>
 
           <% else %>
                      <div <%= id_str_x %> style ="float:right" class="do_not_remove_column" > &nbsp </div>
@@ -75,9 +79,14 @@
           <div    style ="position:relative; min-width: 120px; overflow: hidden; background: #fff; border: 1px solid #000;" class="div_column_edit">
                      
                      <%  raw id_str_x = "id = #{class_id_name}_x" %>
-                     <% on_click_string = "deleteColumn('#{field_name}','#{table_name}');return false" %>
                      <div style ="position:absolute; top:0; right:0; width:100%; height: 100%; background-color: #ffffff;">
-                     <div   <%= raw  id_str_x %> style ="float:right;  background: #AAAAAA;    border-left: 1px solid;    border-color: #000000;" class="remove_column"><a href ="/" data-remote="true" rel="nofollow" onclick= <%="#{on_click_string}"%> >X</a> </div>
+                     <%= link_to "X", 
+                         welcome_delete_column_path(table_name: table_name, field_name: field_name),
+                         method: :post,
+                         remote: true,
+                         class: "remove_column",
+                         style: "float:right; background: #AAAAAA; border-left: 1px solid; border-color: #000000; text-decoration: none; color: black; padding: 0 5px;",
+                         id: "#{class_id_name}_x" %>
 
                      <div style ="float:right">
                              <% if filter.argument_class.length>0  %>
