@@ -16,102 +16,7 @@ function unwait() {
 }
 window.unwait = unwait;
 
-function deleteColumn(field_name, table_name) {
-  wait();
 
-  const table_text_element_id = "table_selector_text_" + table_name;
-  const table_text_element = document.getElementById(table_text_element_id);
-  if (table_text_element !== null) {
-    table_text_element.value = table_name;
-  }
-
-  const class_name = field_name + "_" + table_name;
-
-  // Before removing elements, capture the current display filter state
-  const currentHeaders = Array.from(document.querySelectorAll(`#current_filters_${table_name} th`));
-  const remainingIndices = [];
-  
-  currentHeaders.forEach(function(th) {
-    // Extract the filter index from the class name or data attribute
-    const classList = Array.from(th.classList);
-    classList.forEach(function(className) {
-      // Look for pattern like "field_name_TableName" but exclude the one we're removing
-      if (className !== class_name && className.includes('_' + table_name)) {
-        // Try to find the corresponding index in the display indices
-        const fieldPart = className.replace('_' + table_name, '');
-        // Look for any hidden input or data that maps field names to indices
-        const indexInput = document.querySelector(`input[name*="${fieldPart}"][name*="index"]`);
-        if (indexInput) {
-          const index = parseInt(indexInput.value, 10);
-          if (!isNaN(index) && !remainingIndices.includes(index)) {
-            remainingIndices.push(index);
-          }
-        }
-      }
-    });
-  });
-
-  // Remove matching <td> elements
-  document.querySelectorAll("td." + class_name).forEach(function (td) {
-    td.remove();
-  });
-
-  // Remove matching <th> elements
-  document.querySelectorAll("th." + class_name).forEach(function (th) {
-    th.remove();
-  });
-
-  const num_filters_obj = document.getElementById("all_display_indices_" + table_name);
-  let num_filters = parseInt(num_filters_obj.value, 10) - 1;
-  num_filters_obj.value = num_filters;
-
-  // Create a hidden input to pass the updated display filter information
-  const form_id = "search_form_" + table_name;
-  const form = document.getElementById(form_id);
-  
-  // Remove any existing update_display_filters input
-  const existingInput = form.querySelector('input[name="update_display_filters"]');
-  if (existingInput) {
-    existingInput.remove();
-  }
-  
-  // Add a hidden input to trigger display filter update
-  const updateInput = document.createElement('input');
-  updateInput.type = 'hidden';
-  updateInput.name = 'update_display_filters';
-  updateInput.value = 'true';
-  form.appendChild(updateInput);
-  
-  // Also pass information about which column was removed
-  const removedColumnInput = document.createElement('input');
-  removedColumnInput.type = 'hidden';
-  removedColumnInput.name = 'removed_column';
-  removedColumnInput.value = field_name;
-  form.appendChild(removedColumnInput);
-
-  if (num_filters <= 1) {
-    const search_div = document.getElementById("search_results_" + table_name);
-    const current_div = document.getElementById("current_filters_" + table_name);
-
-    const x_elements_search = search_div.querySelector('.remove_column');
-    const x_elements_current = current_div.querySelector('.remove_column');
-
-    if (x_elements_search !== null) {
-      x_elements_search.remove();
-    }
-
-    if (x_elements_current !== null) {
-      x_elements_current.remove();
-    }
-  }
-
-  const do_search_element = document.getElementById("do_search_" + table_name);
-  do_search_element.setAttribute("name", "do_not_search");
-
-  const elem = document.getElementById(form_id);
-  Rails.fire(elem, 'submit');
-}
-window.deleteColumn = deleteColumn;
 
 function setSearchIndices(table_name) {
   const rows = document.querySelectorAll(".row_" + table_name);
@@ -279,43 +184,7 @@ function restoreSelectIndices(table_name, savedCheckboxStates = null) {
 }
 window.restoreSelectIndices = restoreSelectIndices;
 
-function searchOrder(field_name, table_name) {
-    // Special test case for person_id_Person
-    if (field_name === 'person_id' && table_name === 'Person') {
-        console.log('🧪 TEST: Calling order_toggle for person_id_Person');
-        testOrderToggle(field_name, table_name);
-        return;
-    }
-    
-    wait();
-    const order_element_str = "order_text_" + table_name;
 
-    const order_element_str74 = "#" + order_element_str;
-    const order_element = document.getElementById((order_element_str74).slice(1)); //rwv vanilla change
-
-    order_element.setAttribute("name", "order_text");
-    order_element.setAttribute('value', field_name);
-
-
-    setSearchIndices(table_name);
-    setSelectIndices(table_name);
-
-    disableSubmitters();
-
-    const do_search_str = "do_search_" + table_name;
-
-    const do_search_str81 = "#" + do_search_str;
-    const do_search_element = document.getElementById(do_search_str81.slice(1)); //rwv vanilla change
-    do_search_element.setAttribute("name", "do_search");
-
-    const search_form_str = "search_form_" + table_name;
-
-    const search_form_str85 = "#" + search_form_str;
-    const my_form = document.getElementById((search_form_str85).slice(1)); //rwv vanilla change
-    const elem = document.getElementById(search_form_str);
-    Rails.fire(elem, 'submit');;
-}
-window.searchOrder = searchOrder;
 
 function testOrderToggle(field_name, table_name) {
     console.log('🧪 TEST: testOrderToggle called with field_name=' + field_name + ', table_name=' + table_name);
@@ -438,21 +307,64 @@ function updatePostFilterStrings(class_id_name) {
 }
 window.updatePostFilterStrings = updatePostFilterStrings;
 
-function updatePostExternalFilter(class_id_name) {
+function updatePostExternalFilter(table_name, class_id_name) {
+    console.log('updatePostExternalFilter called for ' + class_id_name + ' in table ' + table_name);
     const sent_text_element_str = class_id_name + "_sent"
     const typed_text_element_str = class_id_name + "_typed"
 
-    const sent_text_element_str136 = "#" + sent_text_element_str;
-    const sent_text_element = document.getElementById((sent_text_element_str136).slice(1)); //rwv vanilla change
+    
+    const sent_text_element = document.getElementById(sent_text_element_str); //rwv vanilla change
 
-    const typed_text_element_str137 = "#" + typed_text_element_str;
-    const typed_text_element = document.getElementById((typed_text_element_str137).slice(1)); //rwv vanilla change
+    const typed_text_element = document.getElementById(typed_text_element_str);
     const typed_filter_str = parseInt(typed_text_element.value);
     sent_text_element.value = typed_filter_str; //rwv vanilla change;
     const x = 1;
+    const form_id = "search_form_" + table_name;
+    submitFormAsPost(form_id);
 
 }
 window.updatePostExternalFilter = updatePostExternalFilter;
+
+function submitFormAsPost(form_id, endpoint = '/welcome/table_search') {
+    const elem = document.getElementById(form_id);
+
+    // Convert to direct POST request instead of Rails.fire
+    if (elem) {
+        const formData = new FormData(elem);
+        
+        // Make direct POST request to the specified endpoint
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            // Execute the returned JavaScript/ERB template
+            const script = document.createElement('script');
+            script.textContent = html;
+            document.head.appendChild(script);
+            document.head.removeChild(script);
+        })
+        .catch(error => {
+            console.error('Form submission failed:', error);
+            alert('Form submission failed: ' + error.message);
+            unwait();
+        });
+    } else {
+        console.error('Form not found:', form_id);
+        unwait();
+    }
+}
+window.submitFormAsPost = submitFormAsPost;
 
 function Search(table_name) {
     console.log("Calling Search for " + table_name);
@@ -474,10 +386,8 @@ function Search(table_name) {
 
     const form_id = "search_form_" + table_name
 
-    const form_id159 = "#" + form_id;
-    const form_element = document.getElementById((form_id159).slice(1)); //rwv vanilla change
-    const elem = document.getElementById(form_id);
-    Rails.fire(elem, 'submit');
+    // Use the new reusable form submission function
+    submitFormAsPost(form_id);
 
 }
 window.Search = Search;
@@ -517,10 +427,8 @@ function AddField(table_name) {
   }
 
   const formId = "search_form_" + table_name;
-  const formEl = document.getElementById(formId);
-  if (formEl) {
-    Rails.fire(formEl, 'submit');
-  }
+  
+  submitFormAsPost(formId);
 }
 
 window.AddField = AddField;
@@ -564,9 +472,9 @@ function AddFilter(table_name) {
   // 5) Submit the form
   const formId = `add_external_filter_${table_name}`;
   const formEl = document.getElementById(formId);
-  if (formEl) {
-    Rails.fire(formEl, 'submit');
-  }
+
+  submitFormAsPost(formId, "/welcome/add_external_filter");
+
 }
 
 window.AddFilter = AddFilter;

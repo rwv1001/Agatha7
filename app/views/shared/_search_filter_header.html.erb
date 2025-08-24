@@ -70,7 +70,7 @@
                      <% on_change_str = "" %>
                      <%  raw id_str = "id = #{class_id_name}_sent" %>
           <% else %>
-                     <%  raw on_change_str = "onchange = updatePostExternalFilter('#{class_id_name}');return false" %>
+                     <%  raw on_change_str = "onchange = updatePostExternalFilter('#{table_name}','#{class_id_name}');return false" %>
                      <%  raw id_str = "id = #{class_id_name}_typed" %>
           <% end %>
      

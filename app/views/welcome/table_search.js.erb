@@ -24,9 +24,9 @@
 
   <% if(params.has_key?("do_search")) %>
     updateHTMLById("<%= "search_results_" + table_name %>", `<%= j render(:partial => 'shared/search_results', :object => search_results) %>`);
-    restoreSelectIndices("<%= table_name %>", savedCheckboxStates);
-    resizeX();
+    restoreSelectIndices("<%= table_name %>", savedCheckboxStates);    
   <% end %>
+  resizeX();
 
   action_select_no_js();
   resizeFilters();
