@@ -33,6 +33,10 @@ Rails.application.routes.draw do
         to: "welcome#update_external_filter",
         via: [:get, :post]
 
+  match "welcome/refresh_external_filter",
+        to: "welcome#refresh_external_filter",
+        via: [:get, :post]
+
   match "welcome/update_group_filters",
         to: "welcome#update_group_filters",
         via: [:get, :post]

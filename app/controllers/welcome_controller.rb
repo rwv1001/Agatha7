@@ -776,6 +776,31 @@ layout "welcome"
 =end    
   end
 
+  def refresh_external_filter
+    class_name = params[:class_name]
+    filter_id = params[:filter_id].to_i
+    table_name = params[:table_name]
+    
+    @search_ctls = session[:search_ctls]
+    search_ctl = @search_ctls[class_name]
+    
+    # Get the external filter object to re-render with fresh data
+    external_filter = search_ctl.GetExternalFilter(filter_id)
+    
+    respond_to do |format|
+      format.html { 
+        render partial: 'shared/external_filter', 
+               object: external_filter,
+               layout: false
+      }
+      format.js { 
+        render partial: 'shared/external_filter', 
+               object: external_filter,
+               layout: false
+      }
+    end
+  end
+
   def new
 #     RubyProf.start
 #     

@@ -571,6 +571,70 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         console.log("⚠️ No affected_relationships found in data:", data);
       }
+      
+      // Handle select box updates based on the trigger model
+      if (data.triggered_by) {
+        this.handleSelectBoxUpdates(data.triggered_by, data.affected_relationships);
+      }
+    },
+
+    handleSelectBoxUpdates(triggeredBy, affectedRelationships) {
+      console.log("🔄 Handling select box updates for triggered_by:", triggeredBy);
+      
+      const triggerTable = triggeredBy.table;
+      const triggerObjectId = triggeredBy.object_id;
+      
+      // Define model dependencies for select box refreshing
+      const modelDependencies = {
+        'Person': ['Person','Lecture', 'Tutorial', 'Attendee', 'TutorialSchedule'],
+        'Course': ['Lecture', 'TutorialSchedule'],
+        'Institution': ['Person'],
+        'Term': ['Lecture', 'TutorialSchedule'],
+        'Day': ['Lecture'],
+        'Location': ['Lecture'],
+        'Lecture': ['Attendee'],
+        'TutorialSchedule': ['Tutorial']
+      };
+      
+      // Get dependent models for the trigger table
+      const dependentModels = modelDependencies[triggerTable] || [];
+      
+      // Update select boxes for each dependent model
+      dependentModels.forEach(dependentModel => {
+        console.log(`🔄 Refreshing ${dependentModel}_select elements due to ${triggerTable} update`);
+        
+        // Find all select elements with class dependentModel_select
+        const selectElements = document.getElementsByClassName(`${dependentModel}_select`);
+        Array.from(selectElements).forEach(selectElement => {
+          console.log(`🔄 Processing select element:`, selectElement.id);
+          
+          // For external filter selects, use refreshExternalFilterSelects
+          if (selectElement.classList.contains('external_filter_argument_selection')) {
+            console.log(`🔄 Refreshing external filter select: ${selectElement.id}`);
+            
+            // Find the parent external filter container to get the table name
+            const externalFilterContainer = selectElement.closest('[id^="external_filters_"]');
+            if (externalFilterContainer && typeof window.refreshExternalFilterSelects === 'function') {
+              const containerTableName = externalFilterContainer.id.replace('external_filters_', '');
+              console.log(`🔄 Calling refreshExternalFilterSelects for table: ${containerTableName}`);
+              setTimeout(() => {
+                 window.refreshExternalFilterSelects(containerTableName, triggerTable);
+              }, 1000);
+            }
+            else {
+              console.log(`⚠️ No external filter container found for: ${selectElement.id}`);
+            }
+          }
+          
+          // For regular select elements, trigger their onchange handler
+          else if (selectElement.onchange) {
+            console.log(`🔄 Triggering onchange for select: ${selectElement.id}`);
+            setTimeout(() => {
+              selectElement.onchange();
+            }, 50);
+          }
+        });
+      });
     },
 
     refreshTable(tableName, affectedRowIds = []) {
@@ -674,7 +738,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Check if we've attempted targeted updates for this recently (within 30 seconds)
       if (this.targetedUpdateAttempts.has(updateKey)) {
         const lastAttempt = this.targetedUpdateAttempts.get(updateKey);
-        if (now - lastAttempt < 3000) {
+        if (now - lastAttempt < 1000) {
           console.log(`🚫 Skipping targeted updates - attempted too recently, using full refresh instead`);
           // Skip to full table refresh
         } else {

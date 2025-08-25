@@ -19,6 +19,7 @@
 })();
 <% end %>
 
-// ActionCable will handle broadcasting updates to all search tables automatically
-// No need for the complex window.opener logic anymore
-console.log('Update completed - ActionCable broadcasting to all users');
+// Data invalidation is now handled via ActionCable broadcast in the controller
+// This reaches all windows including the parent window with external filters
+console.log('Edit cell update completed for <%= @table_name %> ID <%= id %>, field <%= field_name %>');
+console.log('Data invalidation broadcast has been sent automatically via ActionCable');

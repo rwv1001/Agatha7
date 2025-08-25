@@ -1,6 +1,7 @@
 
 module EditHelper
-  include SearchTableBroadcastHelper
+include ApplicationHelper
+include ModelDependencyHelper
   
 def edit_helper(table_name, readonly_fields)
     
@@ -234,8 +235,8 @@ end
                     update_parent = false;
                     edit_cell2 = EditCell.new(attribute2, object, @table_name, @filter_controller, update_parent,readonly_flag);
                     
-                    # Broadcast search table updates via ActionCable instead of using window.opener
-                    broadcast_search_table_update(@table_name, object, [attribute1.name], [id], @search_ctls)
+                    # Send data_invalidation broadcast instead of update_search_rows
+                    send_data_invalidation_for_update(@table_name, object, attribute1.name, id)
                     
                     respond_to do |format| #5
                         format.js { render :partial => "shared/update_helper_actioncable", :locals => {:table_name => @table_name, :field_name => field_name, :edit_cell1 => edit_cell1, :edit_cell2 => edit_cell2, :attribute => attribute1, :id => id} }

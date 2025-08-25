@@ -23,25 +23,28 @@
         <%= raw  render(:partial => "shared/external_filter_element", :object => current_elts[elt_id]) %>
          
         </div>
+      
       <% end %> <!-- for elt_id in (0..(num_elts-1)) -->
+      <input type="text" id =<%= raw "argument_class_external_filter_#{class_name}_#{filter_id}"%> value = <%=  external_filter.argument_class %> style="display:none" />  
       <% Rails.logger.info("external_filter.html.erb 05") %>
   </div>
 </th>
 <th>
   <% on_add_string = "\"addExternalFilterElement('#{class_name}','#{filter_id}');return false\"" %>
   <% Rails.logger.info("external_filter.html.erb 06") %>
+  <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
   <% if external_filter.allow_multiple_arguments %>
   <% Rails.logger.info("external_filter.html.erb 07") %>
-  <div class="add_external_filter_element" style="float: right; padding-top: 0px; height: 17px" ><a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_add_string }"%> >+</a></div>
+  <div class="add_external_filter_element" style="padding-top: 0px; height: 17px;" ><a href ="/" data-remote="true" rel="nofollow" onclick= <%= raw "#{on_add_string }"%> >+</a></div>
   <% end %>
+  </div>
   <% Rails.logger.info("external_filter.html.erb 08") %>
-  <div  style="float: right;" > &nbsp;  </div>
+  <!-- Removed or commented out the spacer div for centering; if needed, add &nbsp; inside the above div -->
+  <%# <div style="float: right;"> &nbsp; </div> %>
   <% Rails.logger.info("external_filter.html.erb 09") %>
-<input type="text" name= <%= raw "number_of_filter_elements_#{filter_id}" %> id= <%= raw  "number_of_filter_elements_#{class_name}_#{filter_id}" %> value = <%=  num_elts %> style="display:none" />
-<input type="text" id= <%= raw "max_filter_elements_#{class_name}_#{filter_id}" %> value = <%=  num_elts %> style="display:none" />
-
-
-<% Rails.logger.info("external_filter.html.erb 10") %>
+  <input type="text" name= <%= raw "number_of_filter_elements_#{filter_id}" %> id= <%= raw  "number_of_filter_elements_#{class_name}_#{filter_id}" %> value = <%=  num_elts %> style="display:none" />
+  <input type="text" id= <%= raw "max_filter_elements_#{class_name}_#{filter_id}" %> value = <%=  num_elts %> style="display:none" />
+  <% Rails.logger.info("external_filter.html.erb 10") %>
 </th>
 
 </tr>

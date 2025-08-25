@@ -1773,6 +1773,13 @@ class SearchController
     return ret_val;
   end
 
+  def GetExternalFilter(filter_id)
+    external_filter = @external_filters[filter_id].filter_object;
+    return external_filter;
+  end  
+    
+  
+
   def save_external_filters_to_db
     
  
