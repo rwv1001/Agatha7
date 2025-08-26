@@ -1,6 +1,8 @@
 include EditHelper
 
 class LecturesController < ApplicationController
+  layout 'application'
+  
   # GET /lectures
   # GET /lectures.xml
 
@@ -14,10 +16,7 @@ class LecturesController < ApplicationController
     edit_helper(@table_name,[]);
   end
 
-
-
   def win_load
-
     win_load_helper();
 
   end
