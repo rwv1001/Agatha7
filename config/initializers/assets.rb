@@ -13,6 +13,7 @@ Rails.application.config.assets.precompile += %w( display_format.js )
 Rails.application.config.assets.precompile += %w( group_filters.js )
 Rails.application.config.assets.precompile += %w( search_table_updates.js )
 Rails.application.config.assets.precompile += %w( consumer.js )
+Rails.application.config.assets.precompile += %w( rich_text_editor.js )
 Rails.application.config.assets.precompile += %w( controllers/hello_controller.js )
 Rails.application.config.assets.precompile += %w( controllers/index.js )
 Rails.application.config.assets.precompile += %w( controllers/application.js )
@@ -24,3 +25,4 @@ Rails.application.config.assets.precompile += %w( controllers/application.js )
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.
 # Rails.application.config.assets.precompile += %w[ admin.js admin.css ]
+Rails.application.config.assets.precompile += %w( rich_text_editor.css )

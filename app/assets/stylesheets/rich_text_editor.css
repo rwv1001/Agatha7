@@ -1,0 +1,67 @@
+/* Rich Text Editor Styles for AgathaEmail */
+
+/* Quill editor specific styling */
+.ql-toolbar {
+  border-top: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: none;
+  background: #f8f9fa;
+}
+
+.ql-container {
+  border-bottom: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-top: none;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.ql-editor {
+  min-height: 250px;
+  padding: 12px 15px;
+}
+
+.ql-editor p {
+  margin-bottom: 1em;
+}
+
+/* Make sure the editor container fits well with existing forms */
+#quill-editor-container {
+  margin: 10px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ql-toolbar {
+    flex-wrap: wrap;
+  }
+  
+  .ql-editor {
+    min-height: 200px;
+  }
+}
+
+/* Integration with existing Agatha styling */
+.content_class #quill-editor-container {
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Ensure proper focus styling */
+.ql-container.ql-snow {
+  border-color: #ccc;
+}
+
+.ql-container.ql-snow:focus-within {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Hide the original textarea when rich editor is active */
+textarea[name*="body"]:not([style*="display: none"]) + #quill-editor-container {
+  display: block;
+}

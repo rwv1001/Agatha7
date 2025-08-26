@@ -10,8 +10,15 @@
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
+    
+    <!-- Quill.js CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+    
     <%= stylesheet_link_tag "application" %>
     <%= javascript_importmap_tags %>
+    
+    <!-- Quill.js JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script type="module">
       import { createConsumer } from "@rails/actioncable";
       

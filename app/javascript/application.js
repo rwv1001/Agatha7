@@ -9,6 +9,7 @@ import "display_format";
 import "group_filters";
 import "consumer";  // Import ActionCable consumer first
 import "search_table_updates";  // Import ActionCable search table updates
+import "rich_text_editor";  // Import rich text editor for email bodies
 import Rails from "@rails/ujs";
 
 Rails.start();

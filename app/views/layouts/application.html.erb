@@ -10,7 +10,16 @@
       <div style="clear:both; height: 20px"> &nbsp</div>
       <% if session[:user_id] %>
       <div style="clear:both; background-color: #FD3; padding-left: 10px">
-        <p> You are logged in as user <%=User.where(:id => session[:user_id]).first.name %> </p>
+        <% begin %>
+          <% current_user = User.find_by_id(session[:user_id]) %>
+          <% if current_user %>
+            <p> You are logged in as user <%= current_user.name %> </p>
+          <% else %>
+            <p> Session error - please log in again </p>
+          <% end %>
+        <% rescue => e %>
+          <p> User lookup error - please log in again </p>
+        <% end %>
       </div>
       <% end %>
       <div id ="flash" style="padding: 3px 13px 3px 13px">
