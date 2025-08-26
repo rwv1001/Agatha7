@@ -1,6 +1,7 @@
 include EditHelper
 
 class MaximumTutorialsController < ApplicationController
+  layout 'application'
   # GET /lectures
   # GET /lectures.xml
 

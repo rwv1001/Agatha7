@@ -635,6 +635,134 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         });
       });
+      
+      // Handle edit page select boxes
+      this.handleEditPageSelectBoxUpdates(triggerTable, triggerObjectId);
+    },
+
+    handleEditPageSelectBoxUpdates(triggerTable, triggerObjectId) {
+      console.log("🔄 Handling edit page select box updates for:", triggerTable, "ID:", triggerObjectId);
+      
+      // Define which edit select boxes need updating based on the trigger table
+      const editSelectDependencies = {
+        'Person': ['edit_person_id'],
+        'Course': ['edit_course_id'],
+        'Institution': ['edit_institution_id'],
+        'Term': ['edit_term_id'],
+        'Day': ['edit_day_id'],
+        'Location': ['edit_location_id'],
+        'Lecture': ['edit_lecture_id'],
+        'TutorialSchedule': ['edit_tutorial_schedule_id'],
+        'Tutorial': ['edit_tutorial_id'],
+        'Group': ['edit_group_id'],
+        'Programme': ['edit_programme_id']
+      };
+      
+      const selectIdsToUpdate = editSelectDependencies[triggerTable] || [];
+      
+      selectIdsToUpdate.forEach(selectId => {
+        const selectElement = document.getElementById(selectId);
+        if (selectElement) {
+          console.log(`🔄 Found edit page select box: ${selectId}`);
+          
+          // Store the current selected value
+          const currentValue = selectElement.value;
+          
+          // Refresh the select box options by making an AJAX call
+          this.refreshEditSelectBox(selectElement, triggerTable, triggerObjectId, currentValue);
+        } else {
+          console.log(`⚠️ Edit page select box not found: ${selectId}`);
+        }
+      });
+    },
+
+    refreshEditSelectBox(selectElement, triggerTable, triggerObjectId, currentValue) {
+      const selectId = selectElement.id;
+      console.log(`🔄 Refreshing edit select box: ${selectId}`);
+      
+      // Extract the field name from the select ID (e.g., 'edit_person_id' -> 'person_id')
+      const fieldName = selectId.replace('edit_', '');
+      
+      // Get the table name from the current page (this should be available in the DOM)
+      const tableNameElement = document.querySelector('input[name="table_name"]');
+      if (!tableNameElement) {
+        console.log(`⚠️ Cannot find table_name input for ${selectId}`);
+        return;
+      }
+      
+      const tableName = tableNameElement.value;
+      
+      // Get the current object ID
+      const idElement = document.querySelector('input[name="id"], input[id="id_value_updater"]');
+      if (!idElement) {
+        console.log(`⚠️ Cannot find object ID input for ${selectId}`);
+        return;
+      }
+      
+      const objectId = idElement.value;
+      
+      console.log(`🔄 Making AJAX request to refresh ${selectId} for ${tableName} ID ${objectId}`);
+      
+      // Make AJAX request to get updated select options
+      const formData = new FormData();
+      formData.append('table_name', tableName);
+      formData.append('object_id', objectId);
+      formData.append('field_name', fieldName);
+      formData.append('current_value', currentValue);
+      
+      fetch('/welcome/refresh_edit_select', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log(`✅ Received updated options for ${selectId}:`, data);
+        
+        // Update the select box options
+        this.updateSelectOptions(selectElement, data.options, currentValue);
+      })
+      .catch(error => {
+        console.log(`❌ Failed to refresh ${selectId}:`, error);
+      });
+    },
+
+    updateSelectOptions(selectElement, newOptions, previousValue) {
+      console.log(`🔄 Updating select options for ${selectElement.id}`);
+      
+      // Clear existing options
+      selectElement.innerHTML = '';
+      
+      // Add new options
+      newOptions.forEach(option => {
+        const optionElement = document.createElement('option');
+        optionElement.value = option.id;
+        optionElement.textContent = option.name;
+        
+        // Restore the previous selection if it still exists
+        if (option.id.toString() === previousValue) {
+          optionElement.selected = true;
+          console.log(`✅ Restored previous selection: ${option.name} (ID: ${option.id})`);
+        }
+        
+        selectElement.appendChild(optionElement);
+      });
+      
+      console.log(`✅ Updated ${selectElement.id} with ${newOptions.length} options`);
+      
+      // If the previous value is no longer available, select the first option
+      if (selectElement.selectedIndex === -1 && newOptions.length > 0) {
+        selectElement.selectedIndex = 0;
+        console.log(`⚠️ Previous value no longer available, selected first option: ${newOptions[0].name}`);
+      }
     },
 
     refreshTable(tableName, affectedRowIds = []) {
@@ -738,7 +866,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Check if we've attempted targeted updates for this recently (within 30 seconds)
       if (this.targetedUpdateAttempts.has(updateKey)) {
         const lastAttempt = this.targetedUpdateAttempts.get(updateKey);
-        if (now - lastAttempt < 1000) {
+        if (now - lastAttempt < 5000) {
           console.log(`🚫 Skipping targeted updates - attempted too recently, using full refresh instead`);
           // Skip to full table refresh
         } else {

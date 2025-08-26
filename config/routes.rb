@@ -37,6 +37,14 @@ Rails.application.routes.draw do
         to: "welcome#refresh_external_filter",
         via: [:get, :post]
 
+  match "welcome/refresh_edit_select",
+        to: "welcome#refresh_edit_select",
+        via: [:get, :post]
+
+  match "welcome/fetch_updated_rows",
+        to: "welcome#fetch_updated_rows",
+        via: [:get, :post]
+
   match "welcome/update_group_filters",
         to: "welcome#update_group_filters",
         via: [:get, :post]

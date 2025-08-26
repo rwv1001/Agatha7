@@ -348,14 +348,64 @@ function submitFormAsPost(form_id, endpoint = '/welcome/table_search') {
         return response.text();
       })
       .then(html => {
-        // Execute the returned JavaScript/ERB template
-        const script = document.createElement('script');
-        script.textContent = html;
-        document.head.appendChild(script);
-        document.head.removeChild(script);
+        try {
+          // Check if the response looks like JavaScript or HTML
+          const trimmed = html.trim();
+          
+          if (trimmed.startsWith('<') && !trimmed.startsWith('<!--')) {
+            // Looks like HTML content, not JavaScript
+            console.warn('Received HTML content instead of JavaScript:', trimmed.substring(0, 100));
+            // Try to extract any script tags and execute them
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            const scripts = tempDiv.querySelectorAll('script');
+            scripts.forEach(script => {
+              try {
+                if (script.textContent) {
+                  eval(script.textContent);
+                }
+              } catch (e) {
+                console.error('Error executing extracted script:', e);
+              }
+            });
+          } else {
+            // Assume it's JavaScript and execute it
+            try {
+              const script = document.createElement('script');
+              script.textContent = html;
+              document.head.appendChild(script);
+              document.head.removeChild(script);
+            } catch (e) {
+              console.error('JavaScript execution error:', e);
+              console.log('Response content:', html.substring(0, 200));
+              // Try eval as fallback
+              try {
+                eval(html);
+              } catch (evalError) {
+                console.error('Eval fallback also failed:', evalError);
+                // Ensure unwait is called even if the response doesn't contain it
+                if (typeof unwait === 'function') {
+                  unwait();
+                }
+              }
+            }
+          }
+        } catch (outerError) {
+          console.error('Outer error in response handling:', outerError);
+          // Ensure unwait is called in case of any error
+          if (typeof unwait === 'function') {
+            unwait();
+          }
+        }
       })
       .catch(error => {
         console.error('Form submission failed:', error);
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          form_id: form_id,
+          endpoint: endpoint
+        });
         alert('Form submission failed: ' + error.message);
         unwait();
       });

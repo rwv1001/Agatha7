@@ -1,6 +1,7 @@
 include EditHelper
 
 class TutorialsController < ApplicationController
+  layout 'application'
   def edit
     @table_name = params[:table_name];
     @id = params[:id];

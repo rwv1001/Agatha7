@@ -1,6 +1,8 @@
 include EditHelper
 
 class EmailTemplatesController < ApplicationController
+  layout 'application'
+  
   # GET /lectures
   # GET /lectures.xml
 

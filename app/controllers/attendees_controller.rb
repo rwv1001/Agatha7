@@ -1,6 +1,8 @@
 include EditHelper
 
 class AttendeesController < ApplicationController
+  layout 'application'
+  
   # GET /lectures
   # GET /lectures.xml
 

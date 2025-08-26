@@ -801,6 +801,116 @@ layout "welcome"
     end
   end
 
+  def refresh_edit_select
+    table_name = params[:table_name]
+    object_id = params[:object_id]
+    field_name = params[:field_name]
+    current_value = params[:current_value]
+    
+    Rails.logger.info("Refreshing edit select: #{field_name} for #{table_name} ID #{object_id}")
+    
+    begin
+      # Get the search controllers from session
+      @search_ctls = session[:search_ctls]
+      search_ctl = @search_ctls[table_name]
+      
+      if !search_ctl
+        Rails.logger.error("No search controller found for table: #{table_name}")
+        render json: { error: "No search controller found" }, status: 400
+        return
+      end
+      
+      # Get the current object
+      object_class = table_name.classify.constantize
+      current_object = object_class.find(object_id)
+      
+      # Get the attribute list to understand the field
+      attribute_list = AttributeList.new(table_name.classify)
+      attribute = attribute_list.attribute_hash[field_name]
+      
+      if !attribute || attribute.foreign_key.length == 0
+        Rails.logger.error("Field #{field_name} is not a foreign key field")
+        render json: { error: "Field is not a foreign key" }, status: 400
+        return
+      end
+      
+      # Create a filter controller to get the updated options
+      user_id = session[:user_id] || 0
+      filter_controller = FilterController.new(@search_ctls, table_name, user_id)
+      
+      # Get the current value for this field
+      current_id = current_object.send(field_name)
+      
+      # Get updated options using the filter controller
+      foreign_key = attribute.foreign_key
+      foreign_class = attribute.foreign_class
+      possible_options = filter_controller.GetOptions(foreign_key, foreign_class, current_id, false, false)
+      
+      # Format the options for JSON response
+      options_array = possible_options.map do |option|
+        {
+          id: option.id,
+          name: option.name
+        }
+      end
+      
+      Rails.logger.info("Returning #{options_array.length} options for #{field_name}")
+      
+      render json: {
+        field_name: field_name,
+        options: options_array,
+        current_value: current_id
+      }
+      
+    rescue Exception => e
+      Rails.logger.error("Error refreshing edit select: #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
+      render json: { error: e.message }, status: 500
+    end
+  end
+
+  def fetch_updated_rows
+    table_name = params[:table_name]
+    row_ids = params[:row_ids].split(',').map(&:to_i)
+    
+    Rails.logger.info("Fetching updated rows for #{table_name}: #{row_ids}")
+    
+    begin
+      # Get the object class
+      object_class = table_name.classify.constantize
+      
+      # Fetch the updated objects
+      updated_objects = object_class.where(id: row_ids)
+      
+      # Get search controller to render rows
+      @search_ctls = session[:search_ctls]
+      search_ctl = @search_ctls[table_name]
+      
+      if !search_ctl
+        Rails.logger.error("No search controller found for table: #{table_name}")
+        render json: { error: "No search controller found" }, status: 400
+        return
+      end
+      
+      # Render each row's HTML
+      rows_data = updated_objects.map do |obj|
+        # Use the search controller to render the row HTML
+        row_html = search_ctl.GetRowHTML(obj.id)
+        {
+          id: obj.id,
+          html: row_html
+        }
+      end
+      
+      render json: { rows: rows_data }
+      
+    rescue Exception => e
+      Rails.logger.error("Error fetching updated rows: #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
+      render json: { error: e.message }, status: 500
+    end
+  end
+
   def new
 #     RubyProf.start
 #     

@@ -1,6 +1,8 @@
 include EditHelper
 
 class AgathaEmailsController < ApplicationController
+  layout 'application'
+  
   # GET /lectures
   # GET /lectures.xml
 
