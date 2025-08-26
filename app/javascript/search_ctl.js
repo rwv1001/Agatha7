@@ -510,10 +510,8 @@ function onUpdateExternalFilterGroup(class_name, filter_id, elt_id) {
   if (groupIdInput) groupIdInput.value = selectedGroupId;
 
   // Submit the form
-  const form = document.getElementById(`update_external_filter_${class_name}`);
-  if (form) {
-    Rails.fire(form, 'submit');
-  }
+
+  submitFormAsPost(`update_external_filter_${class_name}`, "/welcome/update_external_filter")
 }
 window.onUpdateExternalFilterGroup = onUpdateExternalFilterGroup;
 

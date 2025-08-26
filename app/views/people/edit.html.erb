@@ -1,38 +1,32 @@
-<% content_for :title, "#{@table_name}: #{@short_name}" %>
-<% content_for :head do %>
- <%= raw render(:partial => "shared/shared_model_style") %> 
+
+
+<% content_for :additional_content do %>
+  <% if session[:administrator] %>
+    <% user = User.find_by_sql("SELECT * FROM users WHERE person_id = #{@edit_object.current_object.id} LIMIT 1") %>
+    <% if user.length >0 %>
+      <% user = user[0] %>
+      <% else %>
+    <% user = User.new %>
+    <% user.name = "" %>
+    <% user.person_id =  @edit_object.current_object.id %>
+    
+ <% end %>
+ 
+    <div id ="user">
+    <%= raw  render(:partial => "shared/create_user", :object => user ) %>
+    </div>
+
+    <% else%>
+     <%  @user ||= User.find(session[:user_id])%>
+    <div id ="user">
+    <%= raw  render(:partial => "shared/user", :object => @user ) %>
+    </div>
+  <% end %>
 <% end %>
 
-
-<div class ="content_class" style="width: 100%">
-  <div class ="pad_class">
-    <h1><%="#{@table_name}: #{@short_name}"%>  </h1>
-    <%= raw  render(:partial => "shared/edit_object", :object => @edit_object ) %>
-  </div>
-</div>
+<%= render partial: "shared/edit_page" %>
 
 
-    <% if session[:administrator] %>
-      <% user = User.find_by_sql("SELECT * FROM users WHERE person_id = #{@edit_object.current_object.id} LIMIT 1") %>
-      <% if user.length >0 %>
-        <% user = user[0] %>
-        <% else %>
-      <% user = User.new %>
-      <% user.name = "" %>
-      <% user.person_id =  @edit_object.current_object.id %>
-      
-   <% end %>
-   
-      <div id ="user">
-      <%= raw  render(:partial => "shared/create_user", :object => user ) %>
-      </div>
-
-      <% else%>
-       <%  @user ||= User.find(session[:user_id])%>
-      <div id ="user">
-      <%= raw  render(:partial => "shared/user", :object => @user ) %>
-      </div>
-    <% end %>
 
 
 

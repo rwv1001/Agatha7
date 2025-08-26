@@ -13,8 +13,8 @@ function UpdateGroupFilter(table_name, foreign_key) {
     document.getElementById('group_filters_foreign_key').value = foreign_key;
     document.getElementById('group_filters_group_id').value = group_id;
 
-    const elem = document.getElementById('group_filters_form');
-    Rails.fire(elem, 'submit');
+
+    submitFormAsPost('group_filters_form', "/welcome/update_group_filters");
 }
 
 function UpdateGroupFilter2(table_name, foreign_key)

@@ -33,8 +33,8 @@ function div_test()
 
     
     //jQuery('#div_test').submit();
-    const elem = document.getElementById('div_test');
-    Rails.fire(elem, 'submit');    
+
+    submitFormAsPost('div_test', "/welcome/div_test");
 
 }
 window.div_test = div_test;
@@ -47,7 +47,8 @@ function on_load()
     if(win_load_obj != null){
     //win_load_obj.submit();
     const elem = document.getElementById('win_load');
-    Rails.fire(elem, 'submit');;
+    submitFormAsPost('win_load',elem.action);
+    
 
     }
 }
@@ -74,20 +75,13 @@ function file_change() {
         main_div.parentNode.insertBefore(disable_div, main_div.nextSibling);
     }
 
-    const elem = document.getElementById('file_upload');
-    Rails.fire(elem, 'submit');
+
+
+    submitFormAsPost('file_upload', "/agatha_files/file_upload");
 }
 window.file_change = file_change;
 
-function file_change2()
-{
-    const submit_upload_obj = document.getElementById(('#edit_agatha_file').slice(1)); //rwv vanilla change
-    const elem = document.getElementById('edit_agatha_file');
-    Rails.fire(elem, 'submit');
-  //  submit_upload_obj.submit();
-    const x = 1;
-}
-window.file_change2 = file_change2;
+
 function myBlur()
 {
  const x = 1;
@@ -114,45 +108,9 @@ function on_unload()
 }
 
 
-function open_win()
-{
-const my_window = window.open("http://localhost:3000/people/13/edit?table_name=Person");
-}
-window.open_win = open_win;
 
 
-function update_parent(table_name, attribute_name, id)
-{
-    let parent_win = window.opener;
-    let first_parent;
-    if(parent_win == null)
-        {
-            const first_parent = window.open('','main_window');
-            if(first_parent != (window))
-            {
-                    const parent_win = first_parent
-            }
-        }
-    if(parent_win!=null)
-        {
-            const id_obj = parent_win.document.getElementById('update_main_id');
-            const table_obj = parent_win.document.getElementById('update_main_class_name');
-            const attribute_obj = parent_win.document.getElementById('update_main_attribute_name');
-            const update_opener_attribute_name_obj = parent_win.document.getElementById('update_opener_attribute_name');
-            const update_opener_id_obj = parent_win.document.getElementById('update_opener_id');
-            (id_obj).value =  id; //rwv vanilla change;
-            (table_obj).value =  table_name; //rwv vanilla change;
-            (attribute_obj).value =  attribute_name; //rwv vanilla change;
-            (update_opener_attribute_name_obj).value =  document.getElementById('sensible_update_opener_attribute_name').value; //rwv vanilla change;
-            if(update_opener_id_obj!=null){
-                (update_opener_id_obj).value =  document.getElementById('sensible_update_opener_id').value; //rwv vanilla change;
-            }
-            const submit_obj = parent_win.document.getElementById('update_main');
-            //submit_obj.submit();
-            Rails.fire(submit_obj, 'submit');
-        }
-}
-window.update_parent = update_parent;
+
 
 function on_edit(table_name, class_name, id) {
     const span_aref_obj_str = "a_edit_" + table_name + "_" + id;
@@ -487,8 +445,7 @@ function on_assign(id) {
         specific_div.appendChild(new_elt);
     });
 
-    const elem = document.getElementById('action_form');
-    Rails.fire(elem, 'submit');
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 window.on_assign = on_assign;   
 
@@ -516,8 +473,7 @@ function on_willing(id) {
         specific_div.appendChild(new_elt);
     });
 
-    const elem = document.getElementById('action_form');
-    Rails.fire(elem, 'submit');
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 window.on_willing = on_willing;
 
@@ -544,8 +500,7 @@ function on_agatha_send(id, test_flag) {
 
     document.getElementById('action_type').value = "send_email";
 
-    const elem = document.getElementById('action_form');
-    Rails.fire(elem, 'submit');
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 
 window.on_agatha_send = on_agatha_send;
@@ -573,8 +528,7 @@ function on_sends(test_flag) {
     specific_div.appendChild(sent_test_flag);
 
     document.getElementById('action_type').value = "send_emails";
-    const elem = document.getElementById('action_form');
-    Rails.fire(elem, 'submit');
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 window.on_sends = on_sends;
 
@@ -625,8 +579,7 @@ function on_create_send(id) {
         specific_div.appendChild(new_elt);
     });
 
-    const elem = document.getElementById('action_form');
-    Rails.fire(elem, 'submit');
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 window.on_create_send = on_create_send;
 
@@ -813,8 +766,7 @@ function on_create(id) {
             break;
         }
     }
-    const elem = document.getElementById('action_form');
-    Rails.fire(elem, 'submit');
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 window.on_create = on_create;
 
@@ -881,8 +833,7 @@ function on_action(id) {
             insert_specific_div_checks(specific_div, search_results_div, '.compulsorycheck');
             break;
     }
-    const elem = document.getElementById('action_form');
-    Rails.fire(elem, 'submit');
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 window.on_action = on_action;
 function set_suggestion_class(suggest_type_str, suggestion_class)
@@ -919,8 +870,9 @@ function create_multi_change_table(table_name)
         multi_table_create_table_name_obj.value =  table_name; //rwv vanilla change;
         const multi_table_create_obj = document.getElementById(("#multi_table_create").slice(1)); //rwv vanilla change
         //multi_table_create.onsubmit();
-        const elem = document.getElementById('multi_table_create');
-        Rails.fire(elem, 'submit');;
+
+
+        submitFormAsPost('multi_table_create',"/welcome/multi_table_create")
 
     }
 
@@ -1058,8 +1010,8 @@ function on_suggest(course_id) {
         }
     }
 
-    const elem = document.getElementById('make_suggestion');
-    Rails.fire(elem, 'submit');
+    submitFormAsPost('make_suggestion','/welcome/make_suggestion');
+    
 }
 window.on_suggest = on_suggest;
 
@@ -1102,8 +1054,7 @@ function SetMaxTutorials() {
     const action_table = document.getElementById('action_class');
     action_table.value = "Person";
 
-    const elem = document.getElementById('action_form');
-    Rails.fire(elem, 'submit');
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 window.SetMaxTutorials = SetMaxTutorials;
 
@@ -1155,8 +1106,7 @@ function MultiUpdate(class_name) {
         specific_div.appendChild(input);
     });
 
-    const elem = document.getElementById('action_form');
-    Rails.fire(elem, 'submit');
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 window.MultiUpdate = MultiUpdate;
 
@@ -1204,8 +1154,7 @@ function CreateGroup(class_name) {
     document.getElementById('action_class').value = class_name;
 
     // Submit the form via Rails UJS
-    const form = document.getElementById('action_form');
-    Rails.fire(form, 'submit');
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 
 window.CreateGroup = CreateGroup;
@@ -1254,8 +1203,7 @@ function SetTutorialNumber() {
     action_table.value = "TutorialSchedule";
 
     // Submit the form via Rails UJS
-    const form = document.getElementById("action_form");
-    Rails.fire(form, 'submit');
+    csubmitFormAsPost('action_form','/welcome/select_action')
 }
 
 window.SetTutorialNumber = SetTutorialNumber;
@@ -1313,8 +1261,8 @@ function UpdateCollectionStatus() {
     action_table.value = class_name;
 
     // Submit form via Rails UJS
-    const form = document.getElementById('action_form');
-    Rails.fire(form, 'submit');
+
+    submitFormAsPost('action_form','/welcome/select_action');
 }
 
 window.UpdateCollectionStatus = UpdateCollectionStatus;
@@ -1518,8 +1466,8 @@ function DeleteMembers(class_name) {
   const action_table = document.getElementById('action_class');
   action_table.value = class_name;
 
-  const form_elem = document.getElementById('action_form');
-  Rails.fire(form_elem, 'submit');
+
+  submitFormAsPost("action_form", "/welcome/select_action");
 }
 
 window.DeleteMembers = DeleteMembers;
@@ -1556,9 +1504,9 @@ if (!answer)
    ids[0] = id;
    
    //form_obj.submit();
-   const elem = document.getElementById(form_obj_str);
-   Rails.fire(elem, 'submit');;  
-   
+
+   submitFormAsPost("form_delete", "/welcome/delete");
+
 }
 window.on_delete = on_delete;
 
@@ -1666,8 +1614,10 @@ function editBlur(attribute_name, data_type, unloading) {
         }
     }
 
-    const elem = document.getElementById('update_form');
-    if (elem) Rails.fire(elem, 'submit');
+
+    const form = document.getElementById('update_form');
+    const action = form.action;
+    submitFormAsPost('update_form', action);
 }
 window.editBlur = editBlur;
 
@@ -1752,9 +1702,9 @@ window.yahoo_widget = yahoo_widget;
 function createNewEntry(create_entry) {
     console.log("Calling createNewEntry for " + create_entry); 
     
-    const form_id = "create_entry_form_" + create_entry;
-    const elem = document.getElementById(form_id);
-    Rails.fire(elem, 'submit');
+    const form_id = "create_entry_form_" + create_entry;    
+
+    submitFormAsPost(form_id, "/welcome/new");
 }
 window.createNewEntry = createNewEntry;
 
