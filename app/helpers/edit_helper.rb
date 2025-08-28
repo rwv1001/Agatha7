@@ -243,7 +243,7 @@ end
                     end #5
                 else #4
                     respond_to do |format|
-                        format.js { render :partial => "shared/alert", :locals => {:alert_str => exception_str } }
+                        format.js { render :partial => "shared/alert", :locals => {:alert_str => exception_str, :status_flag => 'error' } }
                     end 
                 end #4
             else 
@@ -407,7 +407,7 @@ def email_update()
             else#3
                 #page << "alert('#{exception_str}')";
                 respond_to do |format|#3
-                    format.js {render :partial => "shared/alert", :locals => {:alert_str => exception_str} }
+                    format.js {render :partial => "shared/alert", :locals => {:alert_str => exception_str, :status_flag => 'error'} }
                 end
 
             end #3        

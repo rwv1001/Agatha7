@@ -1930,7 +1930,7 @@ layout "welcome"
       alert_str = "You did not select any courses. "
     end
     respond_to do |format|
-      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str} }
+      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => (alert_str.include?("did not select") ? 'error' : 'success')} }
 =begin      
       do
         render :update do |page|
@@ -1977,7 +1977,7 @@ layout "welcome"
       alert_str = "You did not select any courses. "
     end
     respond_to do |format|
-      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str} }
+      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => (alert_str.include?("did not select") ? 'error' : 'success')} }
 =begin      
 do
         render :update do |page|
@@ -2750,15 +2750,8 @@ Rails.logger.info("RWV remove_from_group B")
     if(group_name.length ==0)
       alert_str = "Group creation failed: the chosen group name #{group_name} can't be an empty string.";
       respond_to do |format|
-        format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str} }
-=begin      
-do
-          render :update do |page|
-       page << "alert(\"Group creation failed: the chosen group name #{group_name} can't be an empty string.\")"
-       page << "unwait();"
-          end
-        end
-=end
+        format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => 'error'} }
+
       end
       return;
     end
@@ -2790,29 +2783,88 @@ do
       end
 
     end
+    
+    # ActionCable invalidation notification for new_group
+    if existing_group.nil?
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for new_group operation")
+        
+        # Build affected relationships for group creation
+        affected_relationships = []
+        
+        # New Group record created
+        affected_relationships << {
+          table: "Group",
+          operation: "create",
+          ids: [new_group_id],
+          reason: "new_group_created",
+          source_operation: "new_group"
+        }
+        
+        # If members were added to the group
+        if ids && ids.any?
+          # New GroupMembership records created (e.g., GroupPerson, GroupCourse, etc.)
+          group_membership_table = "Group#{class_name}"
+          affected_relationships << {
+            table: group_membership_table,
+            operation: "create",
+            ids: [], # New records, so no specific IDs yet
+            reason: "new_group_memberships",
+            source_operation: "new_group",
+            related_group_id: new_group_id,
+            related_member_ids: ids.map(&:to_i)
+          }
+          
+          # Member records updated (shows new group membership)
+          affected_relationships << {
+            table: class_name,
+            operation: "update", 
+            ids: ids.map(&:to_i),
+            reason: "group_membership_added",
+            source_operation: "new_group"
+          }
+        end
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for new_group")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+        end
+        
+        # Broadcast the invalidation notification
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            operation: "new_group",
+            group_id: new_group_id,
+            group_name: group_name,
+            class_name: class_name,
+            member_ids: ids || []
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for new_group operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in new_group: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
+      end
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for new_group due to existing group");
+    end
+    
     @search_ctls = session[:search_ctls];
     table_name = class_name;
     search_ctl = @search_ctls[table_name];
     search_ctl_group = @search_ctls["Group"];
 
-    respond_to do |format|
-          
+    respond_to do |format|   
        
         format.js  { render "new_group", :locals => { :existing_group => existing_group, :class_name => class_name, :table_name => table_name, :group_name => group_name, :new_group_id => new_group_id, :ids => ids, :search_ctl => search_ctl, :search_ctl_group => search_ctl_group } }
-=begin         
-        do
-          render :update do |page|
-            if(existing_group ==nil)
-             page << "alert(\"Successfully created #{class_name} group with name #{group_name}\")"
-             page << "add_group(\"#{class_name}\",\"#{group_name}\", \"#{new_group.id}\")"
-            else
-              page << "alert(\"Group creation failed: #{class_name} group with name #{group_name} already exists.\")"
-            end
-            page << "unwait();"
-          end
-        end
-=end        
-      end
+    end      
 
   end
   def update_tutorial_number(ids, tutorial_number)
@@ -2820,7 +2872,7 @@ do
     if(tutorial_number <0)
         alert_str = "Set Tutorial Number failed: the number of tutorial can't be negative."
         respond_to do |format|
-            format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str} }
+            format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => 'error'} }
         end    
 =begin
     do
@@ -2835,7 +2887,7 @@ do
     if ids.length == 0
         alert_str = "Set Tutorial Number failed: you didn't select any tutorial scedules to be updated."
         respond_to do |format|
-            format.js {render :partial => "shared/alert", :locals => {:alert_str => alert_str} }  
+            format.js {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => 'error'} }  
         end 
 =begin        
             do

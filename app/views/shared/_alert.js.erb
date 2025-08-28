@@ -1,5 +1,5 @@
 if (window.showNotification) {
-  window.showNotification("<%=raw alert_str%>", 'success');
+  window.showNotification("<%=raw alert_str%>", '<%=raw (defined?(status_flag) ? status_flag : 'success')%>');
 } else {
   alert("<%=raw alert_str%>");
 }
