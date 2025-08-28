@@ -30,6 +30,15 @@ unwait();
             'afterend',
             '<%= j render(partial: "shared/search_results_row_button", object: new_row) %>'
           );
+          
+          // Apply proper cell display based on current display settings
+          setTimeout(() => {
+            const newRowElement = document.getElementById('<%= new_row.id %>_AgathaEmail');
+            if (newRowElement && typeof window.hideCellsBasedOnCurrentDisplay === 'function') {
+              console.log('🔧 Applying hideCellsBasedOnCurrentDisplay to newly created email row');
+              window.hideCellsBasedOnCurrentDisplay(newRowElement, 'AgathaEmail');
+            }
+          }, 10);
         }
       })();
     <% end %>

@@ -77,7 +77,18 @@
       if (resultsTable) {
         // insertAfter last row
         const lastTr = resultsTable.querySelector("tr:last-child");
-        if (lastTr) lastTr.insertAdjacentHTML("afterend", rowHtml);
+        if (lastTr) {
+          lastTr.insertAdjacentHTML("afterend", rowHtml);
+          
+          // Apply proper cell display based on current display settings
+          setTimeout(() => {
+            const newRowElement = document.getElementById('<%= new_row.id %>_<%= table_name %>');
+            if (newRowElement && typeof window.hideCellsBasedOnCurrentDisplay === 'function') {
+              console.log('🔧 Applying hideCellsBasedOnCurrentDisplay to newly added group row');
+              window.hideCellsBasedOnCurrentDisplay(newRowElement, '<%= table_name %>');
+            }
+          }, 10);
+        }
       } else {
         // replace entire results container
         document.getElementById("search_results_<%= table_name %>").innerHTML =

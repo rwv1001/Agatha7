@@ -1,5 +1,6 @@
 # coding: utf-8
 #require 'ruby-prof'
+require 'ostruct'
 
 class Dependency
   attr_reader :dependent_table;
@@ -911,6 +912,7 @@ layout "welcome"
     end
   end
 
+  # before def new
   def new
 #     RubyProf.start
 #     
@@ -928,35 +930,51 @@ layout "welcome"
     new_obj.save;
     id = new_obj.id;
 
+    # Get search controller and prepare the new row for display
+    search_ctls = session[:search_ctls]
+    search_ctl = nil
+    new_row = nil
+    
+    if search_ctls && search_ctls[class_name]
+      search_ctl = search_ctls[class_name]
+      begin
+        eval("#{class_name}.set_controller(search_ctl)")
+        
+        # Create a simple object with the required attributes for the template
+        new_row = OpenStruct.new(
+          id: new_obj.id,
+          class_name: class_name,
+          search_controller: search_ctl
+        )
+        
+        # Copy all the new_obj attributes to new_row so filter.eval_str can access them
+        new_obj.attributes.each do |key, value|
+          new_row.send("#{key}=", value) unless new_row.respond_to?(key)
+        end
+        
+        Rails.logger.debug("DEBUG: Created row object for new #{class_name} with ID #{new_obj.id}")
+      rescue => e
+        Rails.logger.error("ERROR creating row object: #{e.message}")
+        new_row = nil
+      end
+    else
+      Rails.logger.debug("DEBUG: No search controller found for #{class_name}")
+    end
+    
+    # Send data invalidation to update other clients
+    #send_data_invalidation_for_update(class_name, new_obj, nil, id)
+
     respond_to do |format|
-      format.js { render "new", :locals=>{:table_name => table_name, :id => id, :class_name => class_name } }
+      format.js { render "new", :locals=>{:table_name => table_name, :id => id, :class_name => class_name, :new_row => new_row, :search_ctl => search_ctl } }
       format.html do
         Rails.logger.debug "WARNING: Form submitted as HTML instead of JavaScript format"
         Rails.logger.debug "Request headers: #{request.headers['Accept']}"
         Rails.logger.debug "Request format: #{request.format}"
         redirect_to root_path, notice: "#{class_name} created successfully with ID #{id}"
-      end
-      
-=begin
-        render :update do |page|
-       
-       page << "open_edit_window( '', 1,'#{table_name}','#{class_name}','#{id}')";
-     
-        end
-      end
-=end      
+      end     
     end
-    x =1;
-#        result = RubyProf.stop
-#  printer = RubyProf::GraphHtmlPrinter.new(result)
-# file = File.open('profile-graph-new.html', File::WRONLY |  File::CREAT)
-
-  #  my_str = "";
-# printer.print(file, :min_percent=>0)
-# Rails.logger.error("Does this work?");
-# file.close
-
   end
+  # after def new
 
   def suggest_tutorial
    tutorial_schedule = TutorialSchedule.new;

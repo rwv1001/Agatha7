@@ -1,3 +1,51 @@
 console.log('Welcome: Creating new entry for table: ' + '<%="#{table_name}"%>' + ', class: ' + '<%="#{class_name}"%>' + ', id: ' + '<%="#{id}"%>');
+
+// Add the new object to the bottom of search results regardless of filter settings
+<% if new_row %>
+  (function() {
+    const newRowSearchTable = document.getElementById("search_results_table_<%= class_name %>");
+    if (newRowSearchTable) {
+      const newRowHtml = `<%= j render(:partial => 'shared/search_results_row_button', :object => new_row) %>`;
+      const lastTr = newRowSearchTable.querySelector("tr:last-child");
+      if (lastTr) {
+        lastTr.insertAdjacentHTML("afterend", newRowHtml);
+        console.log('✅ Added new <%= class_name %> (ID: <%= id %>) to bottom of search results');
+        
+        // Apply proper cell display based on current display settings
+        const newRowElement = document.getElementById('<%= id %>_<%= class_name %>');
+        if (newRowElement) {
+          console.log('🔧 Applying hideCellsBasedOnCurrentDisplay to newly created row');
+          
+          if (typeof window.hideCellsBasedOnCurrentDisplay === 'function') {
+            window.hideCellsBasedOnCurrentDisplay(newRowElement, '<%= class_name %>');
+            console.log('✅ Successfully applied hideCellsBasedOnCurrentDisplay');
+          } else {
+            console.log('⚠️ hideCellsBasedOnCurrentDisplay function not available');
+          }
+        } else {
+          console.log('⚠️ Could not find newly created row element');
+        }
+        
+        if (window.showNotification) {
+          window.showNotification('New <%= class_name %> created successfully', 'success');
+        } else {
+          alert('New <%= class_name %> created successfully');
+        }
+      } else {
+        console.warn('❌ Could not find last row in search results table');
+      }
+    } else {
+      console.log('ℹ️ No search results table found for <%= class_name %> - object created but not added to results');
+    }
+  })();
+<% else %>
+  console.log('ℹ️ No search row data available - you may need to open a <%= class_name %> search table first');
+  if (window.showNotification) {
+    window.showNotification('New <%= class_name %> created successfully', 'success');
+  } else {
+    alert('New <%= class_name %> created successfully');
+  }
+<% end %>
+
 attribute_opener ='';
 open_edit_window(attribute_opener, 1, '<%="#{table_name}"%>', '<%="#{class_name}"%>', '<%="#{id}"%>');

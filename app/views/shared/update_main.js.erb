@@ -116,7 +116,18 @@
           } else if (tableEl) {
             // append after last <tr>
             const lastTr = tableEl.querySelector("tr:last-child");
-            if (lastTr) lastTr.insertAdjacentHTML("afterend", htmlStr);
+            if (lastTr) {
+              lastTr.insertAdjacentHTML("afterend", htmlStr);
+              
+              // Apply proper cell display based on current display settings
+              setTimeout(() => {
+                const newRowElement = document.getElementById('<%= new_row.id %>_<%= table_name %>');
+                if (newRowElement && typeof window.hideCellsBasedOnCurrentDisplay === 'function') {
+                  console.log('🔧 Applying hideCellsBasedOnCurrentDisplay to newly added row in update_main');
+                  window.hideCellsBasedOnCurrentDisplay(newRowElement, '<%= table_name %>');
+                }
+              }, 10);
+            }
 
           } else {
             // render whole results block
