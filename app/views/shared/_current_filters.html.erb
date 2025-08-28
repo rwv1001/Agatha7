@@ -21,6 +21,7 @@
 
 <table>
   <% search_controller_header = SearchControllerHeader.new(:just_filters, search_controller) %>
+  <input size="3" type=text  id=<%= raw "all_display_indices_#{search_controller.table_name}" %>  value="<%= search_controller.current_filter_indices.length  %>"  style="visibility :hidden" >
   <%= raw  render(:partial => "shared/search_controller_header", :object => search_controller_header) %>
 </table>
 <p>Click search to see result</p>
