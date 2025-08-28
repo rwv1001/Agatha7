@@ -131,6 +131,18 @@ Rails.application.routes.draw do
         post :win_load
         post :win_unload
       end
+      
+      # Add custom member actions for users
+      if resource == "users"
+        member do
+          post :admin_update_user
+          post :update_user
+        end
+        collection do
+          post :new_user
+          post :admin_update_user  # Allow admin_update_user without ID in URL
+        end
+      end
     end
   end
 

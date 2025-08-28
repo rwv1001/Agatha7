@@ -671,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function() {
           // Refresh the select box options by making an AJAX call
           this.refreshEditSelectBox(selectElement, triggerTable, triggerObjectId, currentValue);
         } else {
-          console.log(`⚠️ Edit page select box not found: ${selectId}`);
+          console.log(`⚠️ Edit page select box not found: ${selectId} (this may be normal if the page doesn't have this select box)`);
         }
       });
     },

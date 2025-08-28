@@ -66,8 +66,7 @@ class UsersController < ApplicationController
         update_status = false;
         if( current_user )
             params[:user].permit!
-            current_user.update_attributes(params[:user])
-            update_status = current_user.save;
+            update_status = current_user.update(params[:user])
         end
         respond_to do |format|
             format.js  { render "admin_update_user", :locals => {:update_status => update_status, :current_user => current_user } }

@@ -32,26 +32,50 @@ Rails.logger.debug "ApplicationController:authorize - Request: #{request.method}
 Rails.logger.debug "ApplicationController:authorize - User-Agent: #{request.user_agent}"
 Rails.logger.debug "ApplicationController:authorize - Referer: #{request.referer}"
 
-        current_ip = request.remote_ip 
+        # Get the real client IP, accounting for Docker/proxy setups
+        current_ip = request.headers['X-Forwarded-For']&.split(',')&.first&.strip ||
+                     request.headers['X-Real-IP'] ||
+                     request.remote_ip ||
+                     request.ip
+        
         Rails.logger.debug "ApplicationController:authorize - Current IP: #{current_ip}, Session IP: #{session[:current_ip]}"
+        Rails.logger.warn "🔍 DETAILED IP DEBUG:"
+        Rails.logger.warn "🔍   Final current_ip: #{current_ip}"
+        Rails.logger.warn "🔍   request.remote_ip: #{request.remote_ip}"
+        Rails.logger.warn "🔍   request.ip: #{request.ip}"
+        Rails.logger.warn "🔍   X-Forwarded-For: #{request.headers['X-Forwarded-For']}"
+        Rails.logger.warn "🔍   X-Real-IP: #{request.headers['X-Real-IP']}"
+        Rails.logger.warn "🔍   REMOTE_ADDR: #{request.env['REMOTE_ADDR']}"
+        Rails.logger.warn "🔍   HTTP_X_FORWARDED_FOR: #{request.env['HTTP_X_FORWARDED_FOR']}"
         Rails.logger.debug "ApplicationController:authorize - request.ip: #{request.ip}"
         Rails.logger.debug "ApplicationController:authorize - X-Forwarded-For: #{request.headers['X-Forwarded-For']}"
         Rails.logger.debug "ApplicationController:authorize - X-Real-IP: #{request.headers['X-Real-IP']}"
         Rails.logger.debug "ApplicationController:authorize - REMOTE_ADDR: #{request.env['REMOTE_ADDR']}"
         
-        # Temporarily disable IP checking to debug session issues
-        # TODO: Re-enable this after fixing the IP detection issues
-        ip_check_enabled = false  # Set to true to re-enable IP checking
+        # Re-enable IP checking with improved Docker-aware IP detection
+        ip_check_enabled = true  # Set to false to disable IP checking
         
-        if ip_check_enabled && (!session.key?(:current_ip) || session[:current_ip] != current_ip) #force logout if ip has changed
+        Rails.logger.warn "🔍 IP CHECK DEBUG: ip_check_enabled=#{ip_check_enabled}, session has current_ip: #{session.key?(:current_ip)}, stored IP: #{session[:current_ip]}, current IP: #{current_ip}"
+        
+        # Always update the current_ip in session to track the real IP
+        if current_ip && current_ip != session[:current_ip]
+          Rails.logger.warn "🔍 IP changed from '#{session[:current_ip]}' to '#{current_ip}' - updating session"
+          session[:current_ip] = current_ip
+        end
+        
+        if ip_check_enabled && current_ip && (!session.key?(:current_ip) || session[:current_ip] != current_ip) #force logout if ip has changed
           Rails.logger.debug "ApplicationController:authorize b"
           Rails.logger.debug "ApplicationController:authorize - IP changed! Old: #{session[:current_ip]}, New: #{current_ip}"
           Rails.logger.debug "ApplicationController:authorize - Clearing session due to IP change"
            session[:current_ip] = current_ip
 	   session[:valid_ip] = false
            session[:user_id] = nil
+        else
+          Rails.logger.warn "🔍 IP CHECK DEBUG: IP check passed or skipped - user_id should remain intact"
         end
         Rails.logger.debug "ApplicationController:authorize c"
+        Rails.logger.warn "🔍 SESSION DEBUG: Before user lookup - session[:user_id] = #{session[:user_id].inspect}"
+        Rails.logger.warn "🔍 SESSION DEBUG: Session keys present: #{session.keys.sort}"
         Rails.logger.debug "ApplicationController:authorize - session[:user_id] = #{session[:user_id].inspect}"
         Rails.logger.debug "ApplicationController:authorize - session[:user_id].class = #{session[:user_id].class}"
         
