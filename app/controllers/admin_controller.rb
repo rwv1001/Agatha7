@@ -117,6 +117,7 @@ session.each { |k, v| Rails.logger.debug "#{k}: #{v.class}" }
   end
   
   def logout
+    Rails.logger.debug "AdminController:logout session[:user_id] = #{session[:user_id].inspect} before logout"
     session[:user_id] = nil
     session[:search_ctls] = nil;
     flash[:notice] = "Logged out"

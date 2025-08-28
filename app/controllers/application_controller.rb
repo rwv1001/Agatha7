@@ -73,7 +73,7 @@ Rails.logger.debug "ApplicationController:authorize - Referer: #{request.referer
           Rails.logger.debug "ApplicationController:authorize - IP changed! Old: #{session[:current_ip]}, New: #{current_ip}"
           Rails.logger.debug "ApplicationController:authorize - Clearing session due to IP change"
            session[:current_ip] = current_ip
-	   session[:valid_ip] = false
+	         session[:valid_ip] = false
            session[:user_id] = nil
         else
           Rails.logger.warn "🔍 IP CHECK DEBUG: IP check passed or skipped - user_id should remain intact"
@@ -83,6 +83,7 @@ Rails.logger.debug "ApplicationController:authorize - Referer: #{request.referer
         Rails.logger.warn "🔍 SESSION DEBUG: Session keys present: #{session.keys.sort}"
         Rails.logger.debug "ApplicationController:authorize - session[:user_id] = #{session[:user_id].inspect}"
         Rails.logger.debug "ApplicationController:authorize - session[:user_id].class = #{session[:user_id].class}"
+        Rails.logger.debug "ApplicationController:authorize - session current ip: #{session[:current_ip].inspect}"
         
         user_record = User.find_by_id(session[:user_id])
         Rails.logger.debug "ApplicationController:authorize - User.find_by_id(#{session[:user_id]}) = #{user_record.inspect}"
