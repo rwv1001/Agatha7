@@ -1,7 +1,7 @@
 console.log('Welcome: Creating new entry for table: ' + '<%="#{table_name}"%>' + ', class: ' + '<%="#{class_name}"%>' + ', id: ' + '<%="#{id}"%>');
 
 // Add the new object to the bottom of search results regardless of filter settings
-<% if new_row %>
+<% if new_row && local_assigns[:search_done] %>
   (function() {
     const newRowSearchTable = document.getElementById("search_results_table_<%= class_name %>");
     if (newRowSearchTable) {
@@ -38,14 +38,12 @@ console.log('Welcome: Creating new entry for table: ' + '<%="#{table_name}"%>' +
       console.log('ℹ️ No search results table found for <%= class_name %> - object created but not added to results');
     }
   })();
-<% else %>
-  console.log('ℹ️ No search row data available - you may need to open a <%= class_name %> search table first');
-  if (window.showNotification) {
-    window.showNotification('New <%= class_name %> created successfully', 'success');
-  } else {
-    alert('New <%= class_name %> created successfully');
-  }
-<% end %>
 
-attribute_opener ='';
-open_edit_window(attribute_opener, 1, '<%="#{table_name}"%>', '<%="#{class_name}"%>', '<%="#{id}"%>');
+  attribute_opener ='';
+  open_edit_window(attribute_opener, 1, '<%="#{table_name}"%>', '<%="#{class_name}"%>', '<%="#{id}"%>');
+<% else %>
+  console.log('ℹ️ No search row data available or search not done - you may need to open a <%= class_name %> search table first');
+  <% unless local_assigns[:search_done] %>
+    console.log('ℹ️ Search not done - new table will be created with this entry');
+  <% end %>
+<% end %>

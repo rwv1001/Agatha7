@@ -1715,6 +1715,42 @@ function createNewEntry(create_entry) {
     console.log("Calling createNewEntry for " + create_entry); 
     
     const form_id = "create_entry_form_" + create_entry;    
+    const search_table_id = "search_results_table_" + create_entry;
+    
+    // Check if search results table exists to determine if search has been performed
+    const search_table_exists = document.getElementById(search_table_id) !== null;
+    
+    // Add search_done parameter to the form
+    const form = document.getElementById(form_id);
+    if (form) {
+        // Remove any existing search_done input to avoid duplicates
+        const existing_input = form.querySelector('input[name="search_done"]');
+        if (existing_input) {
+            existing_input.remove();
+        }
+        
+        // Remove any existing do_search input to avoid duplicates
+        const existing_do_search = form.querySelector('input[name="do_search"]');
+        if (existing_do_search) {
+            existing_do_search.remove();
+        }
+        
+        // Add search_done parameter
+        const search_done_input = document.createElement('input');
+        search_done_input.type = 'hidden';
+        search_done_input.name = 'search_done';
+        search_done_input.value = search_table_exists ? 'true' : 'false';
+        form.appendChild(search_done_input);
+        
+        // If no search has been performed, add do_search parameter for table_search.js.erb
+        if (!search_table_exists) {
+            const do_search_input = document.createElement('input');
+            do_search_input.type = 'hidden';
+            do_search_input.name = 'do_search';
+            do_search_input.value = 'true';
+            form.appendChild(do_search_input);
+        }
+    }
 
     submitFormAsPost(form_id, "/welcome/new");
 }

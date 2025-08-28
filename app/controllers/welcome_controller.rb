@@ -918,7 +918,8 @@ layout "welcome"
 #     
     class_name = params[:class_name];
     table_name = class_name.tableize;
-    Rails.logger.debug("WelcomeController:new class_name: #{class_name}, table_name: #{table_name}");
+    search_done = params[:search_done] == 'true';
+    Rails.logger.debug("WelcomeController:new class_name: #{class_name}, table_name: #{table_name}, search_done: #{search_done}");
     new_eval_str = "#{class_name}.new"
     new_obj = eval(new_eval_str);
     if(class_name == "EmailTemplate")
@@ -934,6 +935,7 @@ layout "welcome"
     search_ctls = session[:search_ctls]
     search_ctl = nil
     new_row = nil
+    search_results = nil
     
     if search_ctls && search_ctls[class_name]
       search_ctl = search_ctls[class_name]
@@ -953,6 +955,12 @@ layout "welcome"
         end
         
         Rails.logger.debug("DEBUG: Created row object for new #{class_name} with ID #{new_obj.id}")
+        
+        # If no search has been performed, create a SearchResults with just the new row
+        if !search_done
+          search_results = SearchResults.new([new_row], :search_results, search_ctl)
+        end
+        
       rescue => e
         Rails.logger.error("ERROR creating row object: #{e.message}")
         new_row = nil
@@ -960,12 +968,21 @@ layout "welcome"
     else
       Rails.logger.debug("DEBUG: No search controller found for #{class_name}")
     end
+
+    
     
     # Send data invalidation to update other clients
     #send_data_invalidation_for_update(class_name, new_obj, nil, id)
 
     respond_to do |format|
-      format.js { render "new", :locals=>{:table_name => table_name, :id => id, :class_name => class_name, :new_row => new_row, :search_ctl => search_ctl } }
+      if search_done
+        # If search was already performed, add to existing table
+        format.js { render "new", :locals=>{:table_name => table_name, :id => id, :class_name => class_name, :new_row => new_row, :search_done => search_done, :search_ctl => search_ctl } }
+      else
+        # If no search was performed, render a new table with just this entry
+        # We'll need to handle opening the edit window in the table_search template
+        format.js { render "table_search", :locals => {:search_ctl => search_ctl, :params => params, :table_name => class_name, :search_results=> search_results, :new_entry_id => id, :open_edit => true} }
+      end
       format.html do
         Rails.logger.debug "WARNING: Form submitted as HTML instead of JavaScript format"
         Rails.logger.debug "Request headers: #{request.headers['Accept']}"
