@@ -1,6 +1,14 @@
 <% if(update_status) %>
     document.getElementById("user").innerHTML = "<%= j render(:partial => 'shared/user', :object => current_user) %>";
-    alert('<%="Username #{current_user.name} has been successfully updated"%>');
+    if (window.showNotification) {
+      window.showNotification('<%="Username #{current_user.name} has been successfully updated"%>', 'success');
+    } else {
+      alert('<%="Username #{current_user.name} has been successfully updated"%>');
+    }
 <% else %>
-    alert('Unable to update user');
+    if (window.showNotification) {
+      window.showNotification('Unable to update user', 'error');
+    } else {
+      alert('Unable to update user');
+    }
 <% end %>

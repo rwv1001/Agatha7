@@ -193,12 +193,20 @@
 
   action_select_no_js();
   <% unless success_str.empty? %>
-    alert("<%= j success_str %>");
+    if (window.showNotification) {
+      window.showNotification("<%= j success_str %>", 'success');
+    } else {
+      alert("<%= j success_str %>");
+    }
   <% end %>
 
 <% else %>
   <% unless fail_str.empty? %>
-    alert("<%= j fail_str %>");
+    if (window.showNotification) {
+      window.showNotification("<%= j fail_str %>", 'error');
+    } else {
+      alert("<%= j fail_str %>");
+    }
   <% end %>
 <% end %>
 

@@ -13,6 +13,10 @@ if (targetDiv) {
     console.log("❌ Could not find multi_change_table_div_<%= table_name %>");
 }
 <% else %>
-alert('something went wrong with multi_table_create');
+if (window.showNotification) {
+  window.showNotification('something went wrong with multi_table_create', 'error');
+} else {
+  alert('something went wrong with multi_table_create');
+}
 <% end %>
 unwait();

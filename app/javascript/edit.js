@@ -103,7 +103,11 @@ function on_unload()
     const parent_win = window.opener;
     const unload_table_obj = document.getElementById(('#unload_table_name').slice(1)); //rwv vanilla change
     const table = unload_table_obj.value; 
-   parent_win.alert("" +table +" edit window has been closed and the database has been updated. Click search to see changes.");
+    if (parent_win && parent_win.showNotification) {
+      parent_win.showNotification("" +table +" edit window has been closed and the database has been updated. Click search to see changes.", 'success');
+    } else {
+      parent_win.alert("" +table +" edit window has been closed and the database has been updated. Click search to see changes.");
+    }
 
 }
 
@@ -1323,7 +1327,11 @@ window.select_update = select_update;
 
 function edit_alert(test_str)
 {
-   alert(test_str);
+   if (window.showNotification) {
+     window.showNotification(test_str, 'success');
+   } else {
+     alert(test_str);
+   }
 }
 window.edit_alert = edit_alert;
 
@@ -1433,7 +1441,11 @@ window.any_selected = any_selected;
 
 function DeleteMembers(class_name) {
   if (!any_selected(class_name)) {
-    alert('You have not selected any items for deletion!');
+    if (window.showNotification) {
+      window.showNotification('You have not selected any items for deletion!', 'error');
+    } else {
+      alert('You have not selected any items for deletion!');
+    }
     return;
   }
 

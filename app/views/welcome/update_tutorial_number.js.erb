@@ -14,5 +14,9 @@
 
 recolour('TutorialSchedule');
 action_select_no_js();
-alert('<%= success_str %>');
+if (window.showNotification) {
+  window.showNotification('<%= success_str %>', 'success');
+} else {
+  alert('<%= success_str %>');
+}
 unwait();

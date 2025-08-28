@@ -1,6 +1,71 @@
 // ActionCable Search Table Updates
 import consumer from "./consumer";
 
+// Notification System
+function showNotification(message, type = 'success') {
+  // Remove any existing notifications first
+  const existingNotifications = document.querySelectorAll('.custom-notification');
+  existingNotifications.forEach(notification => notification.remove());
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = 'custom-notification';
+  notification.textContent = message;
+  
+  // Style the notification
+  notification.style.position = 'fixed';
+  notification.style.top = '20px';
+  notification.style.right = '20px';
+  notification.style.padding = '12px 20px';
+  notification.style.borderRadius = '8px';
+  notification.style.fontFamily = 'Arial, sans-serif';
+  notification.style.fontSize = '14px';
+  notification.style.fontWeight = '500';
+  notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+  notification.style.zIndex = '10000';
+  notification.style.maxWidth = '400px';
+  notification.style.wordWrap = 'break-word';
+  
+  // Apply type-specific styling
+  if (type === 'success') {
+    notification.style.backgroundColor = '#d4edda';
+    notification.style.color = '#155724';
+    notification.style.border = '2px solid #28a745';
+  } else if (type === 'error') {
+    notification.style.backgroundColor = '#f8d7da';
+    notification.style.color = '#721c24';
+    notification.style.border = '2px solid #dc3545';
+  }
+  
+  // Add to page
+  document.body.appendChild(notification);
+  
+  // Animate in
+  notification.style.opacity = '0';
+  notification.style.transform = 'translateX(100%)';
+  setTimeout(() => {
+    notification.style.transition = 'all 0.3s ease-in-out';
+    notification.style.opacity = '1';
+    notification.style.transform = 'translateX(0)';
+  }, 10);
+  
+  // Auto-remove after 10 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.style.opacity = '0';
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 300);
+    }
+  }, 10000);
+}
+
+// Make showNotification globally available
+window.showNotification = showNotification;
+
 // Initialize external filters on page load
 function initializeExternalFilters() {
   console.log("🔧 Initializing external filters on page load...");
@@ -798,7 +863,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Find the search button for this table
       const searchButton = document.querySelector(`input[onclick*="Search('${tableName}')"]`);
       if (searchButton) {
-        console.log(`🔄 Triggering refresh for ${tableName} via search button click`);
+        console.log(`🔄 Search button found for ${tableName} but automatic refresh disabled`);
         
         // Store checkbox states for restoration after refresh
         if (window.savedCheckboxStates) {
@@ -807,12 +872,22 @@ document.addEventListener('DOMContentLoaded', function() {
           window.savedCheckboxStates = { [tableName]: currentCheckboxes };
         }
         
-        searchButton.click();
+        // AUTOMATIC REFRESH DISABLED: User must manually click Search button
+        // searchButton.click(); // REMOVED - No automatic page refreshes
+        console.log(`⚠️ Table ${tableName} needs manual refresh - automatic refresh disabled`);
         
-        // After the search completes, compare before/after values and highlight only changed cells
+        // Since we're not doing automatic refresh, just add subtle indication to affected rows
         setTimeout(() => {
-          this.compareAndHighlightChanges(tableName, affectedRowIds, beforeRefreshData);
-        }, 1500); // Increased delay to allow search to complete
+          affectedRowIds.forEach(rowId => {
+            const rowElement = document.getElementById(`${rowId}_${tableName}`);
+            if (rowElement) {
+              rowElement.classList.add('row-involved');
+              setTimeout(() => {
+                rowElement.classList.remove('row-involved');
+              }, 2000);
+            }
+          });
+        }, 100);
       } else {
         console.log(`⚠️ No search button found for table: ${tableName}`);
         console.log(`Looking for: input[onclick*="Search('${tableName}')"]`);
@@ -925,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Find the search button for this table
       const searchButton = document.querySelector(`input[onclick*="Search('${tableName}')"]`);
       if (searchButton) {
-        console.log(`🔄 Found Search function, triggering refresh for ${tableName} table`);
+        console.log(`🔄 Search button found for ${tableName} but automatic refresh disabled`);
         
         // Store checkbox states for restoration after refresh
         if (window.savedCheckboxStates) {
@@ -934,12 +1009,22 @@ document.addEventListener('DOMContentLoaded', function() {
           window.savedCheckboxStates = { [tableName]: currentCheckboxes };
         }
         
-        searchButton.click();
+        // AUTOMATIC REFRESH DISABLED: User must manually click Search button  
+        // searchButton.click(); // REMOVED - No automatic page refreshes
+        console.log(`⚠️ Table ${tableName} needs manual refresh - automatic refresh disabled`);
         
-        // After the search completes, compare before/after values and highlight only changed cells
+        // Since we're not doing automatic refresh, just add subtle indication to affected rows
         setTimeout(() => {
-          this.compareAndHighlightChanges(tableName, affectedRowIds, beforeRefreshData);
-        }, 1500); // Increased delay to allow search to complete
+          affectedRowIds.forEach(rowId => {
+            const rowElement = document.getElementById(`${rowId}_${tableName}`);
+            if (rowElement) {
+              rowElement.classList.add('row-involved');
+              setTimeout(() => {
+                rowElement.classList.remove('row-involved');
+              }, 2000);
+            }
+          });
+        }, 100);
       } else {
         console.log(`⚠️ No search button found for table: ${tableName}`);
         console.log(`Looking for: input[onclick*="Search('${tableName}')"]`);
@@ -1032,7 +1117,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           
           // Fallback to full table refresh
-          this.performFullTableRefresh(tableName, affectedRowIds, beforeRefreshData);
+          //this.performFullTableRefresh(tableName, affectedRowIds, beforeRefreshData);
         }
       });
     },
@@ -1171,7 +1256,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Find the search button for this table
       const searchButton = document.querySelector(`input[onclick*="Search('${tableName}')"]`);
       if (searchButton) {
-        console.log(`🔄 Triggering refresh for ${tableName} via search button click`);
+        console.log(`🔄 Search button found for ${tableName} but automatic refresh disabled`);
         
         // Store checkbox states for restoration after refresh
         if (window.savedCheckboxStates) {
@@ -1180,10 +1265,11 @@ document.addEventListener('DOMContentLoaded', function() {
           window.savedCheckboxStates = { [tableName]: currentCheckboxes };
         }
         
-        searchButton.click();
+        // AUTOMATIC REFRESH DISABLED: User must manually click Search button
+        // searchButton.click(); // REMOVED - No automatic page refreshes
+        console.log(`⚠️ Table ${tableName} needs manual refresh - automatic refresh disabled`);
         
-        // After the search completes, highlight the affected rows with a subtle indication
-        // Note: Full refresh replaces all content, so before/after comparison isn't meaningful
+        // Since we're not doing automatic refresh, just add subtle indication to affected rows
         setTimeout(() => {
           affectedRowIds.forEach(rowId => {
             const rowElement = document.getElementById(`${rowId}_${tableName}`);
@@ -1194,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', function() {
               }, 2000);
             }
           });
-        }, 1500);
+        }, 100);
       } else {
         console.log(`⚠️ No search button found for table: ${tableName}`);
       }

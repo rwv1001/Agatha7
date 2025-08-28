@@ -483,6 +483,35 @@ body#field_display_formats ul#menu li ul li a.field_display_formats
   transition: all 0.3s ease;
 }
 
+/* Notification Box Styles */
+.custom-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  max-width: 400px;
+  word-wrap: break-word;
+  transition: all 0.3s ease-in-out;
+}
+
+.custom-notification.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 2px solid #28a745;
+}
+
+.custom-notification.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 2px solid #dc3545;
+}
+
 
 
 

@@ -171,9 +171,17 @@
     });
   <% end %>
 
-  alert("Successfully created <%= class_name %> group with name <%= group_name %>");
+  if (window.showNotification) {
+    window.showNotification("Successfully created <%= class_name %> group with name <%= group_name %>", 'success');
+  } else {
+    alert("Successfully created <%= class_name %> group with name <%= group_name %>");
+  }
 <% else %>
-  alert("Group creation failed: <%= class_name %> group with name <%= group_name %> already exists.");
+  if (window.showNotification) {
+    window.showNotification("Group creation failed: <%= class_name %> group with name <%= group_name %> already exists.", 'error');
+  } else {
+    alert("Group creation failed: <%= class_name %> group with name <%= group_name %> already exists.");
+  }
 <% end %>
 
 unwait();

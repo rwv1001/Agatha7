@@ -22,6 +22,11 @@ class ApplicationController < ActionController::Base
   # from your application log (in this case, all fields with names like "password"). 
   # filter_parameter_logging :password
   
+  # Helper method for notification alerts
+  def notification_alert(message, type = 'success')
+    escaped_message = message.gsub("'", "\\'")
+    "if (window.showNotification) { window.showNotification('#{escaped_message}', '#{type}'); } else { alert('#{escaped_message}'); }"
+  end
 
 
 protected

@@ -15,5 +15,9 @@
      recolour('Person');
      action_select_no_js(); 
 <% end %>
-   alert('<%="#{alert_str}"%>');
+   if (window.showNotification) {
+     window.showNotification('<%="#{alert_str}"%>', 'success');
+   } else {
+     alert('<%="#{alert_str}"%>');
+   }
    unwait();

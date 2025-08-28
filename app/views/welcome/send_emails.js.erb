@@ -1,8 +1,16 @@
 <% if error_str.length >0  %>
     <% str = "error_str"; %>
-    alert('<%="#{status_val[str]}"%>');
+    if (window.showNotification) {
+      window.showNotification('<%="#{status_val[str]}"%>', 'error');
+    } else {
+      alert('<%="#{status_val[str]}"%>');
+    }
 <% else  %>
     <% str = "success_str"; %>
-    alert('<%="#{status_val[str]}"%>')
+    if (window.showNotification) {
+      window.showNotification('<%="#{status_val[str]}"%>', 'success');
+    } else {
+      alert('<%="#{status_val[str]}"%>');
+    }
 <% end  %>
 unwait();  

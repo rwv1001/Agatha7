@@ -1,7 +1,11 @@
 unwait();
 
 <% if error_str.length > 0 %>
-  alert('<%= j error_str %>');
+  if (window.showNotification) {
+    window.showNotification('<%= j error_str %>', 'error');
+  } else {
+    alert('<%= j error_str %>');
+  }
 <% else %>
   <% results_table_name  = "search_results_table_AgathaEmail" %>
   <% current_filter_name = "current_filters_AgathaEmail" %>
@@ -39,5 +43,9 @@ unwait();
   action_select_no_js();
   recolour('AgathaEmail');
 
-  alert('<%= j success_str + warning_str %>');
+  if (window.showNotification) {
+    window.showNotification('<%= j success_str + warning_str %>', 'success');
+  } else {
+    alert('<%= j success_str + warning_str %>');
+  }
 <% end %>

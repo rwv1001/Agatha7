@@ -1,5 +1,9 @@
 <% if error_str.length > 0 %>
-    alert('<%="#{error_str}"%>');
+    if (window.showNotification) {
+      window.showNotification('<%="#{error_str}"%>', 'error');
+    } else {
+      alert('<%="#{error_str}"%>');
+    }
 <% else %>
     console.log("🚀 MAX_TUTORIALS JS EXECUTING - Person IDs: <%= ids %>"); 
     
@@ -74,6 +78,10 @@
       }, 1000); // Wait longer for search refresh to complete
     }, 100); // Small delay before triggering refresh
     
-    alert('<%="#{success_str}"%>');
+    if (window.showNotification) {
+      window.showNotification('<%="#{success_str}"%>', 'success');
+    } else {
+      alert('<%="#{success_str}"%>');
+    }
 <% end %>
 unwait();

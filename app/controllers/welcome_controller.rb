@@ -11,7 +11,7 @@ class Dependency
 end
 
 include FilterHelper
-include SearchTableBroadcastHelper
+include ModelDependencyHelper
 class WelcomeController < ApplicationController
  
 skip_before_action :authorize, only: [:index]
@@ -1142,7 +1142,7 @@ layout "welcome"
            # <%= render(:partial => "shared/multi_table", :object => new_multi_table ) %>
              page.replace_html("multi_change_table_div_#{table_name}" , :partial => "shared/multi_table" , :object => new_multi_table);
             else
-              page << "alert('something went wrong with multi_table_create')";
+              page << notification_alert('Something went wrong with multi table create', 'error');
 
             end
             page << "unwait();"
@@ -1373,9 +1373,9 @@ layout "welcome"
         do
           render :update do |page|
             if error_str.length >0
-              page << "alert('#{error_str}')";
+              page << notification_alert(error_str, 'error');
             else
-              page << "alert('#{success_str}')";
+              page << notification_alert(success_str, 'success');
               
             end
             page << "unwait();"
@@ -1585,9 +1585,9 @@ layout "welcome"
 =begin
         render :update do |page|
           if error_str.length >0
-            page << "alert('#{status_val["error_str"]}')";
+            page << notification_alert(status_val["error_str"], 'error');
           else
-            page << "alert('#{status_val["success_str"]}')";
+            page << notification_alert(status_val["success_str"], 'success');
           end
           page << "unwait();"
         end
@@ -2325,17 +2325,17 @@ do
             person = Person.find(person_id) rescue nil
             if person
               # Broadcast person update (attendance status changed)
-              broadcast_search_table_update('Person', person, ['lectures_attended_in_term'], [person_id], session[:search_ctls])
+              send_data_invalidation_for_update('Person', person, 'lectures_attended_in_term', person_id)
             end
           end
           
           # Broadcast lecture update (attendee list changed)
-          broadcast_search_table_update('Lecture', lecture, ['attendees'], [lecture_id], session[:search_ctls])
+          send_data_invalidation_for_update('Lecture', lecture, 'attendees', lecture_id)
           
           # Also broadcast any attendee objects that were created
           new_attendees = Attendee.where(person_id: people_ids, lecture_id: lecture_id)
           new_attendees.each do |attendee|
-            broadcast_search_table_update('Attendee', attendee, ['person_id', 'lecture_id'], [attendee.id], session[:search_ctls])
+            send_data_invalidation_for_update('Attendee', attendee, 'person_id', attendee.id)
           end
         end
       end

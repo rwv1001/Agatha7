@@ -4,7 +4,15 @@
     <% else %>
         document.getElementById("user").innerHTML = "<%= j render(:partial => 'shared/user', :object => new_user) %>";  
     <% end %>
-    alert('<%="Username #{new_user.name} has been successfully created"%>');
+    if (window.showNotification) {
+      window.showNotification('<%="Username #{new_user.name} has been successfully created"%>', 'success');
+    } else {
+      alert('<%="Username #{new_user.name} has been successfully created"%>');
+    }
 <% else %>
-    alert('Unable to create new user');
+    if (window.showNotification) {
+      window.showNotification('Unable to create new user', 'error');
+    } else {
+      alert('Unable to create new user');
+    }
 <% end %>

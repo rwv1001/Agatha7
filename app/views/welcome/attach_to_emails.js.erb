@@ -1,5 +1,9 @@
 <% if error_str.length > 0 %>
-alert('<%="#{error_str}"%>');
+if (window.showNotification) {
+  window.showNotification('<%="#{error_str}"%>', 'error');
+} else {
+  alert('<%="#{error_str}"%>');
+}
 <% else %>
 
 <% if ids.length > 0  %>
@@ -19,7 +23,11 @@ alert('<%="#{error_str}"%>');
      recolour('AgathaEmail');
      action_select_no_js(); 
 <% end %>
-   alert('<%="#{success_str}"%>');
+   if (window.showNotification) {
+     window.showNotification('<%="#{success_str}"%>', 'success');
+   } else {
+     alert('<%="#{success_str}"%>');
+   }
 <% end %>
 
 unwait();

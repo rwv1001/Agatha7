@@ -281,7 +281,7 @@ end
                 edit_cell = EditCell.new(attribute, object, @table_name, @filter_controller, update_parent,readonly_flag);
                 page.replace_html("#{@table_name}_updated_at", :partial => "shared/edit_cell", :object => edit_cell);
             else
-                page << "alert('#{exception_str}')";
+                page << notification_alert(exception_str, 'error');
             end
             end
         end

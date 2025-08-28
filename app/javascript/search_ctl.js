@@ -406,7 +406,11 @@ function submitFormAsPost(form_id, endpoint = '/welcome/table_search') {
           form_id: form_id,
           endpoint: endpoint
         });
-        alert('Form submission failed: ' + error.message);
+        if (window.showNotification) {
+          window.showNotification('Form submission failed: ' + error.message, 'error');
+        } else {
+          alert('Form submission failed: ' + error.message);
+        }
         unwait();
       });
   } else {

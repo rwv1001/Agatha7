@@ -1,8 +1,16 @@
 // Only alert messages for user feedback
 <% if success_str.present? %>
-  alert('<%= success_str.html_safe %>');
+  if (window.showNotification) {
+    window.showNotification('<%= success_str.html_safe %>', 'success');
+  } else {
+    alert('<%= success_str.html_safe %>');
+  }
 <% end %>
 <% if error_str.present? %>
-  alert('<%= error_str.html_safe %>');
+  if (window.showNotification) {
+    window.showNotification('<%= error_str.html_safe %>', 'error');
+  } else {
+    alert('<%= error_str.html_safe %>');
+  }
 <% end %>
 unwait();

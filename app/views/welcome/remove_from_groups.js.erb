@@ -1,8 +1,16 @@
 <% if(group_ids.length == 0) %>
-    alert('<%="Remove Selected Failed: You did not select any groups."%>');
+    if (window.showNotification) {
+      window.showNotification('<%="Remove Selected Failed: You did not select any groups."%>', 'error');
+    } else {
+      alert('<%="Remove Selected Failed: You did not select any groups."%>');
+    }
 
 <% elsif permissioned.length == 0 %>
-    alert('<%="You do not have permission to remove members from any of the selected groups."%>');
+    if (window.showNotification) {
+      window.showNotification('<%="You do not have permission to remove members from any of the selected groups."%>', 'error');
+    } else {
+      alert('<%="You do not have permission to remove members from any of the selected groups."%>');
+    }
 
 <% else %>
     <% success_str = ""; %>
@@ -58,6 +66,10 @@
 
     recolour('Group');
     action_select_no_js();
-    alert('<%= success_str %>');
+    if (window.showNotification) {
+      window.showNotification('<%= success_str %>', 'success');
+    } else {
+      alert('<%= success_str %>');
+    }
 <% end %>
 unwait();

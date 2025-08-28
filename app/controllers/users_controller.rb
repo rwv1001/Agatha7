@@ -42,13 +42,13 @@ class UsersController < ApplicationController
              else
                 page.replace_html("user", :partial => "shared/user", :object => new_user );
              end
-             page << "alert(\"Username #{new_user.name} has been successfully created\")";
+             page << notification_alert("Username #{new_user.name} has been successfully created", 'success');
          #   page.replace_html("flash", :partial => "shared/flash", :object => "Username #{new_user.name} has been successfully created");
 
           end
         else
           render :update do |page|
-            page << "alert(\"Unable to create new user\")";
+            page << notification_alert('Unable to create new user', 'error');
            # page.replace_html("flash", :partial => "shared/flash", :object => "Unable to create new user");
           end
         end
@@ -76,13 +76,13 @@ class UsersController < ApplicationController
         if(update_status)
         render :update do |page|
         page.replace_html("user", :partial => "shared/create_user", :object => current_user );
-        page << "alert(\"Username #{current_user.name} has been successfully updated\")";
+        page << notification_alert("Username #{current_user.name} has been successfully updated", 'success');
         #  page.replace_html("flash", :partial => "shared/flash", :object => "Username #{current_user.name} has been successfully updated");
 
         end
         else
         render :update do |page|
-        page << "alert(\"Unable to update user. Make sure new password and confirm password are identical\")";
+        page << notification_alert('Unable to update user. Make sure new password and confirm password are identical', 'error');
         # page.replace_html("flash", :partial => "shared/flash", :object => "Unable to update user");
         end
         end
@@ -100,7 +100,7 @@ class UsersController < ApplicationController
 =begin            
     do
         render :update do |page|
-        page << "alert(\"You do not have admin rights\")";
+        page << notification_alert('You do not have admin rights', 'error');
         #    page.replace_html("flash", :partial => "shared/flash", :object => "You do not have admin rights");
         end
     end

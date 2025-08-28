@@ -1,9 +1,21 @@
 <% if db_group== nil %>
-    alert('<%="Remove Selected Failed: Could not find group id #{group_id} in database"%>');
+    if (window.showNotification) {
+      window.showNotification('<%="Remove Selected Failed: Could not find group id #{group_id} in database"%>', 'error');
+    } else {
+      alert('<%="Remove Selected Failed: Could not find group id #{group_id} in database"%>');
+    }
 <% elsif(!class_ok) %>
-    alert('<%="Remove Selected Failed: The #{db_group.group_name} is for members of type #{db_group.table.classify} rather than type #{class_name2}"%>');
+    if (window.showNotification) {
+      window.showNotification('<%="Remove Selected Failed: The #{db_group.group_name} is for members of type #{db_group.table.classify} rather than type #{class_name2}"%>', 'error');
+    } else {
+      alert('<%="Remove Selected Failed: The #{db_group.group_name} is for members of type #{db_group.table.classify} rather than type #{class_name2}"%>');
+    }
 <% elsif(ids.length == 0) %>
-    alert('<%="Remove Selected Failed: You have not selected any #{db_group.table_name}"%>');
+    if (window.showNotification) {
+      window.showNotification('<%="Remove Selected Failed: You have not selected any #{db_group.table_name}"%>', 'error');
+    } else {
+      alert('<%="Remove Selected Failed: You have not selected any #{db_group.table_name}"%>');
+    }
 <% else %>
     <% success_str = ""  %>
     <% if  num_existing == 1 %>
@@ -36,6 +48,10 @@
     <% end %>
     recolour('Group'); 
     action_select_no_js();    
-    alert('<%="#{success_str}"%>');
+    if (window.showNotification) {
+      window.showNotification('<%="#{success_str}"%>', 'success');
+    } else {
+      alert('<%="#{success_str}"%>');
+    }
 <% end %>
 unwait();
