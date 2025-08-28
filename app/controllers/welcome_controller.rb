@@ -4232,7 +4232,8 @@ end
       
       # Apply the same filtering logic as the search controller
       # Use the search controller's eval string to get filtered results
-      eval_str = search_controller.get_eval_string2()
+      sql_str = search_controller.get_sql_id_string(row_ids)
+      eval_str =  "#{table_name}.find_by_sql(\"#{sql_str}\")"
       Rails.logger.info("RWV fetch_updated_rows: Using eval string: #{eval_str}")
       
       filtered_results = eval(eval_str)

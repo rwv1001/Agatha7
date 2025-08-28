@@ -866,7 +866,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Check if we've attempted targeted updates for this recently (within 30 seconds)
       if (this.targetedUpdateAttempts.has(updateKey)) {
         const lastAttempt = this.targetedUpdateAttempts.get(updateKey);
-        if (now - lastAttempt < 5000) {
+        if (now - lastAttempt < 50) {
           console.log(`🚫 Skipping targeted updates - attempted too recently, using full refresh instead`);
           // Skip to full table refresh
         } else {

@@ -1,0 +1,185 @@
+/* Styles for record locking system */
+
+/* Edit links that are locked by the current user */
+a.locked-by-me, .edit-link.locked-by-me {
+  border: 2px solid #28a745 !important;
+  background-color: #d4edda !important;
+  position: relative;
+}
+
+a.locked-by-me::after, .edit-link.locked-by-me::after {
+  content: "🔒";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Edit links that are locked by another user */
+a.locked-by-other, .edit-link.locked-by-other {
+  border: 2px solid #dc3545 !important;
+  background-color: #f8d7da !important;
+  cursor: not-allowed !important;
+  position: relative;
+}
+
+a.locked-by-other::after, .edit-link.locked-by-other::after {
+  content: "🚫";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Lock status indicator */
+.lock-status {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.8em;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.lock-status.locked-by-me {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.lock-status.locked-by-other {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.lock-status.available {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+/* Lock info tooltip */
+.lock-info {
+  position: relative;
+  cursor: help;
+}
+
+.lock-info:hover .lock-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.lock-tooltip {
+  visibility: hidden;
+  width: 200px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -100px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 0.8em;
+}
+
+.lock-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+/* Table row highlighting for locked records */
+tr.record-locked-by-me {
+  background-color: #d4edda !important;
+}
+
+tr.record-locked-by-other {
+  background-color: #f8d7da !important;
+}
+
+/* Notification styles */
+.lock-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  z-index: 9999;
+  max-width: 300px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
+
+.lock-notification.success {
+  background-color: #28a745;
+}
+
+.lock-notification.info {
+  background-color: #17a2b8;
+}
+
+.lock-notification.warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.lock-notification.error {
+  background-color: #dc3545;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Loading spinner for lock attempts */
+.lock-loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 5px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
