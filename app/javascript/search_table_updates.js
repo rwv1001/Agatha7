@@ -298,15 +298,144 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log("✅ ActionCable consumer available:", actionCableConsumer);
   console.log("🔗 Attempting to create SearchTableChannel subscription...");
   
+  // Add reconnection logic and connection monitoring
+  let reconnectAttempts = 0;
+  const maxReconnectAttempts = 10;
+  const baseReconnectDelay = 1000; // 1 second
+  let reconnectTimer = null;
+  let connectionHealthTimer = null;
+  
+  // Function to show connection status to users
+  function showConnectionStatus(status, message) {
+    console.log(`🔗 Connection Status: ${status} - ${message}`);
+    
+    // Create or update a connection status indicator
+    let statusIndicator = document.getElementById('actioncable-status');
+    if (!statusIndicator) {
+      statusIndicator = document.createElement('div');
+      statusIndicator.id = 'actioncable-status';
+      statusIndicator.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 10000;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      `;
+      document.body.appendChild(statusIndicator);
+    }
+    
+    statusIndicator.textContent = message;
+    
+    if (status === 'connected') {
+      statusIndicator.style.backgroundColor = '#28a745';
+      statusIndicator.style.color = 'white';
+      // Hide after 3 seconds if connected
+      setTimeout(() => {
+        if (statusIndicator && statusIndicator.textContent === message) {
+          statusIndicator.style.opacity = '0';
+          setTimeout(() => {
+            if (statusIndicator && statusIndicator.style.opacity === '0') {
+              statusIndicator.remove();
+            }
+          }, 300);
+        }
+      }, 3000);
+    } else if (status === 'connecting') {
+      statusIndicator.style.backgroundColor = '#ffc107';
+      statusIndicator.style.color = 'black';
+      statusIndicator.style.opacity = '1';
+    } else if (status === 'disconnected') {
+      statusIndicator.style.backgroundColor = '#dc3545';
+      statusIndicator.style.color = 'white';
+      statusIndicator.style.opacity = '1';
+    }
+  }
+  
+  // Function to attempt reconnection with exponential backoff
+  function attemptReconnection() {
+    if (reconnectAttempts >= maxReconnectAttempts) {
+      console.log(`❌ Max reconnection attempts (${maxReconnectAttempts}) reached`);
+      showConnectionStatus('disconnected', '🔴 Connection failed - reload page');
+      return;
+    }
+    
+    reconnectAttempts++;
+    const delay = Math.min(baseReconnectDelay * Math.pow(2, reconnectAttempts - 1), 30000); // Max 30 seconds
+    
+    console.log(`🔄 Reconnection attempt ${reconnectAttempts}/${maxReconnectAttempts} in ${delay}ms`);
+    showConnectionStatus('connecting', `🔄 Reconnecting... (${reconnectAttempts}/${maxReconnectAttempts})`);
+    
+    reconnectTimer = setTimeout(() => {
+      console.log(`🔄 Attempting to reconnect ActionCable (attempt ${reconnectAttempts})`);
+      
+      try {
+        // Force reconnection
+        actionCableConsumer.connection.open();
+      } catch (error) {
+        console.log(`❌ Reconnection attempt ${reconnectAttempts} failed:`, error);
+        attemptReconnection(); // Try again
+      }
+    }, delay);
+  }
+  
+  // Function to check connection health periodically
+  function startConnectionHealthMonitoring() {
+    if (connectionHealthTimer) {
+      clearInterval(connectionHealthTimer);
+    }
+    
+    connectionHealthTimer = setInterval(() => {
+      const state = actionCableConsumer.connection.getState();
+      console.log(`🔍 Connection health check: ${state}`);
+      
+      if (state === 'disconnected' || state === 'closed') {
+        console.log('🚨 Connection health check detected disconnection, attempting reconnection');
+        clearInterval(connectionHealthTimer);
+        attemptReconnection();
+      }
+    }, 30000); // Check every 30 seconds
+  }
+  
+  // Function to reset reconnection state on successful connection
+  function resetReconnectionState() {
+    reconnectAttempts = 0;
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+  }
+
   // Subscribe to search table updates
   const searchTableChannel = actionCableConsumer.subscriptions.create("SearchTableChannel", {
     connected() {
       console.log("✅ Connected to SearchTableChannel - ActionCable working!");
       console.log("🎯 ActionCable connection established successfully");
+      
+      // Reset reconnection state and show success
+      resetReconnectionState();
+      showConnectionStatus('connected', '✅ Real-time updates active');
+      
+      // Start health monitoring
+      startConnectionHealthMonitoring();
     },
 
     disconnected() {
       console.log("❌ Disconnected from SearchTableChannel");
+      showConnectionStatus('disconnected', '🔴 Connection lost');
+      
+      // Stop health monitoring and attempt reconnection
+      if (connectionHealthTimer) {
+        clearInterval(connectionHealthTimer);
+      }
+      
+      // Start reconnection attempts after a short delay
+      setTimeout(() => {
+        attemptReconnection();
+      }, 1000);
     },
 
     received(data) {
