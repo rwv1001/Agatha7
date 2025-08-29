@@ -1156,7 +1156,13 @@ function CreateGroup(class_name) {
     // Set action fields
     document.getElementById('action_type').value = "group";
     document.getElementById('action_class').value = class_name;
+    
+    // Check if Group table search has been performed to determine display strategy
+    createNewEntryParams("Group", "action_form");
+    
+    
 
+    
     // Submit the form via Rails UJS
     submitFormAsPost('action_form','/welcome/select_action')
 }
@@ -1711,10 +1717,10 @@ const x = 1;
     }
 window.yahoo_widget = yahoo_widget;
 
-function createNewEntry(create_entry) {
-    console.log("Calling createNewEntry for " + create_entry); 
+function createNewEntryParams(create_entry, form_id){
+    console.log("Calling createNewEntryParams for " + create_entry); 
     
-    const form_id = "create_entry_form_" + create_entry;    
+      
     const search_table_id = "search_results_table_" + create_entry;
     
     // Check if search results table exists to determine if search has been performed
@@ -1743,15 +1749,23 @@ function createNewEntry(create_entry) {
         form.appendChild(search_done_input);
         
         // If no search has been performed, add do_search parameter for table_search.js.erb
-        if (!search_table_exists) {
+        if (!search_table_exists) {            
             const do_search_input = document.createElement('input');
             do_search_input.type = 'hidden';
             do_search_input.name = 'do_search';
             do_search_input.value = 'true';
             form.appendChild(do_search_input);
+        } else {
+            console.log("ℹ️ createNewEntryParams: search_table_exists is exists for " + create_entry);
+
         }
     }
+}
 
+function createNewEntry(create_entry) {
+    console.log("Calling createNewEntry for " + create_entry);
+    createNewEntryParams(create_entry,  "create_entry_form_" + create_entry);
+    const form_id = "create_entry_form_" + create_entry;
     submitFormAsPost(form_id, "/welcome/new");
 }
 window.createNewEntry = createNewEntry;

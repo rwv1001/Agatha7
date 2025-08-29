@@ -326,6 +326,7 @@ function updatePostExternalFilter(table_name, class_id_name) {
 window.updatePostExternalFilter = updatePostExternalFilter;
 
 function submitFormAsPost(form_id, endpoint = '/welcome/table_search') {
+  console.log("🔄 submitFormAsPost called for form:", form_id, "endpoint:", endpoint);
   const elem = document.getElementById(form_id);
 
   // Convert to direct POST request instead of Rails.fire
@@ -372,6 +373,7 @@ function submitFormAsPost(form_id, endpoint = '/welcome/table_search') {
             // Assume it's JavaScript and execute it
             try {
               const script = document.createElement('script');
+              console.log("🔄 submitFormAsPost gets html code: ", html);
               script.textContent = html;
               document.head.appendChild(script);
               document.head.removeChild(script);

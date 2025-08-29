@@ -22,6 +22,9 @@ console.log('Welcome: Creating new entry for table: ' + '<%="#{table_name}"%>' +
           } else {
             console.log('⚠️ hideCellsBasedOnCurrentDisplay function not available');
           }
+          if (typeof window.recolour === 'function') {
+            window.recolour('<%= class_name %>');
+          }
         } else {
           console.log('⚠️ Could not find newly created row element');
         }

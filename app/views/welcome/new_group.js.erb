@@ -1,10 +1,56 @@
 
 <% if existing_group.nil? %>
-  if (window.showNotification) {
-    window.showNotification("Successfully created <%= class_name %> group with name <%= group_name %>", 'success');
-  } else {
-    alert("Successfully created <%= class_name %> group with name <%= group_name %>");
-  }
+  console.log('Welcome: Creating new group for class: ' + '<%= class_name %>' + ', group name: ' + '<%= group_name %>' + ', id: ' + '<%= new_group_id %>');
+
+  // Add the new group to the bottom of Group search results regardless of filter settings
+  <% if new_row && search_done %>
+    (function() {
+      const newRowSearchTable = document.getElementById("search_results_table_Group");
+      if (newRowSearchTable) {
+        const newRowHtml = `<%= j render(:partial => 'shared/search_results_row_button', :object => new_row) %>`;
+        const lastTr = newRowSearchTable.querySelector("tr:last-child");
+        if (lastTr) {
+          lastTr.insertAdjacentHTML("afterend", newRowHtml);
+          console.log('✅ Added new Group (ID: <%= new_group_id %>) to bottom of search results');
+          
+          // Apply proper cell display based on current display settings
+          const newRowElement = document.getElementById('<%= new_group_id %>_Group');
+          if (newRowElement) {
+            console.log('🔧 Applying hideCellsBasedOnCurrentDisplay to newly created group row');
+            
+            if (typeof window.hideCellsBasedOnCurrentDisplay === 'function') {
+              window.hideCellsBasedOnCurrentDisplay(newRowElement, 'Group');
+              console.log('✅ Successfully applied hideCellsBasedOnCurrentDisplay');
+            } else {
+              console.log('⚠️ hideCellsBasedOnCurrentDisplay function not available');
+            }
+            if (typeof window.recolour === 'function') {
+              window.recolour('Group');
+            }
+          } else {
+            console.log('⚠️ Could not find newly created group row element');
+          }
+          
+          if (window.showNotification) {
+            window.showNotification('Successfully created <%= class_name %> group with name <%= group_name %>', 'success');
+          } else {
+            alert('Successfully created <%= class_name %> group with name <%= group_name %>');
+          }
+        } else {
+          console.warn('❌ Could not find last row in Group search results table');
+        }
+      } else {
+        console.log('ℹ️ No Group search results table found - group created but not added to results');
+      }
+    })();
+  <% else %>
+    console.log('ℹ️ No Group search row data available or Group search not done - you may need to open a Group search table first');
+    <% unless search_done %>
+      console.log('ℹ️ Group search not done - new table will be created with this entry');
+    <% end %>
+  <% end %>
+
+  // Note: Unlike new.js.erb, we don't open an edit window for groups
 <% else %>
   if (window.showNotification) {
     window.showNotification("Group creation failed: <%= class_name %> group with name <%= group_name %> already exists.", 'error');

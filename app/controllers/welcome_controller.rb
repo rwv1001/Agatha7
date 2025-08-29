@@ -915,7 +915,8 @@ layout "welcome"
   # before def new
   def new
 #     RubyProf.start
-#     
+#   
+    Rails.logger.info("WelcomeController:new, params: #{params.inspect}")
     class_name = params[:class_name];
     table_name = class_name.tableize;
     search_done = params[:search_done] == 'true';
@@ -3010,8 +3011,21 @@ Rails.logger.info("RWV remove_from_group B")
     existing_group = Group.where(:group_name => group_name, :table_name => table_name).first;
     new_group_id = nil
     
-    if(existing_group == nil)
-        Rails.logger.info("RWV Created new group");
+    # Check if a group with this name already exists for this table
+    if existing_group
+      alert_str = "Group creation failed: a #{class_name} group with name '#{group_name}' already exists.";
+      respond_to do |format|
+        format.js { render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => 'error'} }
+      end
+      return;
+    end
+    
+    # Check if Group table search has been performed to determine display update strategy
+    search_done = params[:search_done] == 'true'
+    Rails.logger.debug("WelcomeController:new_group search_done: #{search_done}")
+    
+    # Create the new group
+    Rails.logger.info("RWV Created new group");
 
       new_group = Group.new;
       new_group.group_name = group_name;
@@ -3031,6 +3045,44 @@ Rails.logger.info("RWV remove_from_group B")
           eval(new_group_member_member_str);
           new_group_member.save;
         end
+      end
+      
+      # Prepare Group table row for display (similar to new method)
+      search_ctls = session[:search_ctls]
+      new_row = nil
+      group_search_results = nil
+      
+      if search_ctls && search_ctls["Group"]
+        search_ctl_group = search_ctls["Group"]
+        begin
+          eval("Group.set_controller(search_ctl_group)")
+          
+          # Create a simple object with the required attributes for the template
+          new_row = OpenStruct.new(
+            id: new_group.id,
+            class_name: "Group",
+            search_controller: search_ctl_group,
+            Number_of_group_members_Group: ids.length
+          )
+          
+          # Copy all the new_group attributes to new_row so filter.eval_str can access them
+          new_group.attributes.each do |key, value|
+            new_row.send("#{key}=", value) unless new_row.respond_to?(key)
+          end
+          
+          Rails.logger.debug("DEBUG: Created Group row object for new Group with ID #{new_group.id}")
+          
+          # If no search has been performed on Group table, create a SearchResults with just the new row
+          if !search_done
+            group_search_results = SearchResults.new([new_row], :search_results, search_ctl_group)
+          end
+          
+        rescue => e
+          Rails.logger.error("ERROR creating Group row object: #{e.message}")
+          new_row = nil
+        end
+      else
+        Rails.logger.debug("DEBUG: No search controller found for Group")
       end
 
       # ActionCable invalidation notification for new_group
@@ -3100,10 +3152,6 @@ Rails.logger.info("RWV remove_from_group B")
         Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
-
-    else
-      Rails.logger.info("RWV Skipping ActionCable broadcast for new_group due to existing group");
-    end
     
     @search_ctls = session[:search_ctls];
     table_name = class_name;
@@ -3111,8 +3159,29 @@ Rails.logger.info("RWV remove_from_group B")
     search_ctl_group = @search_ctls["Group"];
 
     respond_to do |format|   
-       
-        format.js  { render "new_group", :locals => { :existing_group => existing_group, :class_name => class_name, :table_name => table_name, :group_name => group_name, :new_group_id => new_group_id, :ids => ids, :search_ctl => search_ctl, :search_ctl_group => search_ctl_group } }
+      if search_done
+        # If Group search was already performed, add to existing table
+        format.js { 
+          render "new_group", :locals => { 
+            :existing_group => existing_group, 
+            :class_name => class_name, 
+            :table_name => table_name, 
+            :group_name => group_name, 
+            :new_group_id => new_group_id, 
+            :ids => ids, 
+            :search_ctl => search_ctl, 
+            :search_ctl_group => search_ctl_group,
+            :new_row => new_row,
+            :search_done => search_done
+          } 
+        }
+      else
+        # If no Group search was performed, render a new Group table with just this entry
+        format.js { 
+          render "table_search", :locals => {:search_ctl => search_ctl_group, :params => params, :table_name => "Group", :search_results => group_search_results}
+                 
+        }
+      end
     end      
 
   end
