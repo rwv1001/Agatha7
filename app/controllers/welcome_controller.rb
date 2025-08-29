@@ -2759,6 +2759,8 @@ Rails.logger.info("RWV remove_from_group B")
     table_name = class_name.tableize;
     Rails.logger.info("RWV Created new group I am here");
     existing_group = Group.where(:group_name => group_name, :table_name => table_name).first;
+    new_group_id = nil
+    
     if(existing_group == nil)
         Rails.logger.info("RWV Created new group");
 
@@ -2782,10 +2784,7 @@ Rails.logger.info("RWV remove_from_group B")
         end
       end
 
-    end
-    
-    # ActionCable invalidation notification for new_group
-    if existing_group.nil?
+      # ActionCable invalidation notification for new_group
       begin
         Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for new_group operation")
         
@@ -2852,8 +2851,9 @@ Rails.logger.info("RWV remove_from_group B")
         Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
+
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for new_group due to existing group");
+      Rails.logger.info("RWV Skipping ActionCable broadcast for new_group due to existing group");
     end
     
     @search_ctls = session[:search_ctls];
