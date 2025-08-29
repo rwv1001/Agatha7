@@ -53,12 +53,12 @@ layout "welcome"
         redirect_to controller: :admin, action: :login
         return
       end
- if session[:user_id]==1 && Person.first == nil
+    if session[:user_id]==1 && Person.first == nil
       import_csv
     end
   
  
-    session[:suggest_course_id] = 0;
+    
     user_id=session[:user_id];
     Rails.logger.debug("WelcomeController:index a #{user_id}");
 
@@ -1073,13 +1073,18 @@ layout "welcome"
     lecture = Lecture.new;
     previous_suggestions = params[:previous_suggestions];
     course_id = params[:suggest_id];
+    Rails.logger.debug "WelcomeController:suggest_lecture, current_term: #{session[:current_term]}, suggest_course_id:, #{session[:suggest_course_id]}, course_id: #{course_id}, previous_suggestions: #{previous_suggestions}, person_id: #{params[:person_id]}";
     if session[:suggest_course_id] !=course_id
+      Rails.logger.debug "WelcomeController:suggest_lecture, course_id changed, resetting previous suggestions";
       previous_suggestions="";
       old_person_id = SearchController::NOT_SET;
       session[:suggest_course_id] =  course_id;
     else
       old_person_id = params[:person_id].to_i;
     end
+    Rails.logger.debug "session[:suggest_course_id] is now #{session[:suggest_course_id]}";
+
+
     
     previous_str = "";
     if previous_suggestions.length >0
@@ -1089,8 +1094,14 @@ layout "welcome"
     if previous_suggestions.length >0
       previous_str = "AND person_id NOT IN (#{previous_suggestions}) "
     end
-    db_lectures = Lecture.find_by_sql("SELECT * FROM lectures WHERE course_id = #{course_id} #{previous_str} ORDER BY term_id DESC LIMIT 1");
-    willing_lecturers = WillingLecturer.find_by_sql("SELECT * FROM willing_lecturers WHERE course_id = #{course_id} #{previous_str} ORDER BY order_of_preference ASC LIMIT 1");
+    
+    db_lectures_str = "SELECT * FROM lectures WHERE course_id = #{course_id} #{previous_str} ORDER BY term_id DESC LIMIT 1";
+    Rails.logger.debug "WelcomeController:suggest_lecture, db_lectures_str: #{db_lectures_str}";
+    db_lectures = Lecture.find_by_sql(db_lectures_str);
+
+    willing_lecturers_str = "SELECT * FROM willing_lecturers WHERE course_id = #{course_id} #{previous_str} ORDER BY order_of_preference ASC LIMIT 1";
+    Rails.logger.debug "WelcomeController:suggest_lecture, willing_lecturers_str: #{willing_lecturers_str}";
+    willing_lecturers = WillingLecturer.find_by_sql(willing_lecturers_str);
     if willing_lecturers.length > 0
       lecture.person_id = willing_lecturers[0].person_id;
     else
@@ -1109,7 +1120,7 @@ layout "welcome"
         old_term_id = params[:term_id].to_i;
     if old_term_id == SearchController::NOT_SET
        suggested_term = session[:current_term];
-      if suggested_term !=nil ||   suggested_term == SearchController::NOT_SET
+      if suggested_term !=nil &&   suggested_term == SearchController::NOT_SET
         lecture.term_id = suggested_term.id
       else
         lecture.term_id = Term.last.id;
@@ -1151,7 +1162,9 @@ layout "welcome"
   end
 
   def make_suggestion
-   suggest_type = params[:suggest_type];
+    suggest_type = params[:suggest_type];
+    Rails.logger.debug "WelcomeController:make_suggestion - suggest_type: #{suggest_type}"
+    
     case suggest_type
     when "Lecture"
       suggest_lecture
@@ -2996,6 +3009,7 @@ Rails.logger.info("RWV remove_from_group B")
   end
 
   def new_group(ids, class_name, group_name, group_privacy)
+    Rails.logger.debug("WelcomeController:new_group: Params received for new_group: #{params.inspect}")
     group_name = group_name.gsub(/^\s+/,'').gsub(/\s+$/,'');
     if(group_name.length ==0)
       alert_str = "Group creation failed: the chosen group name #{group_name} can't be an empty string.";

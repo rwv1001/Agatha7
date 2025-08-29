@@ -26,14 +26,15 @@
     updateHTMLById("<%= "search_results_" + table_name %>", `<%= j render(:partial => 'shared/search_results', :object => search_results) %>`);
     restoreSelectIndices("<%= table_name %>", savedCheckboxStates); 
     console.log("✅ Search results updated for <%= table_name %>");
+    const currentFiltersDiv = document.getElementById("current_filters_<%= table_name %>");
+    if (currentFiltersDiv) {
+      currentFiltersDiv.style.display = 'none';
+    }
   <% else %>
     console.log("ℹ️ Search executed without 'do_search' parameter; only filters updated for <%= table_name %>");
 
   <% end %>
-  const currentFiltersDiv = document.getElementById("current_filters_<%= table_name %>");
-  if (currentFiltersDiv) {
-      currentFiltersDiv.style.display = 'none';
-  }
+
   
   <% if local_assigns[:open_edit] && local_assigns[:new_entry_id] %>
     // Hide current_filters div when creating new entry without prior search

@@ -49,6 +49,10 @@ Rails.application.routes.draw do
         to: "welcome#update_group_filters",
         via: [:get, :post]
 
+  match "welcome/make_suggestion",
+        to: "welcome#make_suggestion",
+        via: [:get, :post]
+
   match "welcome/update_formats",
         to: "welcome#update_formats",
         via: [:get, :post]

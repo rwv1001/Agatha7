@@ -313,7 +313,12 @@ module FilterHelper
       "array_to_string(ARRAY(SELECT b1.first_name || ' ' || b1.second_name || ', ' || SUBSTRING(b5.name,1,1) || SUBSTRING('' || b4.year,3,2) FROM people b1 INNER JOIN ( lectures b2 INNER JOIN ( terms b4 INNER JOIN term_names b5 ON b4.term_name_id = b5.id ) ON b2.term_id = b4.id) ON b2.person_id = b1.id  WHERE b2.course_id = a0.id ORDER BY b1.first_name),',<br>')", "")),
   ExtendedFilter.new(:subquery, SubQuery.new([],"Tutors of", "tutors_of" ,
       "array_to_string(ARRAY(SELECT b1.first_name || ' ' || b1.second_name || ', ' || SUBSTRING(b5.name,1,1) || SUBSTRING('' || b4.year,3,2) FROM people b1 INNER JOIN ( tutorial_schedules b2 INNER JOIN ( terms b4 INNER JOIN term_names b5 ON b4.term_name_id = b5.id ) ON b2.term_id = b4.id) ON b2.person_id = b1.id  WHERE b2.course_id = a0.id ORDER BY b1.first_name),',<br>')", "")),
-   ExtendedFilter.new(:external_filter, ExternalFilter.new("Course", #class_name
+  ExtendedFilter.new(:subquery, SubQuery.new([],"Willing lecturers of", "willing_lecturers_of" ,
+      "array_to_string(ARRAY(SELECT b1.first_name || ' ' || b1.second_name FROM people b1 INNER JOIN  willing_lecturers b2 ON b2.person_id = b1.id  WHERE b2.course_id = a0.id ORDER BY b1.first_name),',<br>')", "")),
+  ExtendedFilter.new(:subquery, SubQuery.new([],"Willing tutors of", "willing_tutors_of" ,
+      "array_to_string(ARRAY(SELECT b1.first_name || ' ' || b1.second_name FROM people b1 INNER JOIN  willing_tutors b2 ON b2.person_id = b1.id  WHERE b2.course_id = a0.id ORDER BY b1.first_name),',<br>')", "")),
+
+  ExtendedFilter.new(:external_filter, ExternalFilter.new("Course", #class_name
       "Courses in group", #header
       "(SELECT COUNT(*) FROM group_courses b1 WHERE b1.group_id = arg_value AND b1.course_id = a0.id)>0", #where_str_
       "Group",#argument_class_
