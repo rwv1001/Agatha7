@@ -1183,6 +1183,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                   invalidationContext.reason === 'attendance_added' ||
                                   invalidationContext.reason === 'attendee_count_change';
       
+      // For member count changes (like when deleting a person), also use targeted updates only
+      const isMemberCountChange = invalidationContext.reason === 'member_count_change' ||
+                                  invalidationContext.reason === 'group_membership_change';
+      
       if (isAttendeeOperation) {
         console.log(`🎯 Attendee operation detected - using ONLY targeted updates, no fallback to full refresh`);
         if (affectedRowIds.length > 0) {
@@ -1190,6 +1194,17 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         } else {
           console.log(`ℹ️ No specific row IDs for attendee operation - skipping update for ${tableName}`);
+          return;
+        }
+      }
+      
+      if (isMemberCountChange) {
+        console.log(`🎯 Member count change detected - using ONLY targeted updates, no fallback to full refresh`);
+        if (affectedRowIds.length > 0) {
+          this.updateSpecificRows(tableName, affectedRowIds, invalidationContext);
+          return;
+        } else {
+          console.log(`ℹ️ No specific row IDs for member count change - skipping update for ${tableName}`);
           return;
         }
       }
@@ -1304,11 +1319,14 @@ document.addEventListener('DOMContentLoaded', function() {
     updateSpecificRows(tableName, affectedRowIds, invalidationContext) {
       console.log(`🎯 Updating specific rows in ${tableName}: ${affectedRowIds.join(', ')}`);
       
-      // Check if this is an attendee operation
+      // Check if this is an attendee operation or member count change
       const sourceOperation = invalidationContext.sourceOperation;
       const isAttendeeOperation = sourceOperation === 'make_attendee' || 
                                   invalidationContext.reason === 'attendance_added' ||
                                   invalidationContext.reason === 'attendee_count_change';
+      
+      const isMemberCountChange = invalidationContext.reason === 'member_count_change' ||
+                                  invalidationContext.reason === 'group_membership_change';
       
       // Capture before state for comparison
       const beforeRefreshData = {};
@@ -1357,11 +1375,11 @@ document.addEventListener('DOMContentLoaded', function() {
       .catch(error => {
         console.log(`❌ Failed to fetch specific rows for ${tableName} (IDs: ${affectedRowIds.join(', ')}):`, error);
         
-        if (isAttendeeOperation) {
-          console.log(`🚫 Attendee operation failed - NOT falling back to full refresh to preserve checkboxes`);
+        if (isAttendeeOperation || isMemberCountChange) {
+          console.log(`🚫 ${isAttendeeOperation ? 'Attendee' : 'Member count change'} operation failed - NOT falling back to full refresh to preserve checkboxes`);
           console.log(`ℹ️ Adding subtle indication that these rows were affected by the operation`);
           
-          // For attendee operations, just add a subtle visual indication without disturbing checkboxes
+          // For attendee operations and member count changes, just add a subtle visual indication without disturbing checkboxes
           affectedRowIds.forEach(rowId => {
             const rowElement = document.getElementById(`${rowId}_${tableName}`);
             if (rowElement) {
