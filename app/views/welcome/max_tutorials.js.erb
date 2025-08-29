@@ -5,78 +5,8 @@
       alert('<%="#{error_str}"%>');
     }
 <% else %>
-    console.log("🚀 MAX_TUTORIALS JS EXECUTING - Person IDs: <%= ids %>"); 
-    
-    // Update UI first, then highlight the updated content
-    action_select_no_js(); 
-    
-    // Force a content refresh and then highlight
-    setTimeout(function() {
-      console.log("🔄 Triggering content refresh for max tutorials update");
-      
-      // Store checkbox states before refresh
-      const personTable = document.getElementById('search_results_Person');
-      const checkboxStates = {};
-      
-      if (personTable) {
-        const checkboxes = personTable.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-          checkboxStates[checkbox.id] = checkbox.checked;
-        });
-      }
-      
-      // Try to trigger a search refresh to update the displayed content
-      if (typeof Search === 'function') {
-        console.log("📊 Found Search function, triggering refresh for Person table");
-        Search('Person');
-      } else {
-        console.log("⚠️ No refresh function found, proceeding with highlighting");
-      }
-      
-      // Restore checkbox states after a short delay
-      setTimeout(function() {
-        Object.keys(checkboxStates).forEach(checkboxId => {
-          const checkbox = document.getElementById(checkboxId);
-          if (checkbox) {
-            checkbox.checked = checkboxStates[checkboxId];
-          }
-        });
-      }, 200);
-      
-      // Add highlighting after content refresh
-      setTimeout(function() {
-        console.log("🎯 Targeting content cells for highlighting after content refresh");
-        
-        // Target each person's "Maximum_tutorials_in_term_Person" cell (or similar spelling)
-<%   ids.each do |person_id| %>
-        console.log("Looking for person row: <%= person_id %>_Person");
-        const personRowElement_<%= person_id %> = document.getElementById('<%= person_id %>_Person');
-        console.log("Found person <%= person_id %> row:", personRowElement_<%= person_id %>);
-        if (personRowElement_<%= person_id %>) {
-          // Try different possible cell class names for max tutorials
-          let maxTutorialsCell_<%= person_id %> = personRowElement_<%= person_id %>.querySelector('.Maximum_tutorials_in_term_Person');
-          if (!maxTutorialsCell_<%= person_id %>) {
-            maxTutorialsCell_<%= person_id %> = personRowElement_<%= person_id %>.querySelector('.Maxiumum_tutorials_in_term_Person');
-          }
-          if (!maxTutorialsCell_<%= person_id %>) {
-            maxTutorialsCell_<%= person_id %> = personRowElement_<%= person_id %>.querySelector('.Max_tutorials_Person');
-          }
-          console.log("Found max tutorials cell for person <%= person_id %>:", maxTutorialsCell_<%= person_id %>);
-          if (maxTutorialsCell_<%= person_id %>) {
-            maxTutorialsCell_<%= person_id %>.classList.add('cell-updated');
-            setTimeout(() => {
-              maxTutorialsCell_<%= person_id %>.classList.remove('cell-updated');
-            }, 1500);
-            console.log("✨ Highlighted person <%= person_id %> max tutorials cell with updated content");
-          } else {
-            console.log("❌ Could not find max tutorials cell for person <%= person_id %>");
-          }
-        } else {
-          console.log("❌ Could not find person row: <%= person_id %>_Person");
-        }
-<%   end %>
-      }, 1000); // Wait longer for search refresh to complete
-    }, 100); // Small delay before triggering refresh
+    // ActionCable will handle table updates automatically
+    action_select_no_js();
     
     if (window.showNotification) {
       window.showNotification('<%="#{success_str}"%>', 'success');
@@ -84,4 +14,5 @@
       alert('<%="#{success_str}"%>');
     }
 <% end %>
+
 unwait();

@@ -1822,6 +1822,73 @@ layout "welcome"
 
     end
     
+    # ActionCable invalidation notification for max_tutorials
+    if error_str.empty? && people_ids.any?
+      begin
+        affected_relationships = []
+        
+        # Person table updates for max tutorials changes
+        affected_relationships << {
+          table: "Person",
+          operation: "update", 
+          ids: people_ids.map(&:to_s),
+          reason: "max_tutorials_updated",
+          source_operation: "max_tutorials"
+        }
+        
+        # MaximumTutorial table updates (creates and updates)
+        all_max_tutorial_ids = []
+        if present_num > 0
+          # Updated existing MaximumTutorial records
+          updated_max_tutorial_ids = present_max_tutorials.map(&:id).map(&:to_s)
+          all_max_tutorial_ids.concat(updated_max_tutorial_ids)
+          affected_relationships << {
+            table: "MaximumTutorial",
+            operation: "update",
+            ids: updated_max_tutorial_ids,
+            reason: "max_tutorials_value_updated",
+            source_operation: "max_tutorials"
+          }
+        end
+        
+        if new_num > 0
+          # Created new MaximumTutorial records - get their IDs
+          new_max_tutorial_records = MaximumTutorial.where(person_id: ids.map(&:to_i), term_id: term_id)
+          new_max_tutorial_ids = new_max_tutorial_records.map(&:id).map(&:to_s)
+          all_max_tutorial_ids.concat(new_max_tutorial_ids)
+          affected_relationships << {
+            table: "MaximumTutorial", 
+            operation: "create",
+            ids: new_max_tutorial_ids,
+            reason: "new_max_tutorial_records",
+            source_operation: "max_tutorials"
+          }
+        end
+        
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          type: "data_invalidation",
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f,
+          source_action: "max_tutorials",
+          metadata: {
+            term_id: term_id,
+            max_tutorials_number: max_tutorials_number,
+            people_count: people_ids.length,
+            updates_count: present_num,
+            creates_count: new_num
+          }
+        })
+        
+        Rails.logger.info("RWV ActionCable broadcast sent for max_tutorials: #{affected_relationships.length} relationships affected")
+      rescue => e
+        Rails.logger.error("RWV ActionCable broadcast failed for max_tutorials: #{e.message}")
+        Rails.logger.error(e.backtrace.join("\n"))
+      end
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for max_tutorials due to error or no people")
+    end
+    
     table_name = "Person"
     @search_ctls=session[:search_ctls]
     search_ctl = @search_ctls[table_name]
