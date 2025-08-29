@@ -2437,6 +2437,75 @@ Rails.logger.info("RWV remove_from_group B")
         end
         Rails.logger.info("RWV remove_from_group K")
     end
+    
+    # ActionCable invalidation notification for remove_from_group
+    if permission && class_ok && num_existing > 0
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for remove_from_group operation")
+        
+        # Build affected relationships for group membership removal
+        affected_relationships = []
+        
+        # Group record updated (member count changed)
+        affected_relationships << {
+          table: "Group",
+          operation: "update",
+          ids: [group_id],
+          reason: "group_membership_removed",
+          source_operation: "remove_from_group"
+        }
+        
+        # GroupMembership records deleted
+        group_membership_table = "Group#{class_name2}"
+        affected_relationships << {
+          table: group_membership_table,
+          operation: "delete",
+          ids: [], # Records were deleted, so no specific IDs
+          reason: "group_memberships_deleted",
+          source_operation: "remove_from_group",
+          related_group_id: group_id,
+          related_member_ids: ids.map(&:to_i)
+        }
+        
+        # Member records updated (group membership removed)
+        affected_relationships << {
+          table: class_name2,
+          operation: "update",
+          ids: ids.map(&:to_i),
+          reason: "group_membership_removed",
+          source_operation: "remove_from_group"
+        }
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for remove_from_group")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+        end
+        
+        # Broadcast the invalidation notification
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            operation: "remove_from_group",
+            group_id: group_id,
+            class_name: class_name2,
+            member_ids: ids || []
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for remove_from_group operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in remove_from_group: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
+      end
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for remove_from_group due to permission/class/existence issues");
+    end
+    
     Rails.logger.info("RWV remove_from_group L")
     @search_ctls = session[:search_ctls];
     if class_ok
@@ -2456,35 +2525,7 @@ Rails.logger.info("RWV remove_from_group B")
     Rails.logger.info("RWV remove_from_group END")
     Rails.logger.flush
   end      
-=begin      
-      do
-        render :update do |page|
-          if(db_group== nil)
-          page << "alert('Remove Selected Failed: Could not find group id #{group_id} in database')"
-          elsif(!permission )
-            page << "alert('Remove Selected Failed: You do not have permission to edit group #{db_group.group_name}')"
-          elsif(!class_ok)
-            page << "alert('Remove Selected Failed: The #{db_group.group_name} is for members of type #{db_group.table.classify} rather than type #{class_name2}')"
-          elsif(ids.length == 0)
-            page << "alert('Remove Selected Failed: You have not selected any #{db_group.table_name}')"
-          else
-            success_str = ""
-            if  num_existing == 1
-              success_str << "1 #{class_name2} has been removed from the group #{db_group.group_name}. "
-            elsif  num_existing >1
-              success_str << "#{num_existing} #{class_name2.tableize} have been removed from the group #{db_group.group_name}. "
-            end
-            if not_present_members.length == 1
-              success_str <<  "1 #{class_name2} was not in the group #{db_group.group_name} to begin with. "
-            elsif not_present_members.length > 1
-              success_str << "#{not_present_members.length} #{class_name2.tableize} were not in the group #{db_group.group_name} to begin with."
-            end
-            page << "alert('#{success_str}')"
-           end
-          page << "unwait();"
-        end
-      end
-=end      
+   
 
 
   def add_to_groups(group_ids, class_id, class_name)
@@ -2530,49 +2571,86 @@ Rails.logger.info("RWV remove_from_group B")
          end
       end
     end
+    
+    # ActionCable invalidation notification for add_to_groups
+    if permissioned.length > 0 && unpresent.length > 0
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for add_to_groups operation")
+        
+        # Build affected relationships for adding to multiple groups
+        affected_relationships = []
+        
+        # Group records updated (member count changed)
+        group_ids_affected = unpresent.map(&:id)
+        affected_relationships << {
+          table: "Group",
+          operation: "update",
+          ids: group_ids_affected,
+          reason: "group_membership_added",
+          source_operation: "add_to_groups"
+        }
+        
+        # New GroupMembership records created
+        group_membership_table = "Group#{class_name}"
+        affected_relationships << {
+          table: group_membership_table,
+          operation: "create",
+          ids: [], # New records, so no specific IDs yet
+          reason: "new_group_memberships",
+          source_operation: "add_to_groups",
+          related_group_ids: group_ids_affected,
+          related_member_id: class_id
+        }
+        
+        # Member record updated (shows new group memberships)
+        affected_relationships << {
+          table: class_name,
+          operation: "update",
+          ids: [class_id],
+          reason: "group_membership_added",
+          source_operation: "add_to_groups"
+        }
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for add_to_groups")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+        end
+        
+        # Broadcast the invalidation notification
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            operation: "add_to_groups",
+            group_ids: group_ids,
+            class_id: class_id,
+            class_name: class_name
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for add_to_groups operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in add_to_groups: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
+      end
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for add_to_groups due to no valid operations");
+    end
+    
     @search_ctls = session[:search_ctls];
     table_name = class_name
     search_ctl = @search_ctls[table_name];
     search_ctl_group = @search_ctls["Group"];
     respond_to do |format|
       format.js { render "add_to_groups", :locals => { :group_ids => group_ids, :permissioned => permissioned, :unpresent => unpresent, :class_name => class_name, :present => present, :wrong_types => wrong_types, :class_id => class_id, :unpermissioned => unpermissioned, :search_ctl => search_ctl, :search_ctl_group => search_ctl_group } }
-=begin      
-      do
-        render :update do |page|
-          if(group_ids.length == 0)
-            page << "alert('Add Selected Failed: You did not select any groups')"
-          elsif permissioned.length == 0
-            page << "alert('You do not have permission to add members to any of the selected groups')";
-          else
-            success_str = "";
-            if unpresent.length ==1
-              success_str << "#{class_name} was added to 1 group. "
-            elsif unpresent.length >1
-              success_str << "#{class_name} was added to #{unpresent.length} groups. "
-            end
-            if present.length == 1
-              success_str << "#{class_name} was not added to 1 group because it was already in it. "
-            elsif present.length >1
-              success_str << "#{class_name} was not added to #{present.length} groups because it was already in them. "
-            end
-            if wrong_types.length == 1
-              success_str << "#{class_name} was not added to 1 group because it was of the wrong type. "
-            elsif wrong_types.length > 1
-              success_str << "#{class_name} was not added to #{wrong_types.length} groups because they were of the wrong type. "
-            end
-            if unpermissioned.length == 1
-              success_str << "#{class_name} was not added to 1 group because you did not have permission to update this group. "
-            elsif unpermissioned.length >1
-              success_str << "#{class_name} was not added to #{unpermissioned.length} groups because you did not have permission to update these groups. "
-            end
-            page << "alert('#{success_str}')";
-          end
-          page << "unwait();"
-        end
-      end
-=end      
+
     end    
   end
+
   def remove_from_groups(group_ids, class_id, class_name)
       Rails.logger.info("remove_from_groups begin ");
     @user_id = session[:user_id];
@@ -2608,6 +2686,76 @@ Rails.logger.info("RWV remove_from_group B")
          end
       end
     end
+    
+    # ActionCable invalidation notification for remove_from_groups
+    if permissioned.length > 0 && present.length > 0
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for remove_from_groups operation")
+        
+        # Build affected relationships for removing from multiple groups
+        affected_relationships = []
+        
+        # Group records updated (member count changed)
+        group_ids_affected = permissioned.map(&:id)
+        affected_relationships << {
+          table: "Group",
+          operation: "update",
+          ids: group_ids_affected,
+          reason: "group_membership_removed",
+          source_operation: "remove_from_groups"
+        }
+        
+        # GroupMembership records deleted
+        group_membership_table = "Group#{class_name}"
+        affected_relationships << {
+          table: group_membership_table,
+          operation: "delete",
+          ids: [], # Records were deleted, so no specific IDs
+          reason: "group_memberships_deleted",
+          source_operation: "remove_from_groups",
+          related_group_ids: group_ids_affected,
+          related_member_id: class_id
+        }
+        
+        # Member record updated (group memberships removed)
+        affected_relationships << {
+          table: class_name,
+          operation: "update",
+          ids: [class_id],
+          reason: "group_membership_removed",
+          source_operation: "remove_from_groups"
+        }
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for remove_from_groups")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+        end
+        
+        # Broadcast the invalidation notification
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            operation: "remove_from_groups",
+            group_ids: group_ids,
+            class_id: class_id,
+            class_name: class_name
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for remove_from_groups operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in remove_from_groups: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
+      end
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for remove_from_groups due to no valid operations");
+    end
+    
     @search_ctls = session[:search_ctls];
     table_name = class_name;
     search_ctl = @search_ctls[table_name];
@@ -2615,41 +2763,6 @@ Rails.logger.info("RWV remove_from_group B")
     Rails.logger.info("remove_from_groups 01 ");
     respond_to do |format|
       format.js  { render "remove_from_groups", :locals => {:group_ids => group_ids, :permissioned => permissioned, :present => present, :unpresent => unpresent, :wrong_types => wrong_types, :unpermissioned => unpermissioned, :search_ctl => search_ctl, :search_ctl_group => search_ctl_group, :class_name => class_name , :class_id => class_id } }
-=begin      
-      do
-        render :update do |page|
-          if(group_ids.length == 0)
-            page << "alert('Remove Selected Failed: You did not select any groups')"
-          elsif permissioned.length == 0
-            page << "alert('You do not have permission to remove members from any of the selected groups')";
-          else
-            success_str = "";
-            if present.length ==1
-              success_str << "#{class_name} was removed from 1 group. "
-            elsif present.length >1
-              success_str << "#{class_name} was removed from #{present.length} groups. "
-            end
-            if unpresent.length == 1
-              success_str << "#{class_name} was not removed from 1 group because it was not there to begin with. "
-            elsif unpresent.length >1
-              success_str << "#{class_name} was not removed from #{unpresent.length} groups because it was not there to begin with. "
-            end
-            if wrong_types.length == 1
-              success_str << "#{class_name} was not removed from 1 group because it was of the wrong type. "
-            elsif wrong_types.length > 1
-              success_str << "#{class_name} was not removed from #{wrong_types.length} groups because they were of the wrong type. "
-            end
-            if unpermissioned.length == 1
-              success_str << "#{class_name} was not removed from 1 group because you did not have permission to update this group. "
-            elsif unpermissioned.length >1
-              success_str << "#{class_name} was not removed from #{unpermissioned.length} groups because you did not have permission to update these groups. "
-            end
-            page << "alert('#{success_str}')";
-          end
-          page << "unwait();"
-        end
-      end
-=end      
     end
   end
 
@@ -2702,6 +2815,75 @@ Rails.logger.info("RWV remove_from_group B")
       end
     end
     end
+    
+    # ActionCable invalidation notification for add_to_group
+    if permission && class_ok && new_members.length > 0
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for add_to_group operation")
+        
+        # Build affected relationships for group membership addition
+        affected_relationships = []
+        
+        # Group record updated (member count changed)
+        affected_relationships << {
+          table: "Group",
+          operation: "update",
+          ids: [group_id],
+          reason: "group_membership_added",
+          source_operation: "add_to_group"
+        }
+        
+        # New GroupMembership records created
+        group_membership_table = "Group#{class_name2}"
+        affected_relationships << {
+          table: group_membership_table,
+          operation: "create",
+          ids: [], # New records, so no specific IDs yet
+          reason: "new_group_memberships",
+          source_operation: "add_to_group",
+          related_group_id: group_id,
+          related_member_ids: new_members.map(&:to_i)
+        }
+        
+        # Member records updated (shows new group membership)
+        affected_relationships << {
+          table: class_name2,
+          operation: "update",
+          ids: new_members.map(&:to_i),
+          reason: "group_membership_added",
+          source_operation: "add_to_group"
+        }
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for add_to_group")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+        end
+        
+        # Broadcast the invalidation notification
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            operation: "add_to_group",
+            group_id: group_id,
+            class_name: class_name2,
+            member_ids: ids || []
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for add_to_group operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in add_to_group: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
+      end
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for add_to_group due to permission/class/membership issues");
+    end
+    
    @search_ctls = session[:search_ctls];
    if class_ok
       table_name = class_name2;
@@ -2874,14 +3056,7 @@ Rails.logger.info("RWV remove_from_group B")
         respond_to do |format|
             format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => 'error'} }
         end    
-=begin
-    do
-    render :update do |page|
-    page << "alert(\"Set Tutorial Number failed: the number of tutorial can't be negative.\")"
-    page << "unwait();"
-    end
-    end
-=end    
+
         return;
     end
     if ids.length == 0
@@ -2889,15 +3064,7 @@ Rails.logger.info("RWV remove_from_group B")
         respond_to do |format|
             format.js {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => 'error'} }  
         end 
-=begin        
-            do
-          render :update do |page|
-       page << "alert(\"Set Tutorial Number failed: you didn't select any tutorial scedules to be updated.\")"
-       page << "unwait();"
-          end
-        end
-      end
-=end      
+    
       return;
     end
     id_str = ""

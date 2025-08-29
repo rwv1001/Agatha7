@@ -38,33 +38,7 @@
         <% success_str << "#{class_name} was not removed from #{unpermissioned.length} groups because you did not have permission to update these groups. " %>
     <% end %>
 
-    <% table_name = class_name %>    
-    <% id_array = [class_id.to_i] %>
-    <% eval("#{table_name}.set_controller(search_ctl)") %>
-    <% updated_objects = search_ctl.GetUpdateObjects(table_name, ["id"], id_array) %>
-
-    <% updated_objects.each do |row| %>
-        const rowElement_<%= row.id %> = document.getElementById("<%= "#{row.id}_#{table_name}" %>");
-        if (rowElement_<%= row.id %>) {
-            rowElement_<%= row.id %>.outerHTML = `<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>`;
-        }
-    <% end %>
-
-    recolour('<%= table_name %>');
-
-    <% table_name = "Group" %>
-    <% eval("#{table_name}.set_controller(search_ctl_group)") %>
-    <% updated_objects = search_ctl_group.GetUpdateObjects(table_name, ["id"], group_ids) %>
-
-    <% updated_objects.each do |row| %>
-        const groupRow_<%= row.id %> = document.getElementById("<%= "#{row.id}_#{table_name}" %>");
-        if (groupRow_<%= row.id %>) {
-            groupRow_<%= row.id %>.outerHTML = `<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>`;
-            setcheck("<%= "#{table_name}_check_#{row.id}" %>", true);
-        }
-    <% end %>
-
-    recolour('Group');
+    // ActionCable will handle table updates automatically
     action_select_no_js();
     if (window.showNotification) {
       window.showNotification('<%= success_str %>', 'success');

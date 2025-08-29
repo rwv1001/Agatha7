@@ -4,6 +4,12 @@
     } else {
       alert('<%="Remove Selected Failed: Could not find group id #{group_id} in database"%>');
     }
+<% elsif(!permission) %>
+    if (window.showNotification) {
+      window.showNotification('<%="Remove Selected Failed: You do not have permission to edit group #{db_group.group_name}"%>', 'error');
+    } else {
+      alert('<%="Remove Selected Failed: You do not have permission to edit group #{db_group.group_name}"%>');
+    }
 <% elsif(!class_ok) %>
     if (window.showNotification) {
       window.showNotification('<%="Remove Selected Failed: The #{db_group.group_name} is for members of type #{db_group.table.classify} rather than type #{class_name2}"%>', 'error');
@@ -29,24 +35,7 @@
         <% success_str << "#{not_present_members.length} #{class_name2.tableize} were not in the group #{db_group.group_name} to begin with." %>
     <% end %>
 
-    <% eval("#{table_name}.set_controller(search_ctl)"); %>
-    <% updated_objects = search_ctl.GetUpdateObjects(table_name, ["id"], ids); %>
-    <% updated_objects.each do |row| %>
-        if (document.getElementById('<%="#{row.id}_#{table_name}"%>')) {
-            document.getElementById('<%="#{row.id}_#{table_name}"%>').outerHTML = "<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>";
-            setcheck('<%="#{table_name}_check_#{row.id.to_s}"%>', true)
-        }
-    <% end %>
-    recolour('<%="#{table_name}"%>');            
-    <% table_name = "Group" %>
-    <% eval("#{table_name}.set_controller(search_ctl_group)"); %>
-    <% updated_objects = search_ctl_group.GetUpdateObjects(table_name, ["id"], [group_id.to_i]); %>
-    <% updated_objects.each do |row| %>
-        if (document.getElementById('<%="#{row.id}_#{table_name}"%>')) {
-            document.getElementById('<%="#{row.id}_#{table_name}"%>').outerHTML = "<%= j render(:partial => 'shared/search_results_row_button', :object => row) %>";               
-        }                
-    <% end %>
-    recolour('Group'); 
+    // ActionCable will handle table updates automatically
     action_select_no_js();    
     if (window.showNotification) {
       window.showNotification('<%="#{success_str}"%>', 'success');
