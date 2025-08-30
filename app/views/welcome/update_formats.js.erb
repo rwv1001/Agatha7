@@ -1,4 +1,4 @@
-const formatDiv = document.getElementById('<%= "format_controller_div" %>');
+var formatDiv = document.getElementById('<%= "format_controller_div" %>');
 if (formatDiv) {
   formatDiv.innerHTML = `<%= j render(:partial => 'shared/format_controller', :object => format_controller) %>`;
 }

@@ -3,7 +3,7 @@ wait();
 <% new_multi_table = MultiTable.new("#{table_name}", search_ctl) %>
 console.log("🔧 MULTI_TABLE_CREATE JS EXECUTING - Table: <%= table_name %>");
 console.log("Looking for div: multi_change_table_div_<%= table_name %>");
-const targetDiv = document.getElementById("<%= "multi_change_table_div_#{table_name}" %>");
+var targetDiv = document.getElementById("<%= "multi_change_table_div_#{table_name}" %>");
 console.log("Found target div:", targetDiv);
 if (targetDiv) {
     targetDiv.innerHTML = "<%= j render(:partial => "shared/multi_table", :object => new_multi_table) %>";

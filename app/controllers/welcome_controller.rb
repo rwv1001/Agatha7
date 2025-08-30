@@ -812,7 +812,7 @@ layout "welcome"
     field_name = params[:field_name]
     current_value = params[:current_value]
 
-    Rails.logger.info("Refreshing edit select: #{field_name} for #{table_name} ID #{object_id}, current_value: #{current_value} (user: #{current_user_id})")
+    Rails.logger.info("refresh_edit_select: Refreshing edit select: #{field_name} for #{table_name} ID #{object_id}, current_value: #{current_value} (user: #{current_user_id})")
 
     begin
       # Get the search controllers from session
@@ -820,13 +820,15 @@ layout "welcome"
       search_ctl = @search_ctls[table_name]
       
       if !search_ctl
-        Rails.logger.error("No search controller found for table: #{table_name}")
+        Rails.logger.error("refresh_edit_select: No search controller found for table: #{table_name}")
         render json: { 
           error: "No search controller found",
           user_id: current_user_id,
           request_timestamp: Time.current.to_f
         }, status: 400
         return
+      else
+        Rails.logger.info("refresh_edit_select: Using search controller for table: #{table_name}")
       end
       
       # Verify user ID hasn't changed during request processing
@@ -838,6 +840,8 @@ layout "welcome"
           request_timestamp: Time.current.to_f
         }, status: 409
         return
+      else
+        Rails.logger.info("refresh_edit_select: User ID #{session[:user_id]} is still valid")
       end
       
       # Get the current object
@@ -847,6 +851,8 @@ layout "welcome"
         Rails.logger.error("refresh_edit_select: No current object found for #{table_name} ID #{object_id}")
         render json: { error: "refresh_edit_select: No current object found" }, status: 400
         return
+      else
+        Rails.logger.info("refresh_edit_select: Found current object for #{table_name} ID #{object_id}")
       end
 
       # Get the attribute list to understand the field
@@ -857,6 +863,8 @@ layout "welcome"
         Rails.logger.error("Field #{field_name} is not a foreign key field")
         render json: { error: "Field is not a foreign key" }, status: 400
         return
+      else
+        Rails.logger.info("refresh_edit_select: Field #{field_name} is a valid foreign key of type #{attribute.foreign_class}")
       end
       
       # Create a filter controller to get the updated options
@@ -878,9 +886,9 @@ layout "welcome"
           name: option.name
         }
       end
-      
-      Rails.logger.info("Returning #{options_array.length} options for #{field_name} (user: #{current_user_id})")
-      
+
+      Rails.logger.info("refresh_edit_select: Returning #{options_array.length} options for #{field_name} (user: #{current_user_id})")
+
       render json: {
         field_name: field_name,
         options: options_array,

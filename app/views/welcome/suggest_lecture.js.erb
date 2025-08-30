@@ -1,7 +1,7 @@
 <%
   timestamp_suffix = Time.now.to_f.to_s.gsub('.', '_')
 %>
-const scheduleDiv_<%= timestamp_suffix %> = document.getElementById("<%= 'schedule_div' %>");
+var scheduleDiv_<%= timestamp_suffix %> = document.getElementById("<%= 'schedule_div' %>");
 if (scheduleDiv_<%= timestamp_suffix %>) {
   scheduleDiv_<%= timestamp_suffix %>.innerHTML = `<%= j render(:partial => 'shared/suggested_lecture', :object => suggested_lecture) %>`;
 }
