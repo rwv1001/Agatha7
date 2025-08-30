@@ -14,6 +14,7 @@
           <% current_user = User.find_by_id(session[:user_id]) %>
           <% if current_user %>
             <p> You are logged in as user <%= current_user.name %> </p>
+            <input id="logged_in_user_id" type="hidden" value="<%= current_user.id %>">
           <% else %>
             <p> Session error - please log in again </p>
           <% end %>

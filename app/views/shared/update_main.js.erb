@@ -30,10 +30,10 @@
           
           // Add highlighting for updated cells
           setTimeout(function() {
-            console.log("🎯 MULTI-UPDATE: Attempting to highlight cells for row:", elId);
+            console.log("🎯 update_main.js.erb: MULTI-UPDATE: Attempting to highlight cells for row:", elId);
             const updatedRowEl = document.getElementById(elId);
             if (updatedRowEl) {
-              console.log("✅ Found updated row element:", updatedRowEl);
+              console.log("✅ update_main.js.erb: Found updated row element:", updatedRowEl);
               <% attribute_names.each do |attr_name| %>
                 (function() {
                   // Try multiple possible cell class patterns
@@ -57,19 +57,19 @@
                   
                   console.log("🎯 Found cell:", cell, "with class:", foundClass);
                   if (cell) {
-                    console.log("✨ Adding cell-updated class to:", cell);
+                    console.log("✨ update_main.js.erb: Adding cell-updated class to:", cell);
                     cell.classList.add('cell-updated');
                     setTimeout(() => {
                       cell.classList.remove('cell-updated');
-                      console.log("🔄 Removed cell-updated class from:", cell);
+                      console.log("🔄 update_main.js.erb: Removed cell-updated class from:", cell);
                     }, 1500);
                   } else {
-                    console.log("❌ Could not find cell for attribute: <%= attr_name %>");
+                    console.log("❌ update_main.js.erb: Could not find cell for attribute: <%= attr_name %>");
                   }
                 })();
               <% end %>
             } else {
-              console.log("❌ Could not find updated row element:", elId);
+              console.log("❌ update_main.js.erb: Could not find updated row element:", elId);
             }
           }, 100);
         }
@@ -175,19 +175,19 @@
                   
                   console.log("🎯 Found cell:", cell, "with class:", foundClass);
                   if (cell) {
-                    console.log("✨ Adding cell-updated class to:", cell);
+                    console.log("✨ update_main.js.erb: Adding cell-updated class to:", cell);
                     cell.classList.add('cell-updated');
                     setTimeout(() => {
                       cell.classList.remove('cell-updated');
-                      console.log("🔄 Removed cell-updated class from:", cell);
+                      console.log("🔄 update_main.js.erb: Removed cell-updated class from:", cell);
                     }, 1500);
                   } else {
-                    console.log("❌ Could not find cell for attribute: <%= attr_name %>");
+                    console.log("❌ update_main.js.erb: Could not find cell for attribute: <%= attr_name %>");
                   }
                 })();
               <% end %>
             } else {
-              console.log("❌ Could not find new row element:", rowId);
+              console.log("❌ update_main.js.erb: Could not find new row element:", rowId);
             }
           }, 100);
 

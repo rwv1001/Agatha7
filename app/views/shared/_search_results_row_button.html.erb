@@ -14,7 +14,7 @@
     <% filter_type = search_controller.extended_filters[i].filter_type %>
     <% field_name = "#{filter.tag}" %>
     <% class_id_name = "#{field_name}_#{table_name}" %>
-    <td class =<%="#{class_id_name}"%> >
+    <td id= <%= raw "#{row.id}_#{class_id_name}" %> class =<%="#{class_id_name}"%> >
     <% begin %>
       <% case filter_type 
          when :subquery %>

@@ -26,11 +26,12 @@
         if (<%= table_name.downcase %>RowElement_<%= person_id %>) {
           const groupsCell_<%= person_id %> = <%= table_name.downcase %>RowElement_<%= person_id %>.querySelector('.Groups_in_<%= table_name %>');
           if (groupsCell_<%= person_id %>) {
+            console.log(`✨ new_group_fixed.js.erb: Highlighting ${table_name.downcase} ${person_id}'s groups cell`);
             groupsCell_<%= person_id %>.classList.add('cell-updated');
             setTimeout(() => {
               groupsCell_<%= person_id %>.classList.remove('cell-updated');
             }, 1500);
-            console.log("✨ Highlighted <%= table_name.downcase %> <%= person_id %>'s groups cell");
+            console.log(`✨ new_group_fixed.js.erb: Highlighted ${table_name.downcase} ${person_id}'s groups cell`);
           }
         }
       <% end %>
@@ -42,11 +43,12 @@
     if (newGroupRowElement) {
       const membersCell = newGroupRowElement.querySelector('.Number_of_group_members_Group');
       if (membersCell) {
+        console.log(`✨ new_group_fixed.js.erb: Highlighting new group's member count cell`);
         membersCell.classList.add('cell-updated');
         setTimeout(() => {
           membersCell.classList.remove('cell-updated');
         }, 1500);
-        console.log("✨ Highlighted new group's member count cell");
+        console.log(`✨ new_group_fixed.js.erb: Highlighted new group's member count cell`);
       }
     }
   }, 100);

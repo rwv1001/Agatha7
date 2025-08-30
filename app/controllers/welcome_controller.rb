@@ -803,13 +803,17 @@ layout "welcome"
   end
 
   def refresh_edit_select
+    # Capture user ID at the start of the request to prevent race conditions
+    current_user_id = session[:user_id]
+    Rails.logger.info("refresh_edit_select: Request initiated by user_id=#{current_user_id}")
+    
     table_name = params[:table_name]
     object_id = params[:object_id]
     field_name = params[:field_name]
     current_value = params[:current_value]
-    
-    Rails.logger.info("Refreshing edit select: #{field_name} for #{table_name} ID #{object_id}")
-    
+
+    Rails.logger.info("Refreshing edit select: #{field_name} for #{table_name} ID #{object_id}, current_value: #{current_value} (user: #{current_user_id})")
+
     begin
       # Get the search controllers from session
       @search_ctls = session[:search_ctls]
@@ -817,14 +821,34 @@ layout "welcome"
       
       if !search_ctl
         Rails.logger.error("No search controller found for table: #{table_name}")
-        render json: { error: "No search controller found" }, status: 400
+        render json: { 
+          error: "No search controller found",
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }, status: 400
+        return
+      end
+      
+      # Verify user ID hasn't changed during request processing
+      if session[:user_id] != current_user_id
+        Rails.logger.warn("refresh_edit_select: User ID changed during request! Started with #{current_user_id}, now have #{session[:user_id]}")
+        render json: { 
+          error: "User session changed during request processing",
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }, status: 409
         return
       end
       
       # Get the current object
       object_class = table_name.classify.constantize
       current_object = object_class.find(object_id)
-      
+      if !current_object
+        Rails.logger.error("refresh_edit_select: No current object found for #{table_name} ID #{object_id}")
+        render json: { error: "refresh_edit_select: No current object found" }, status: 400
+        return
+      end
+
       # Get the attribute list to understand the field
       attribute_list = AttributeList.new(table_name.classify)
       attribute = attribute_list.attribute_hash[field_name]
@@ -855,18 +879,24 @@ layout "welcome"
         }
       end
       
-      Rails.logger.info("Returning #{options_array.length} options for #{field_name}")
+      Rails.logger.info("Returning #{options_array.length} options for #{field_name} (user: #{current_user_id})")
       
       render json: {
         field_name: field_name,
         options: options_array,
-        current_value: current_id
+        current_value: current_id,
+        user_id: current_user_id,
+        request_timestamp: Time.current.to_f
       }
       
     rescue Exception => e
-      Rails.logger.error("Error refreshing edit select: #{e.message}")
+      Rails.logger.error("Error refreshing edit select for user #{current_user_id}: #{e.message}")
       Rails.logger.error(e.backtrace.join("\n"))
-      render json: { error: e.message }, status: 500
+      render json: { 
+        error: e.message,
+        user_id: current_user_id,
+        request_timestamp: Time.current.to_f
+      }, status: 500
     end
   end
 
@@ -4757,11 +4787,19 @@ end
   def fetch_updated_rows
     Rails.logger.info("RWV fetch_updated_rows called with params: #{params.inspect}")
     
+    # Capture user ID at the start of the request to prevent race conditions
+    current_user_id = session[:user_id]
+    Rails.logger.info("RWV fetch_updated_rows: Request initiated by user_id=#{current_user_id}")
+    
     table_name = params[:table_name]
     row_ids = params[:row_ids]&.split(',')&.map(&:to_i) || []
     
     if table_name.blank? || row_ids.empty?
-      render json: { error: 'Missing table_name or row_ids' }, status: :bad_request
+      render json: { 
+        error: 'Missing table_name or row_ids',
+        user_id: current_user_id,
+        request_timestamp: Time.current.to_f
+      }, status: :bad_request
       return
     end
     
@@ -4774,7 +4812,22 @@ end
       search_controller = session[:search_ctls][table_name]
       
       if search_controller.nil?
-        render json: { error: "No search controller found for table #{table_name}" }, status: :not_found
+        render json: { 
+          error: "No search controller found for table #{table_name}",
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }, status: :not_found
+        return
+      end
+      
+      # Verify user ID hasn't changed during request processing (race condition check)
+      if session[:user_id] != current_user_id
+        Rails.logger.warn("RWV fetch_updated_rows: User ID changed during request! Started with #{current_user_id}, now have #{session[:user_id]}")
+        render json: { 
+          error: "User session changed during request processing",
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }, status: :conflict
         return
       end
       
@@ -4788,9 +4841,20 @@ end
       # Use the search controller's eval string to get filtered results
       sql_str = search_controller.get_sql_id_string(row_ids)
       eval_str =  "#{table_name}.find_by_sql(\"#{sql_str}\")"
-      Rails.logger.info("RWV fetch_updated_rows: Using eval string: #{eval_str}")
+      Rails.logger.info("RWV fetch_updated_rows: User #{current_user_id} using eval string: #{eval_str}")
       
       filtered_results = eval(eval_str)
+      
+      # Final user ID verification before processing results
+      if session[:user_id] != current_user_id
+        Rails.logger.warn("RWV fetch_updated_rows: User ID changed after query! Started with #{current_user_id}, now have #{session[:user_id]}")
+        render json: { 
+          error: "User session changed during query processing",
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }, status: :conflict
+        return
+      end
       
       # Find the requested rows among the filtered results only
       
@@ -4798,7 +4862,7 @@ end
       rows = filtered_results.select { |r| row_ids.include?(r.id) }
      
      
-      Rails.logger.info("RWV fetch_updated_rows: #{row_ids.size} requested, #{rows.size} matched filters for #{table_name}")
+      Rails.logger.info("RWV fetch_updated_rows: User #{current_user_id} - #{row_ids.size} requested, #{rows.size} matched filters for #{table_name}")
       
       # Generate HTML for each row using the same logic as the search results
       updated_rows = rows.map do |row|
@@ -4807,29 +4871,36 @@ end
           partial: 'shared/search_results_row_button',
           object: row,
           formats: [:html]
-        )
-        
+        )        
         {
           id: row.id,
           html: row_html.strip
         }
       end
       
+      Rails.logger.info("RWV fetch_updated_rows: User #{current_user_id} - Successfully generated #{updated_rows.size} row updates for #{table_name}")
+      
       respond_to do |format|
         format.json { 
           render json: {
             success: true,
+            user_id: current_user_id,
             table_name: table_name,
-            rows: updated_rows
+            rows: updated_rows,
+            request_timestamp: Time.current.to_f
           }
         }
-      end
+      end      
       
     rescue => e
-      Rails.logger.error("RWV Error in fetch_updated_rows: #{e.message}")
+      Rails.logger.error("RWV Error in fetch_updated_rows for user #{current_user_id}: #{e.message}")
       Rails.logger.error("RWV #{e.backtrace.first(5).join("\n")}")
-      render json: { error: e.message }, status: :internal_server_error
+      render json: { 
+        error: e.message,
+        user_id: current_user_id,
+        request_timestamp: Time.current.to_f
+      }, status: :internal_server_error
     end
   end
-  
-end
+end  
+

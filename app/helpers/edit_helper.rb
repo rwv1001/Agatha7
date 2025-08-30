@@ -127,37 +127,19 @@ def win_unload_helper
     sql_str = "OpenRecord.find_by_sql(\"SELECT * FROM  open_records WHERE (user_id = " + @user_id.to_s + " AND table_name = '" + @table_name + "' AND  record_id = " +@id.to_s + "  AND in_use = true)\")"
     open_records = eval(sql_str)
     if(open_records.length >0)
-    open_records[0].in_use = false;
-    open_records[0].save;
+      open_records[0].in_use = false;
+      open_records[0].save;
  
-    session_div = 1;
-    respond_to do |format|
-        format.js { render  :partial => "shared/win_unload_helper", :locals => {:session_div => session_div, :table_name => @table_name, :id => @id, :attribute => attribute_name }  }
-=begin        
-        do
-        render :update do |page|
-            session_div = 1;
-            page.replace_html("session_div", :partial => "shared/session_div", :object => session_div);
-        end
-        end
-=end        
-    end
-
+      session_div = 1;
+      respond_to do |format|
+          format.js { render  :partial => "shared/win_unload_helper", :locals => {:session_div => session_div, :table_name => @table_name, :id => @id, :attribute => attribute_name }  }
+      end
     else
-    Rails.logger.info("win_unload_helper rwv NOT updated record");
-    respond_to do |format|
-        format.js { render :partial => "shared/win_unload_helper_blank" }
-=begin        
-        do
-        render :update do |page|
-            blank_popup_div  = "This page has expired";
-            page.replace_html("main_div", :partial => "shared/blank_popup_div", :object =>  blank_popup_div );
-        end
-        end\
-=end        
+      Rails.logger.info("win_unload_helper rwv NOT updated record");
+      respond_to do |format|
+          format.js { render :partial => "shared/win_unload_helper_blank" }      
+      end
     end
-    end
-
 end
 def update_helper()
     @user_id = session[:user_id] || 0;
