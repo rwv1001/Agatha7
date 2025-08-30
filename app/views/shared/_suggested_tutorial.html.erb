@@ -27,11 +27,13 @@
           <% end -%>
         </select>
 
-          <label>Number of tutorials</label><input type="text"  style="width: 2em" value="<%= tutorial_schedule.number_of_tutorials  %>" id="number_of_tutorials" name ="number_of_tutorials"/>
-          <br>
+          <table>
+            <tr><td><label>Number of tutorials</label></td><td><input type="text"  style="width: 2em" value="<%= tutorial_schedule.number_of_tutorials  %>" id="number_of_tutorials" name ="number_of_tutorials"/></td></tr>
+            <tr><td><label>Tutorial class size</label></td><td><input type="text"  style="width: 2em" value="1" id="tutorial_class_size" name ="tutorial_class_size"/></td></tr>
+          </table>
           <label>Collection required</label><input type="checkbox"  style="width: 2em" value=0 id="collection_required" name ="collection_required"/>
           
-          <input type="text" id="previous_tutorial_schedule_suggestions"  style ="display: none" value=<%= raw "#{previous_suggestions}"%> name="previous_suggestions" />
+          <input type="text" id="previous_tutorial_schedule_suggestions"  style ="display: none" value="<%= raw "#{previous_suggestions}"%>" name="previous_suggestions" />
           
 
 

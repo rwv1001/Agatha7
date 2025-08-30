@@ -409,15 +409,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // Function to reset reconnection state with a delay to ensure stable connection
+  function delayedResetReconnectionState() {
+    setTimeout(() => {
+      resetReconnectionState();
+    }, 2000); // Wait 2 seconds to ensure connection is stable
+  }
+
   // Subscribe to search table updates
   const searchTableChannel = actionCableConsumer.subscriptions.create("SearchTableChannel", {
     connected() {
       console.log("✅ Connected to SearchTableChannel - ActionCable working!");
       console.log("🎯 ActionCable connection established successfully");
       
-      // Reset reconnection state and show success
-      resetReconnectionState();
+      // Show success immediately but delay resetting reconnection state
       showConnectionStatus('connected', '✅ Real-time updates active');
+      
+      // Reset reconnection state after a delay to ensure stable connection
+      delayedResetReconnectionState();
       
       // Start health monitoring
       startConnectionHealthMonitoring();

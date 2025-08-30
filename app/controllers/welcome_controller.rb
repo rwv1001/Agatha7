@@ -995,16 +995,43 @@ layout "welcome"
   # after def new
 
   def suggest_tutorial
-   tutorial_schedule = TutorialSchedule.new;
+    debug_prefix = "WelcomeController:suggest_tutorial (#{Time.now.strftime('%H:%M:%S')})"
+    Rails.logger.debug "#{debug_prefix} METHOD START - session keys: #{session.keys}, suggest_tutorial_course_id: #{session[:suggest_tutorial_course_id].inspect}";
+    Rails.logger.debug "#{debug_prefix} suggest_tutorial_course_id key exists: #{session.key?(:suggest_tutorial_course_id)}, value class: #{session[:suggest_tutorial_course_id].class}";
+    
+    # Check if session was reset and restore from a backup or use a different strategy
+    if session[:suggest_tutorial_course_id] == 0 && params[:suggest_id] && session.key?(:suggest_tutorial_course_id)
+      Rails.logger.debug "#{debug_prefix} SUSPICIOUS: suggest_tutorial_course_id is 0 but key exists - possible reset detected";
+      Rails.logger.debug "#{debug_prefix} Request params suggest_id: #{params[:suggest_id]}, previous_suggestions: #{params[:previous_suggestions]}";
+      
+      # Check if this is a continuation of a previous suggestion by looking at previous_suggestions
+      if params[:previous_suggestions] && !params[:previous_suggestions].empty?
+        Rails.logger.debug "#{debug_prefix} Found previous_suggestions - this appears to be a continuation, not first call";
+        # If we have previous suggestions, this suggests the session was reset between calls
+        # We can try to recover by setting the course_id from params
+        session[:suggest_tutorial_course_id] = params[:suggest_id].to_i
+        Rails.logger.debug "#{debug_prefix} RECOVERY: Set suggest_tutorial_course_id to #{session[:suggest_tutorial_course_id]} from params";
+      end
+    end
+    
+    tutorial_schedule = TutorialSchedule.new;
     previous_suggestions = params[:previous_suggestions];
     course_id = params[:suggest_id];
-    if session[:suggest_course_id] !=course_id
+    Rails.logger.debug "#{debug_prefix} current_term: #{session[:current_term]}, suggest_tutorial_course_id: #{session[:suggest_tutorial_course_id]}, course_id: #{course_id}, previous_suggestions: #{previous_suggestions}, person_id: #{params[:person_id]}";
+    if session[:suggest_tutorial_course_id].to_i !=course_id.to_i
+      Rails.logger.debug "#{debug_prefix} course_id changed, resetting previous suggestions";
       previous_suggestions="";
       old_person_id = SearchController::NOT_SET;
-      session[:suggest_course_id] =  course_id;
+      
+      # More explicit session assignment to ensure persistence
+      Rails.logger.debug "#{debug_prefix} BEFORE assignment - suggest_tutorial_course_id: #{session[:suggest_tutorial_course_id].inspect}";
+      session[:suggest_tutorial_course_id] = course_id.to_i  # Ensure it's an integer
+      Rails.logger.debug "#{debug_prefix} AFTER assignment - suggest_tutorial_course_id: #{session[:suggest_tutorial_course_id].inspect}";
+      Rails.logger.debug "#{debug_prefix} forced session save for suggest_tutorial_course_id";
     else
       old_person_id = params[:person_id].to_i;
     end
+    Rails.logger.debug "#{debug_prefix} session[:suggest_tutorial_course_id] is now #{session[:suggest_tutorial_course_id]}";
 
     previous_str = "";
     if previous_suggestions.length >0
@@ -1015,7 +1042,9 @@ layout "welcome"
       previous_str = "AND person_id NOT IN (#{previous_suggestions}) "
     end
     db_tutorial_schedules = TutorialSchedule.find_by_sql("SELECT * FROM tutorial_schedules WHERE course_id = #{course_id} #{previous_str} ORDER BY term_id DESC LIMIT 1");
-    willing_tutor = WillingTutor.find_by_sql("SELECT * FROM willing_tutors WHERE course_id = #{course_id} #{previous_str} ORDER BY order_of_preference ASC LIMIT 1");
+    willing_tutor_str = "SELECT * FROM willing_tutors WHERE course_id = #{course_id} #{previous_str} ORDER BY order_of_preference ASC LIMIT 1";
+    Rails.logger.debug "#{debug_prefix} willing_tutor_str: #{willing_tutor_str}";
+    willing_tutor = WillingTutor.find_by_sql(willing_tutor_str);
     if willing_tutor.length > 0
       tutorial_schedule.person_id = willing_tutor[0].person_id;
     else
@@ -1035,7 +1064,7 @@ layout "welcome"
     if old_term_id == SearchController::NOT_SET
 
       suggested_term = session[:current_term];
-      if suggested_term !=nil ||   suggested_term == SearchController::NOT_SET
+      if suggested_term !=nil &&   suggested_term == SearchController::NOT_SET
         tutorial_schedule.term_id = suggested_term.id
       else
         tutorial_schedule.term_id = Term.last.id;
@@ -1057,32 +1086,53 @@ layout "welcome"
    
     suggested_tutorial_schedule = SuggestedTutorial.new(@search_ctls["TutorialSchedule"],tutorial_schedule);
     suggested_tutorial_schedule.previous_suggestions = previous_suggestions;
+    Rails.logger.debug "#{debug_prefix} METHOD END - session[:suggest_tutorial_course_id]: #{session[:suggest_tutorial_course_id].inspect}";
     respond_to do |format|
       format.js  { render "suggest_tutorial", :locals => {:suggested_tutorial_schedule => suggested_tutorial_schedule}  }
-=begin
-        render :update do |page|
-        page.replace_html("tutorial_schedule_div",:partial => "shared/suggested_tutorial", :object =>  suggested_tutorial_schedule);
-        page << "unwait();"
-        end
-      end
-=end      
+  
     end
+    Rails.logger.flush
   end
   
   def suggest_lecture
+    debug_prefix = "WelcomeController:suggest_lecture (#{Time.now.strftime('%H:%M:%S')})"
+    Rails.logger.debug "#{debug_prefix} METHOD START - session keys: #{session.keys}, suggest_course_id: #{session[:suggest_course_id].inspect}";
+    Rails.logger.debug "#{debug_prefix} suggest_course_id key exists: #{session.key?(:suggest_course_id)}, value class: #{session[:suggest_course_id].class}";
+    
+    # Check if session was reset and restore from a backup or use a different strategy
+    if session[:suggest_course_id] == 0 && params[:suggest_id] && session.key?(:suggest_course_id)
+      Rails.logger.debug "#{debug_prefix} SUSPICIOUS: suggest_course_id is 0 but key exists - possible reset detected";
+      Rails.logger.debug "#{debug_prefix} Request params suggest_id: #{params[:suggest_id]}, previous_suggestions: #{params[:previous_suggestions]}";
+      
+      # Check if this is a continuation of a previous suggestion by looking at previous_suggestions
+      if params[:previous_suggestions] && !params[:previous_suggestions].empty?
+        Rails.logger.debug "#{debug_prefix} Found previous_suggestions - this appears to be a continuation, not first call";
+        # If we have previous suggestions, this suggests the session was reset between calls
+        # We can try to recover by setting the course_id from params
+        session[:suggest_course_id] = params[:suggest_id].to_i
+        Rails.logger.debug "#{debug_prefix} RECOVERY: Set suggest_course_id to #{session[:suggest_course_id]} from params";
+      end
+    end
+    
     lecture = Lecture.new;
     previous_suggestions = params[:previous_suggestions];
     course_id = params[:suggest_id];
-    Rails.logger.debug "WelcomeController:suggest_lecture, current_term: #{session[:current_term]}, suggest_course_id:, #{session[:suggest_course_id]}, course_id: #{course_id}, previous_suggestions: #{previous_suggestions}, person_id: #{params[:person_id]}";
-    if session[:suggest_course_id] !=course_id
-      Rails.logger.debug "WelcomeController:suggest_lecture, course_id changed, resetting previous suggestions";
+    Rails.logger.debug "#{debug_prefix} current_term: #{session[:current_term]}, suggest_course_id: #{session[:suggest_course_id]}, course_id: #{course_id}, previous_suggestions: #{previous_suggestions}, person_id: #{params[:person_id]}";
+    if session[:suggest_course_id].to_i !=course_id.to_i
+      Rails.logger.debug "#{debug_prefix} course_id changed, resetting previous suggestions";
       previous_suggestions="";
       old_person_id = SearchController::NOT_SET;
-      session[:suggest_course_id] =  course_id;
+      
+      # More explicit session assignment to ensure persistence
+      Rails.logger.debug "#{debug_prefix} BEFORE assignment - suggest_course_id: #{session[:suggest_course_id].inspect}";
+      session[:suggest_course_id] = course_id.to_i  # Ensure it's an integer
+      Rails.logger.debug "#{debug_prefix} AFTER assignment - suggest_course_id: #{session[:suggest_course_id].inspect}";
+      Rails.logger.debug "#{debug_prefix} forced session save for suggest_course_id";
     else
       old_person_id = params[:person_id].to_i;
+      Rails.logger.debug "#{debug_prefix} course_id unchanged";
     end
-    Rails.logger.debug "session[:suggest_course_id] is now #{session[:suggest_course_id]}";
+    Rails.logger.debug "#{debug_prefix} session[:suggest_course_id] is now #{session[:suggest_course_id]}";
 
 
     
@@ -1096,11 +1146,11 @@ layout "welcome"
     end
     
     db_lectures_str = "SELECT * FROM lectures WHERE course_id = #{course_id} #{previous_str} ORDER BY term_id DESC LIMIT 1";
-    Rails.logger.debug "WelcomeController:suggest_lecture, db_lectures_str: #{db_lectures_str}";
+    Rails.logger.debug "#{debug_prefix} db_lectures_str: #{db_lectures_str}";
     db_lectures = Lecture.find_by_sql(db_lectures_str);
 
     willing_lecturers_str = "SELECT * FROM willing_lecturers WHERE course_id = #{course_id} #{previous_str} ORDER BY order_of_preference ASC LIMIT 1";
-    Rails.logger.debug "WelcomeController:suggest_lecture, willing_lecturers_str: #{willing_lecturers_str}";
+    Rails.logger.debug "#{debug_prefix} willing_lecturers_str: #{willing_lecturers_str}";
     willing_lecturers = WillingLecturer.find_by_sql(willing_lecturers_str);
     if willing_lecturers.length > 0
       lecture.person_id = willing_lecturers[0].person_id;
@@ -1147,6 +1197,7 @@ layout "welcome"
     class_name = params[:suggest_class];
     suggested_lecture = SuggestedLecture.new(@search_ctls["Lecture"],lecture);
     suggested_lecture.previous_suggestions = previous_suggestions;
+    Rails.logger.debug "#{debug_prefix} METHOD END - session[:suggest_course_id]: #{session[:suggest_course_id].inspect}";
     respond_to do |format|
       format.js  { render "suggest_lecture", :locals =>{:suggested_lecture => suggested_lecture, :class_name => class_name  } }
 =begin      
@@ -1978,6 +2029,7 @@ layout "welcome"
 
   def  make_willing_lecturer(ids)
      alert_str= "";
+     affected_course_ids = []
     if ids != nil && ids.length > 0
       person_id = params[:willing_id];
       already_willing = 0;
@@ -1993,8 +2045,35 @@ layout "welcome"
           willing_lecturer.course_id = course_id;
           willing_lecturer.order_of_preference = 1;
           willing_lecturer.save;
+          affected_course_ids << course_id.to_i
         end
       end
+      
+      # Send data invalidation for affected courses
+      if affected_course_ids.any?
+        begin
+          ActionCable.server.broadcast("search_table_updates", {
+            action: "data_invalidation",
+            triggered_by: {
+              user_id: session[:user_id] || 0,
+              table: "WillingLecturer",
+              operation: "create",
+              person_id: person_id.to_i
+            },
+            affected_relationships: [{
+              table: 'Course',
+              operation: 'update',
+              ids: affected_course_ids,
+              reason: "Person #{person_id} became willing lecturer for these courses"
+            }],
+            timestamp: Time.current.to_f
+          })
+          Rails.logger.info("Broadcast data invalidation for willing lecturer creation affecting courses: #{affected_course_ids}")
+        rescue => e
+          Rails.logger.error "ActionCable broadcast failed in make_willing_lecturer: #{e.message}"
+        end
+      end
+      
       if new_willing == 0
         alert_str = "No willing lecturer entries were added to the database. "
       elsif new_willing == 1
@@ -2025,6 +2104,7 @@ layout "welcome"
 
     def  make_willing_tutor(ids)
      alert_str= "";
+     affected_course_ids = []
     if ids != nil && ids.length > 0
       person_id = params[:willing_id];
       already_willing = 0;
@@ -2040,8 +2120,35 @@ layout "welcome"
           willing_tutor.course_id = course_id;
           willing_tutor.order_of_preference = 1;
           willing_tutor.save;
+          affected_course_ids << course_id.to_i
         end
       end
+      
+      # Send data invalidation for affected courses
+      if affected_course_ids.any?
+        begin
+          ActionCable.server.broadcast("search_table_updates", {
+            action: "data_invalidation",
+            triggered_by: {
+              user_id: session[:user_id] || 0,
+              table: "WillingTutor",
+              operation: "create",
+              person_id: person_id.to_i
+            },
+            affected_relationships: [{
+              table: 'Course',
+              operation: 'update',
+              ids: affected_course_ids,
+              reason: "Person #{person_id} became willing tutor for these courses"
+            }],
+            timestamp: Time.current.to_f
+          })
+          Rails.logger.info("Broadcast data invalidation for willing tutor creation affecting courses: #{affected_course_ids}")
+        rescue => e
+          Rails.logger.error "ActionCable broadcast failed in make_willing_tutor: #{e.message}"
+        end
+      end
+      
       if new_willing == 0
         alert_str = "No willing tutor entries were added to the database. "
       elsif new_willing == 1
@@ -2059,14 +2166,7 @@ layout "welcome"
     end
     respond_to do |format|
       format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => (alert_str.include?("did not select") ? 'error' : 'success')} }
-=begin      
-do
-        render :update do |page|
-          page << "alert('#{alert_str}')"
-          page << "unwait();"
-        end
-      end
-=end
+
     end
   end
   
@@ -2164,6 +2264,56 @@ do
           willing_lecturer.order_of_preference = 1;
           willing_lecturer.save;
         end
+
+    # Send data invalidation for lecture creation
+    begin
+      affected_relationships = []
+      
+      # Course is affected because it now has a new lecture
+      if course_id.present? && course_id.to_i != SearchController::NOT_SET
+        affected_relationships << {
+          table: 'Course',
+          operation: 'update',
+          ids: [course_id.to_i],
+          reason: "Course #{course_id} has new lecture #{lecture.id}"
+        }
+      end
+      
+      # Person is affected because they are now lecturing this course
+      if person_id.present? && person_id.to_i != SearchController::NOT_SET
+        affected_relationships << {
+          table: 'Person',
+          operation: 'update',
+          ids: [person_id.to_i],
+          reason: "Person #{person_id} is now lecturer for lecture #{lecture.id}"
+        }
+      end
+      
+      # Lecture itself is a new record
+      affected_relationships << {
+        table: 'Lecture',
+        operation: 'create',
+        ids: [lecture.id],
+        reason: "New lecture #{lecture.id} created"
+      }
+      
+      if affected_relationships.any?
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id] || 0,
+            table: "Lecture",
+            operation: "create",
+            object_id: lecture.id
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        Rails.logger.info("Broadcast data invalidation for lecture creation affecting: Course #{course_id}, Person #{person_id}, Lecture #{lecture.id}")
+      end
+    rescue => e
+      Rails.logger.error "ActionCable broadcast failed in create_lecture_schedule: #{e.message}"
+    end
 
     success_str = 'Lecture schedule created';
     error_str = '';

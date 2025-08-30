@@ -71,6 +71,28 @@ module ModelDependencyHelper
         }
       end
       
+      # 6. Courses where they are a willing lecturer
+      willing_lecturer_course_ids = WillingLecturer.where(person_id: object_id).pluck(:course_id)
+      if willing_lecturer_course_ids.any?
+        affected_relationships << {
+          table: 'Course',
+          operation: 'update',
+          ids: willing_lecturer_course_ids,
+          reason: "Person #{object_id} is willing lecturer for these courses"
+        }
+      end
+      
+      # 7. Courses where they are a willing tutor  
+      willing_tutor_course_ids = WillingTutor.where(person_id: object_id).pluck(:course_id)
+      if willing_tutor_course_ids.any?
+        affected_relationships << {
+          table: 'Course',
+          operation: 'update',
+          ids: willing_tutor_course_ids,
+          reason: "Person #{object_id} is willing tutor for these courses"
+        }
+      end
+      
     when 'Course'
       course = Course.find_by(id: object_id)
       return affected_relationships unless course
@@ -197,6 +219,30 @@ module ModelDependencyHelper
           reason: "TutorialSchedule #{object_id} tutorials"
         }
       end
+      
+    when 'WillingLecturer'
+      willing_lecturer = WillingLecturer.find_by(id: object_id)
+      return affected_relationships unless willing_lecturer
+      
+      # WillingLecturer updates affect the related course
+      affected_relationships << {
+        table: 'Course',
+        operation: 'update',
+        ids: [willing_lecturer.course_id],
+        reason: "WillingLecturer #{object_id} affects course #{willing_lecturer.course_id}"
+      }
+      
+    when 'WillingTutor'
+      willing_tutor = WillingTutor.find_by(id: object_id)
+      return affected_relationships unless willing_tutor
+      
+      # WillingTutor updates affect the related course
+      affected_relationships << {
+        table: 'Course',
+        operation: 'update',
+        ids: [willing_tutor.course_id],
+        reason: "WillingTutor #{object_id} affects course #{willing_tutor.course_id}"
+      }
     end
     
     # Remove duplicate relationships and merge IDs

@@ -38,8 +38,9 @@ session.each { |k, v| Rails.logger.debug "#{k}: #{v.class}" }
       if user
         Rails.logger.debug "AdminController:login g"
         session[:user_id] = user.id
-        session[:suggest_course_id] = 0;
-        
+        session[:suggest_course_id] = -1;
+        session[:suggest_tutorial_course_id] = -1;
+
         admin_group = Group.where(:group_name => "Administrator", :table_name => "users").first;
         if(admin_group == nil)
           Rails.logger.debug "AdminController:login h"
