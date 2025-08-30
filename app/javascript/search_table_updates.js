@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearInterval(connectionHealthTimer);
         attemptReconnection();
       }
-    }, 30000); // Check every 30 seconds
+    }, 10000); // Check every 10 seconds
   }
   
   // Function to reset reconnection state on successful connection
@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`✅ Updating row ${rowId} with targeted cell updates`);
         
         // Instead of replacing the entire row, update only the cells that changed
-        const changedCells = this.updateChangedCells(rowElement, rowData.html, updateType, affectedExtendedFilters);
+        const changedCells = this.updateChangedCells(rowElement, rowData.html, updateType, affectedExtendedFilters, tableName);
         
         // Set checkbox state if setcheck function exists
         if (typeof window.setcheck === 'function') {
@@ -563,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     },
 
-    updateChangedCells(currentRowElement, newRowHtml, updateType, affectedExtendedFilters) {
+    updateChangedCells(currentRowElement, newRowHtml, updateType, affectedExtendedFilters, tableName = null) {
       console.log('🔧 updateChangedCells called with:', {
         updateType,
         affectedExtendedFilters,
@@ -619,12 +619,52 @@ document.addEventListener('DOMContentLoaded', function() {
       
       console.log(`🔍 Comparing ${currentCells.length} current cells with ${newCells.length} new cells`);
       
+      // Warn if cell counts differ
+      if (currentCells.length !== newCells.length) {
+        console.warn(`⚠️ Cell count mismatch: current=${currentCells.length}, new=${newCells.length}. Some cells may not be updated correctly.`);
+      }
+      
       let changedCellCount = 0;
       
-      // Compare each cell and update only those that changed
+      // Create a mapping of CSS classes to cells for new cells
+      const newCellsByClass = new Map();
+      newCells.forEach((newCell, index) => {
+        // Get all CSS classes for this cell
+        const cellClasses = Array.from(newCell.classList);
+        // Use the classes as a key (sorted for consistency)
+        const classKey = cellClasses.sort().join(' ');
+        if (classKey) {
+          newCellsByClass.set(classKey, newCell);
+        } else {
+          // For cells without CSS classes, use position as fallback
+          newCellsByClass.set(`__position_${index}__`, newCell);
+        }
+      });
+      
+      // Compare each cell and update only those that changed using class-based matching
       currentCells.forEach((currentCell, index) => {
-        if (index < newCells.length) {
-          const newCell = newCells[index];
+        // Get all CSS classes for this current cell
+        const cellClasses = Array.from(currentCell.classList);
+        const classKey = cellClasses.sort().join(' ');
+        
+        let newCell = null;
+        let matchType = 'none';
+        
+        if (classKey && newCellsByClass.has(classKey)) {
+          // Found matching cell by CSS classes
+          newCell = newCellsByClass.get(classKey);
+          matchType = 'class';
+        } else if (newCellsByClass.has(`__position_${index}__`)) {
+          // Fallback to position-based matching for cells without CSS classes
+          newCell = newCellsByClass.get(`__position_${index}__`);
+          matchType = 'position';
+        } else if (index < newCells.length) {
+          // Final fallback: direct position comparison
+          newCell = newCells[index];
+          matchType = 'fallback';
+        }
+        
+        if (newCell) {
           const currentContent = this.normalizeContent(currentCell.innerHTML);
           const newContent = this.normalizeContent(newCell.innerHTML);
           
@@ -636,7 +676,14 @@ document.addEventListener('DOMContentLoaded', function() {
           const textChanged = currentText !== newText;
           
           if (htmlChanged || textChanged) {
-            console.log(`🎯 Cell ${index} changed, updating content`);
+            console.log(`🎯 Cell ${index} changed (${matchType} match), updating content`);
+            if (matchType === 'class') {
+              console.log(`   Matched by classes: "${classKey}"`);
+            } else if (matchType === 'position') {
+              console.log(`   Matched by position (no CSS classes)`);
+            } else {
+              console.log(`   Matched by fallback position`);
+            }
             console.log(`   Old HTML: "${currentContent}"`);
             console.log(`   New HTML: "${newContent}"`);
             console.log(`   Old Text: "${currentText}"`);
@@ -646,15 +693,30 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update the cell content
             currentCell.innerHTML = newCell.innerHTML;
             
-            // NOTE: Highlighting is now handled centrally in applyRowUpdates method
-            // No need to highlight here to avoid conflicts
+            // Add visual feedback for updated cells (for targeted cell updates)
+            currentCell.classList.add('cell-updated');
+            setTimeout(() => {
+              currentCell.classList.remove('cell-updated');
+            }, 10000); // Remove highlight after 10 seconds
             
             changedCellCount++;
+          }
+        } else {
+          // No matching cell found
+          if (classKey) {
+            console.log(`⚠️ No matching new cell found for current cell ${index} with classes "${classKey}"`);
+          } else {
+            console.log(`⚠️ No matching new cell found for current cell ${index} (no CSS classes)`);
           }
         }
       });
       
       console.log(`✅ Updated ${changedCellCount} cells with targeted updates`);
+      
+      // Apply proper cell visibility after updates if we have the table name
+      if (tableName) {
+        this.hideCellsBasedOnCurrentDisplay(currentRowElement, tableName);
+      }
       
       // If no cells changed but we got an update, there might be background color changes 
       // or other styling differences that we should ignore for targeted updates
@@ -757,7 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (rowElement) {
           // Use targeted cell updates instead of full row replacement to maintain consistency
           console.log(`🔄 New row data for existing row ${rowId}, using targeted cell updates`);
-          const changedCells = this.updateChangedCells(rowElement, newRowData.html, 'new_row', []);
+          const changedCells = this.updateChangedCells(rowElement, newRowData.html, 'new_row', [], tableName);
           console.log(`📊 New row processing for ${rowId} updated ${changedCells} cells`);
         } else if (tableElement) {
           // Append to table (this is for truly new rows)
@@ -982,6 +1044,17 @@ document.addEventListener('DOMContentLoaded', function() {
     handleEditPageSelectBoxUpdates(triggerTable, triggerObjectId) {
       console.log("🔄 Handling edit page select box updates for:", triggerTable, "ID:", triggerObjectId);
       
+      // Check if we're actually on an edit page by looking for required DOM elements
+      const tableNameElement = document.querySelector('input[name="table_name"]');
+      const idElement = document.querySelector('input[name="id"], input[id="id_value_updater"]');
+      
+      if (!tableNameElement || !idElement) {
+        console.log(`⚠️ Not on an edit page - skipping edit select box updates (missing table_name or id inputs)`);
+        return;
+      }
+      
+      console.log(`✅ Confirmed we're on an edit page for table: ${tableNameElement.value}, object ID: ${idElement.value}`);
+      
       // Define which edit select boxes need updating based on the trigger table
       const editSelectDependencies = {
         'Person': ['edit_person_id'],
@@ -1025,7 +1098,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Get the table name from the current page (this should be available in the DOM)
       const tableNameElement = document.querySelector('input[name="table_name"]');
       if (!tableNameElement) {
-        console.log(`⚠️ Cannot find table_name input for ${selectId}`);
+        console.log(`⚠️ Cannot find table_name input for ${selectId} - skipping refresh`);
         return;
       }
       
@@ -1034,11 +1107,17 @@ document.addEventListener('DOMContentLoaded', function() {
       // Get the current object ID
       const idElement = document.querySelector('input[name="id"], input[id="id_value_updater"]');
       if (!idElement) {
-        console.log(`⚠️ Cannot find object ID input for ${selectId}`);
+        console.log(`⚠️ Cannot find object ID input for ${selectId} - skipping refresh`);
         return;
       }
       
       const objectId = idElement.value;
+      
+      // Validate that we have all required data
+      if (!tableName || !objectId || !fieldName) {
+        console.log(`⚠️ Missing required data for ${selectId} (table: ${tableName}, object: ${objectId}, field: ${fieldName}) - skipping refresh`);
+        return;
+      }
       
       console.log(`🔄 Making AJAX request to refresh ${selectId} for ${tableName} ID ${objectId}`);
       
@@ -1049,17 +1128,29 @@ document.addEventListener('DOMContentLoaded', function() {
       formData.append('field_name', fieldName);
       formData.append('current_value', currentValue);
       
+      // Get CSRF token with fallback
+      const csrfTokenElement = document.querySelector('meta[name="csrf-token"]');
+      if (!csrfTokenElement) {
+        console.log(`⚠️ Cannot find CSRF token for ${selectId} - skipping refresh`);
+        return;
+      }
+      
       fetch('/welcome/refresh_edit_select', {
         method: 'POST',
         headers: {
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          'X-CSRF-Token': csrfTokenElement.getAttribute('content'),
           'X-Requested-With': 'XMLHttpRequest'
         },
         body: formData
       })
       .then(response => {
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          // Provide more detailed error information
+          return response.text().then(text => {
+            console.log(`❌ Server error for ${selectId}: ${response.status} ${response.statusText}`);
+            console.log(`❌ Response body:`, text.substring(0, 500));
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          });
         }
         return response.json();
       })
@@ -1071,6 +1162,8 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .catch(error => {
         console.log(`❌ Failed to refresh ${selectId}:`, error);
+        console.log(`   This error occurred during data invalidation for ${triggerTable} ID ${triggerObjectId}`);
+        console.log(`   The select box will not be updated but functionality should continue normally`);
       });
     },
 
@@ -1337,19 +1430,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const isMemberCountChange = invalidationContext.reason === 'member_count_change' ||
                                   invalidationContext.reason === 'group_membership_change';
       
-      // Capture before state for comparison
-      const beforeRefreshData = {};
-      affectedRowIds.forEach(rowId => {
-        const rowElement = document.getElementById(`${rowId}_${tableName}`);
-        if (rowElement) {
-          const cells = Array.from(rowElement.querySelectorAll('td'));
-          beforeRefreshData[rowId] = cells.map(cell => ({
-            innerHTML: cell.innerHTML.trim(),
-            textContent: (cell.textContent || '').trim()
-          }));
-          console.log(`📸 Captured before-state for targeted update of row ${rowId}:`, beforeRefreshData[rowId].length, 'cells');
-        }
-      });
+      console.log(`🌐 Fetching updated row data for ${tableName} rows: ${affectedRowIds.join(', ')}`);
       
       // Make AJAX request to fetch updated row data
       const params = new URLSearchParams();
@@ -1379,7 +1460,30 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .then(data => {
         console.log(`✅ Received updated row data:`, data);
-        this.applyRowUpdates(tableName, data.rows, beforeRefreshData);
+        
+        // Check if the search results container exists before processing rows
+        const searchResultsDiv = document.getElementById(`search_results_${tableName}`);
+        if (!searchResultsDiv) {
+          console.log(`⚠️ No search results div found for table: ${tableName} (looking for search_results_${tableName})`);
+          console.log(`⚠️ Skipping row updates since there are no rows to update`);
+          return;
+        }
+        
+        // Use updateChangedCells for each row instead of applyRowUpdates
+        let totalUpdatedCells = 0;
+        data.rows.forEach(rowData => {
+          const rowElement = document.getElementById(`${rowData.id}_${tableName}`);
+          if (rowElement && rowData.html) {
+            console.log(`🔄 Applying class-based cell updates to row ${rowData.id}_${tableName}`);
+            const updatedCells = this.updateChangedCells(rowElement, rowData.html, 'ajax_update', [], tableName);
+            totalUpdatedCells += updatedCells;
+            console.log(`✅ Updated ${updatedCells} cells in row ${rowData.id}_${tableName}`);
+          } else {
+            console.log(`⚠️ Could not update row ${rowData.id}_${tableName} - element not found or no HTML provided`);
+          }
+        });
+        
+        console.log(`✅ Total cells updated via class-based matching: ${totalUpdatedCells}`);
       })
       .catch(error => {
         console.log(`❌ Failed to fetch specific rows for ${tableName} (IDs: ${affectedRowIds.join(', ')}):`, error);
@@ -1410,121 +1514,6 @@ document.addEventListener('DOMContentLoaded', function() {
           
           // Fallback to full table refresh
           //this.performFullTableRefresh(tableName, affectedRowIds, beforeRefreshData);
-        }
-      });
-    },
-
-    applyRowUpdates(tableName, updatedRows, beforeRefreshData) {
-      console.log(`🔄 Applying updates to ${updatedRows.length} rows in ${tableName}`);
-      
-      updatedRows.forEach(rowData => {
-        const rowId = rowData.id;
-        const rowElement = document.getElementById(`${rowId}_${tableName}`);
-        
-        if (rowElement && rowData.html) {
-          console.log(`🔄 Updating row ${rowId}_${tableName} with new HTML`);
-          
-          // PRESERVE CHECKBOX STATES before replacing content
-          const checkboxStates = {};
-          const checkboxes = rowElement.querySelectorAll('input[type="checkbox"]');
-          checkboxes.forEach(checkbox => {
-            if (checkbox.id) {
-              checkboxStates[checkbox.id] = checkbox.checked;
-              console.log(`💾 Preserving checkbox state: ${checkbox.id} = ${checkbox.checked}`);
-            }
-          });
-          
-          // Parse the new HTML
-          const tempDiv = document.createElement('table');
-          tempDiv.innerHTML = rowData.html.trim();
-          const newRowElement = tempDiv.querySelector('tr');
-          
-          if (newRowElement) {
-            // Do the comparison BEFORE replacing the content
-            const beforeData = beforeRefreshData[rowId];
-            const changedCellIndices = [];
-            
-            if (beforeData) {
-              console.log(`🔍 Comparing row ${rowId} BEFORE replacing content`);
-              
-              // Get current (before) cells for comparison
-              const currentCells = Array.from(rowElement.querySelectorAll('td'));
-              const newCells = Array.from(newRowElement.querySelectorAll('td'));
-              
-              console.log(`🔍 Row has ${currentCells.length} current cells, ${newCells.length} new cells`);
-              
-              // Compare and track differences
-              let changedCellCount = 0;
-              newCells.forEach((newCell, cellIndex) => {
-                if (cellIndex < currentCells.length && cellIndex < beforeData.length) {
-                  const currentCell = currentCells[cellIndex];
-                  const beforeCell = beforeData[cellIndex];
-                  
-                  const newInnerHTML = newCell.innerHTML.trim();
-                  const beforeInnerHTML = beforeCell.innerHTML.trim();
-                  
-                  // Normalize content for comparison
-                  const newNorm = this.normalizeContent(newInnerHTML);
-                  const beforeNorm = this.normalizeContent(beforeInnerHTML);
-                  
-                  if (newNorm !== beforeNorm) {
-                    console.log(`🎯 Cell ${cellIndex} changed!`);
-                    console.log(`   BEFORE: "${beforeInnerHTML}"`);
-                    console.log(`   AFTER:  "${newInnerHTML}"`);
-                    
-                    changedCellCount++;
-                    changedCellIndices.push(cellIndex);
-                  }
-                }
-              });
-              
-              if (changedCellCount > 0) {
-                console.log(`✨ Row ${rowId} has ${changedCellCount} changed cells - will be highlighted`);
-              } else {
-                console.log(`ℹ️ Row ${rowId} updated but no visible changes detected`);
-              }
-            }
-            
-            // Now replace the row content
-            rowElement.innerHTML = newRowElement.innerHTML;
-            
-            // IMMEDIATELY HIDE CELLS that should be hidden (before highlighting)
-            this.hideCellsBasedOnCurrentDisplay(rowElement, tableName);
-            
-            // RESTORE CHECKBOX STATES after replacing content
-            Object.keys(checkboxStates).forEach(checkboxId => {
-              const restoredCheckbox = document.getElementById(checkboxId);
-              if (restoredCheckbox) {
-                restoredCheckbox.checked = checkboxStates[checkboxId];
-                console.log(`✅ Restored checkbox state: ${checkboxId} = ${checkboxStates[checkboxId]}`);
-              }
-            });
-            
-            // AFTER replacing content and hiding cells, highlight the changed cells
-            if (changedCellIndices.length > 0) {
-              setTimeout(() => {
-                const updatedCells = Array.from(rowElement.querySelectorAll('td'));
-                changedCellIndices.forEach(cellIndex => {
-                  if (cellIndex < updatedCells.length) {
-                    const cellToHighlight = updatedCells[cellIndex];
-                    console.log(`✨ Highlighting cell ${cellIndex} in updated row ${rowId}`);
-                    cellToHighlight.classList.add('cell-updated');
-                    setTimeout(() => {
-                      cellToHighlight.classList.remove('cell-updated');
-                    }, 10000);
-                  }
-                });
-              }, 50); // Small delay to ensure hiding is applied first
-            }
-          } else {
-            console.log(`⚠️ Could not parse new row HTML for ${rowId}, applying subtle indication`);
-            rowElement.classList.add('row-involved');
-            setTimeout(() => {
-              rowElement.classList.remove('row-involved');
-            }, 1500);
-          }          
-        } else {
-          console.log(`⚠️ Could not update row ${rowId}_${tableName} - element not found or no HTML provided`);
         }
       });
     },
@@ -1660,8 +1649,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`   🎯 *** CELL ${cellIndex} CHANGED! ***`);
                 console.log(`   🎯 HTML changed: ${htmlChanged}, Text changed: ${textChanged}`);
                 
-                // NOTE: Cell highlighting is now handled centrally in applyRowUpdates
-                // This method is only used for full table refresh comparison
+                // NOTE: Cell highlighting is now handled by updateChangedCells method
+                // This method is only used for full table refresh comparison logging
                 
                 changedCellCount++;
               } else {
@@ -1690,75 +1679,6 @@ document.addEventListener('DOMContentLoaded', function() {
           if (!beforeData) {
             console.log(`⚠️ No before-data captured for row: ${rowId}`);
           }
-        }
-      });
-    },
-
-    highlightBasedOnOperation(tableName, affectedRowIds, invalidationContext) {
-      console.log(`🎯 Highlighting based on operation for ${tableName}:`, invalidationContext);
-      
-      const { operation, reason, sourceOperation, triggeredBy } = invalidationContext;
-      console.log(`🔍 Operation details: sourceOperation="${sourceOperation}", operation="${operation}", reason="${reason}"`);
-      
-      affectedRowIds.forEach(rowId => {
-        const rowElement = document.getElementById(`${rowId}_${tableName}`);
-        
-        if (rowElement) {
-          console.log(`🔍 Processing row ${rowId} for operation ${sourceOperation}/${operation}`);
-          
-          // Determine which cells to highlight based on the operation type
-          let cellsToHighlight = [];
-          
-          if (sourceOperation === 'make_attendee') {
-            if (tableName === 'Person' && reason === 'attendance_added') {
-              // Highlight lecture/course related cells in Person table - be specific about attendance, not teaching
-              // Use pattern matching to catch variations like "Lectures_attended_in_term_Person"
-              cellsToHighlight = this.findCellsByPattern(rowElement, [
-                'Lectures_attended',  // Pattern match for lectures attended (will catch Lectures_attended_in_term_Person)
-                'Courses_in_Person'   // Exact match for courses attended
-              ]);
-              console.log(`🎯 Looking for lecture attendance cells in Person table for row ${rowId}`);
-            } else if (tableName === 'Lecture' && reason === 'attendee_count_change') {
-              // Highlight attendee count cells in Lecture table
-              cellsToHighlight = this.findCellsByPattern(rowElement, [
-                'Number_of_attendees', 'attendee', 'count', 'students'
-              ]);
-            }
-          } else if (sourceOperation === 'delete' || sourceOperation === 'delete_array' || 
-                     (operation === 'delete') || (operation === 'update' && tableName === 'Group')) {
-            console.log(`🗑️ Processing delete/update operation for ${tableName} table`);
-            
-            // Handle group member deletion or group updates
-            if (tableName === 'Group') {
-              console.log(`🎯 Looking for group member count cells in Group table for row ${rowId}`);
-              // For Group table, highlight the member count cell
-              cellsToHighlight = this.findCellsByExactPattern(rowElement, [
-                'Number_of_group_members_Group'
-              ]);
-            } else {
-              // For other tables, highlight group-related cells
-              cellsToHighlight = this.findCellsByPattern(rowElement, [
-                'Groups_in_', 'Number_of_group_members', 'group'
-              ]);
-            }
-          } else {
-            console.log(`⚠️ Unhandled operation combination: sourceOperation="${sourceOperation}", operation="${operation}", reason="${reason}"`);
-          }
-          
-          if (cellsToHighlight.length > 0) {
-            console.log(`✨ Found ${cellsToHighlight.length} operation-specific cells in row ${rowId}`);
-            console.log(`ℹ️ NOTE: Cell highlighting is now handled centrally in applyRowUpdates method`);
-            console.log(`ℹ️ These cells will be highlighted when the row update is applied`);
-          } else {
-            // Fallback: add subtle row indication
-            console.log(`ℹ️ No specific cells found, adding subtle row indication for ${rowId}`);
-            rowElement.classList.add('row-involved');
-            setTimeout(() => {
-              rowElement.classList.remove('row-involved');
-            }, 2000);
-          }
-        } else {
-          console.log(`⚠️ Could not find row element for operation highlighting: ${rowId}_${tableName}`);
         }
       });
     },
