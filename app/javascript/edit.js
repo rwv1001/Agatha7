@@ -47,6 +47,22 @@ function on_load()
     if(win_load_obj != null){
     //win_load_obj.submit();
     const elem = document.getElementById('win_load');
+
+    const table = document.querySelector("table");
+    const content = document.querySelector(".content_class");
+
+  if (table && content) {
+    const tableRect = table.getBoundingClientRect();
+    const contentRect = content.getBoundingClientRect();
+
+    // Desired width = right edge of table
+    const newWidth = Math.ceil(tableRect.right) + 20;   // +padding for window borders
+    // Desired height = bottom edge of content_class
+    const newHeight = Math.ceil(contentRect.bottom);
+
+    // Resize the popup to fit
+    window.resizeTo(newWidth, newHeight);
+  }
     submitFormAsPost('win_load',elem.action);
     
 

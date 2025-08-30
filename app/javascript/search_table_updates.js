@@ -575,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('🧹 updateChangedCells: Cleaned HTML starts with:', cleanedHtml.substring(0, 100));
       
       // Create a temporary element to parse the new HTML
-      const tempDiv = document.createElement('div');
+      const tempDiv = document.createElement('table');
       tempDiv.innerHTML = cleanedHtml;
       
       // Try different ways to find the row element
@@ -714,19 +714,8 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Handle case where new row has more cells than current (shouldn't happen normally)
       if (newCells.length > currentCells.length) {
-        console.log('⚠️ updateChangedCellsNew row has more cells, falling back to full replacement');
-        currentRowElement.outerHTML = newRowHtml;
-        
-        // Add glow effect to the updated row after replacement
-        const newlyInsertedRow = document.getElementById(currentRowElement.id);
-        if (newlyInsertedRow) {
-          console.log(`✨ updateChangedCells: cell number mismatch, Glow effect added to newly inserted row with id ${currentRowElement.id}`);
-          newlyInsertedRow.classList.add('row-updated');
-          setTimeout(() => {
-            newlyInsertedRow.classList.remove('row-updated');
-          }, 1500);
-        }
-        return 1; // Count full replacement as 1 change
+        console.log('⚠️ updateChangedCells: New row has more cells, perhaps you have two windows open?');
+
       }
       
       return changedCellCount;
