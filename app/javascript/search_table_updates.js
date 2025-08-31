@@ -963,10 +963,33 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log("🔄 handleSelectBoxUpdates: Handling select box updates for triggered_by:", triggeredBy);
       console.log("🔄 handleSelectBoxUpdates: Affected relationships:", affectedRelationships);
       
-      const triggerTable = triggeredBy.table;
-      const triggerObjectId = triggeredBy.object_id;
+      // Extract trigger information based on operation type
+      let triggerTable, triggerObjectIds, operation;
+      
+      if (triggeredBy.operation === 'new_group') {
+        triggerTable = 'Group';
+        triggerObjectIds = [triggeredBy.group_id];
+        operation = 'create';
+        console.log(`🔄 handleSelectBoxUpdates: Handling new_group operation - Group ID ${triggerObjectIds[0]}`);
+      } else if (triggeredBy.operation === 'delete' && triggeredBy.ids) {
+        triggerTable = triggeredBy.table;
+        triggerObjectIds = Array.isArray(triggeredBy.ids) ? triggeredBy.ids : [triggeredBy.ids];
+        operation = 'delete';
+        console.log(`🔄 handleSelectBoxUpdates: Handling delete operation - ${triggerTable} IDs ${triggerObjectIds.join(', ')}`);
+      } else {
+        triggerTable = triggeredBy.table;
+        triggerObjectIds = [triggeredBy.object_id];
+        operation = triggeredBy.operation;
+      }
 
-      console.log(`🔄 handleSelectBoxUpdates: Trigger details: table=${triggerTable}, objectId=${triggerObjectId}`);
+      console.log(`🔄 handleSelectBoxUpdates: Trigger details: table=${triggerTable}, objectIds=${triggerObjectIds}, operation=${operation}`);
+
+      // Handle create/delete operations for external filter select boxes
+      if (operation === 'new_group' || operation === 'create' || operation === 'delete') {
+        triggerObjectIds.forEach(objectId => {
+          this.handleExternalFilterCreateDelete(triggerTable, objectId, operation, affectedRelationships);
+        });
+      }
 
       // Dynamic discovery: Find all external filter select elements that need updating
       // Look for elements with both 'external_filter_argument_selection' and '{triggerTable}_select' classes
@@ -988,17 +1011,223 @@ document.addEventListener('DOMContentLoaded', function() {
           
           console.log(`🔄 handleSelectBoxUpdates: Parsed select ID - className: ${className}, filterId: ${filterId}, elementId: ${elementId}`);
           
-          // Update this specific external filter select
-          this.updateExternalFilterSelect(selectElement, className, filterId, elementId, triggerTable, triggerObjectId);
+          // Update this specific external filter select for each trigger object
+          triggerObjectIds.forEach(objectId => {
+            this.updateExternalFilterSelect(selectElement, className, filterId, elementId, triggerTable, objectId);
+          });
         } else {
           console.log(`⚠️ handleSelectBoxUpdates: Could not parse select element ID: ${selectElement.id}`);
         }
       });
       
       // Handle edit page select box updates
-      if (triggerObjectId) {
-        this.handleEditPageSelectBoxUpdates(triggerTable, triggerObjectId);
+      triggerObjectIds.forEach(objectId => {
+        this.handleEditPageSelectBoxUpdates(triggerTable, objectId);
+      });
+    },
+
+    handleExternalFilterCreateDelete(triggerTable, triggerObjectId, operation, affectedRelationships) {
+      console.log(`🔄 handleExternalFilterCreateDelete: Handling ${operation} for ${triggerTable} ID ${triggerObjectId}`);
+      
+      // For Group creation, we need to be more selective about which select boxes to update
+      if (triggerTable === 'Group' && (operation === 'new_group' || operation === 'create')) {
+        console.log(`🔄 handleExternalFilterCreateDelete: Special handling for Group creation`);
+        this.handleGroupCreationForExternalFilters(triggerObjectId, affectedRelationships);
+        return;
       }
+      
+      // Find all external filter select boxes that display options from the trigger table
+      const selectorQuery = `.external_filter_argument_selection.${triggerTable}_select`;
+      const affectedSelects = document.querySelectorAll(selectorQuery);
+      
+      console.log(`🔄 handleExternalFilterCreateDelete: Found ${affectedSelects.length} external filter selects for ${triggerTable}`);
+      
+      affectedSelects.forEach(selectElement => {
+        console.log(`🔄 handleExternalFilterCreateDelete: Processing select ${selectElement.id} for ${operation}`);
+        
+        if (operation === 'new_group' || operation === 'create') {
+          // Add new option to select box alphabetically
+          this.addOptionToSelectAlphabetically(selectElement, triggerObjectId, triggerTable);
+        } else if (operation === 'delete') {
+          // Remove option from select box
+          this.removeOptionFromSelect(selectElement, triggerObjectId);
+        }
+      });
+    },
+
+    handleGroupCreationForExternalFilters(groupId, affectedRelationships) {
+      console.log(`🔄 handleGroupCreationForExternalFilters: Handling Group creation ID ${groupId}`);
+      console.log(`🔄 handleGroupCreationForExternalFilters: Affected relationships:`, affectedRelationships);
+      
+      // Determine what type of group was created by examining the affected relationships
+      let groupMemberType = null;
+      
+      // Look for GroupMembership creation relationships to determine the member type
+      const groupMembershipRelation = affectedRelationships?.find(rel => 
+        rel.table && rel.table.startsWith('Group') && rel.operation === 'create'
+      );
+      
+      if (groupMembershipRelation) {
+        // Extract member type from table name like "GroupLecture" -> "Lecture"
+        const match = groupMembershipRelation.table.match(/^Group(.+)$/);
+        if (match) {
+          groupMemberType = match[1];
+          console.log(`🔍 handleGroupCreationForExternalFilters: Detected group member type: ${groupMemberType}`);
+        }
+      }
+      
+      // If we couldn't determine the member type, this might be an empty group
+      // In that case, we should be very conservative about updates
+      if (!groupMemberType) {
+        console.log(`⚠️ handleGroupCreationForExternalFilters: Could not determine group member type - skipping external filter updates`);
+        return;
+      }
+      
+      // Only update external filter select boxes that are specifically for Groups containing this member type
+      // Look for pattern: external_filter_argument_selection Group_select Group_{MemberType}_select
+      const specificGroupFilterQuery = `.external_filter_argument_selection.Group_select.Group_${groupMemberType}_select`;
+      const specificGroupFilterSelects = document.querySelectorAll(specificGroupFilterQuery);
+      
+      console.log(`🔄 handleGroupCreationForExternalFilters: Looking for specific Group filters with query: ${specificGroupFilterQuery}`);
+      console.log(`🔄 handleGroupCreationForExternalFilters: Found ${specificGroupFilterSelects.length} specific Group filter selects`);
+      
+      specificGroupFilterSelects.forEach(selectElement => {
+        console.log(`✅ handleGroupCreationForExternalFilters: Updating select ${selectElement.id} for Group of ${groupMemberType}`);
+        this.addOptionToSelectAlphabetically(selectElement, groupId, 'Group');
+      });
+      
+      // Also handle the general Group_Group_select case (Groups that contain Groups)
+      // But only if the member type is actually "Group"
+      if (groupMemberType === 'Group') {
+        const groupGroupFilterSelects = document.querySelectorAll('.external_filter_argument_selection.Group_select.Group_Group_select');
+        console.log(`🔄 handleGroupCreationForExternalFilters: Found ${groupGroupFilterSelects.length} Group-to-Group filter selects`);
+        
+        groupGroupFilterSelects.forEach(selectElement => {
+          console.log(`✅ handleGroupCreationForExternalFilters: Updating Group-to-Group select ${selectElement.id}`);
+          this.addOptionToSelectAlphabetically(selectElement, groupId, 'Group');
+        });
+      }
+    },
+
+    addOptionToSelectAlphabetically(selectElement, objectId, tableName) {
+      console.log(`🔄 addOptionToSelectAlphabetically: Adding option ${objectId} to ${selectElement.id}`);
+      
+      // First, get the display name for this object using the SearchController.GetShortField method
+      this.getDisplayNameForObject(objectId, tableName)
+        .then(displayName => {
+          if (!displayName) {
+            console.log(`⚠️ addOptionToSelectAlphabetically: No display name found for ${tableName} ID ${objectId}`);
+            return;
+          }
+          
+          console.log(`✅ addOptionToSelectAlphabetically: Got display name "${displayName}" for ${tableName} ID ${objectId}`);
+          
+          // Check if option already exists
+          const existingOption = selectElement.querySelector(`option[value="${objectId}"]`);
+          if (existingOption) {
+            console.log(`⚠️ addOptionToSelectAlphabetically: Option ${objectId} already exists in ${selectElement.id}`);
+            // Update the text in case it changed
+            existingOption.textContent = displayName;
+            return;
+          }
+          
+          // Create new option element
+          const newOption = document.createElement('option');
+          newOption.value = objectId;
+          newOption.textContent = displayName;
+          
+          // Copy style from the first visible option to maintain consistency
+          const options = Array.from(selectElement.options);
+          const firstVisibleOption = options.find(option => option.style.display !== 'none' && option.value !== '-1');
+          if (firstVisibleOption) {
+            // Copy the style from the first visible option
+            newOption.style.cssText = firstVisibleOption.style.cssText;
+            console.log(`✅ addOptionToSelectAlphabetically: Copied style "${newOption.style.cssText}" from existing option`);
+          } else {
+            // Fallback to default style if no visible options found
+            newOption.style.direction = 'rtl';
+            console.log(`⚠️ addOptionToSelectAlphabetically: No visible options found, using default style`);
+          }
+          
+          // Find the correct alphabetical position (skip hidden options)
+          const visibleOptions = options.filter(option => option.style.display !== 'none' && option.value !== '-1');
+          let insertIndex = options.length; // Default to end
+          
+          for (let i = 0; i < visibleOptions.length; i++) {
+            // Compare display names alphabetically (case-insensitive)
+            if (displayName.toLowerCase() < visibleOptions[i].textContent.toLowerCase()) {
+              // Find the actual index in the full options array
+              insertIndex = options.indexOf(visibleOptions[i]);
+              break;
+            }
+          }
+          
+          // Insert the option at the correct position
+          if (insertIndex >= options.length) {
+            selectElement.appendChild(newOption);
+          } else {
+            selectElement.insertBefore(newOption, options[insertIndex]);
+          }
+          
+          console.log(`✅ addOptionToSelectAlphabetically: Added option "${displayName}" (ID ${objectId}) at position ${insertIndex} in ${selectElement.id}`);
+        })
+        .catch(error => {
+          console.log(`❌ addOptionToSelectAlphabetically: Failed to get display name for ${tableName} ID ${objectId}:`, error);
+        });
+    },
+
+    removeOptionFromSelect(selectElement, objectId) {
+      console.log(`🔄 removeOptionFromSelect: Removing option ${objectId} from ${selectElement.id}`);
+      
+      const optionToRemove = selectElement.querySelector(`option[value="${objectId}"]`);
+      if (optionToRemove) {
+        const optionText = optionToRemove.textContent;
+        optionToRemove.remove();
+        console.log(`✅ removeOptionFromSelect: Removed option "${optionText}" (ID ${objectId}) from ${selectElement.id}`);
+        
+        // If this was the selected option, reset to default
+        if (selectElement.value === objectId.toString()) {
+          selectElement.selectedIndex = 0;
+          console.log(`🔄 removeOptionFromSelect: Reset selection to first option in ${selectElement.id}`);
+        }
+      } else {
+        console.log(`⚠️ removeOptionFromSelect: Option ${objectId} not found in ${selectElement.id}`);
+      }
+    },
+
+    getDisplayNameForObject(objectId, tableName) {
+      console.log(`🔄 getDisplayNameForObject: Getting display name for ${tableName} ID ${objectId}`);
+      
+      // Make AJAX request to get the display name using SearchController.GetShortField
+      const formData = new FormData();
+      formData.append('class_name', tableName);
+      formData.append('object_id', objectId);
+      
+      // Get CSRF token
+      const csrfTokenElement = document.querySelector('meta[name="csrf-token"]');
+      if (!csrfTokenElement) {
+        console.log(`⚠️ getDisplayNameForObject: Cannot find CSRF token - skipping`);
+        return Promise.reject('No CSRF token');
+      }
+      
+      return fetch('/welcome/get_object_display_name', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': csrfTokenElement.getAttribute('content'),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log(`✅ getDisplayNameForObject: Received display name data:`, data);
+        return data.display_name;
+      });
     },
 
     updateExternalFilterSelect(selectElement, className, filterId, elementId, triggerTable, triggerObjectId) {
@@ -1070,6 +1299,13 @@ document.addEventListener('DOMContentLoaded', function() {
       // Store the current selected value
       const currentValue = selectElement.value;
       
+      // Get the style from the first visible option before clearing
+      const options = Array.from(selectElement.options);
+      const firstVisibleOption = options.find(option => option.style.display !== 'none' && option.value !== '-1');
+      const optionStyle = firstVisibleOption ? firstVisibleOption.style.cssText : 'direction: rtl;';
+      
+      console.log(`🔄 refreshAllOptionsInSelect: Using style "${optionStyle}" for new options`);
+      
       // Clear existing options
       selectElement.innerHTML = '';
       
@@ -1078,7 +1314,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const optionElement = document.createElement('option');
         optionElement.value = option.id;
         optionElement.textContent = option.name;
-        optionElement.style.direction = 'rtl';
+        optionElement.style.cssText = optionStyle;
         
         // Restore selection if this was the previously selected option
         if (option.id.toString() === currentValue) {

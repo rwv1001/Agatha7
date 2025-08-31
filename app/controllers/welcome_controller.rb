@@ -989,6 +989,77 @@ layout "welcome"
       }, status: 500
     end
   end
+  
+  def get_object_display_name
+    begin
+      current_user_id = session[:user_id] || 0
+      class_name = params[:class_name]
+      object_id = params[:object_id].to_i
+      
+      Rails.logger.info("get_object_display_name: Getting display name for #{class_name} ID #{object_id}")
+      
+      # Validate parameters
+      if class_name.blank? || object_id <= 0
+        Rails.logger.error("get_object_display_name: Invalid parameters - class_name: #{class_name}, object_id: #{object_id}")
+        render json: { 
+          error: "Invalid parameters",
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }, status: 400
+        return
+      end
+      
+      # Get search controllers from session
+      search_ctls = session[:search_ctls]
+      if !search_ctls || !search_ctls[class_name]
+        Rails.logger.error("get_object_display_name: No search controller found for #{class_name}")
+        render json: { 
+          error: "No search controller found for #{class_name}",
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }, status: 400
+        return
+      end
+      
+      # Set up the search controller
+      search_ctl = search_ctls[class_name]
+      eval("#{class_name}.set_controller(search_ctl)")
+      
+      # Get the object and its display name using GetShortField
+      begin
+        # Verify the object exists
+        class_name.constantize.find(object_id)
+        display_name = search_ctl.GetShortField(object_id)
+        
+        Rails.logger.info("get_object_display_name: Found display name '#{display_name}' for #{class_name} ID #{object_id}")
+        
+        render json: {
+          display_name: display_name,
+          object_id: object_id,
+          class_name: class_name,
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }
+        
+      rescue ActiveRecord::RecordNotFound
+        Rails.logger.error("get_object_display_name: #{class_name} with ID #{object_id} not found")
+        render json: { 
+          error: "#{class_name} with ID #{object_id} not found",
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }, status: 404
+      end
+      
+    rescue Exception => e
+      Rails.logger.error("Error getting display name for user #{current_user_id}: #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
+      render json: { 
+        error: e.message,
+        user_id: current_user_id,
+        request_timestamp: Time.current.to_f
+      }, status: 500
+    end
+  end
 
   def fetch_updated_rows
     table_name = params[:table_name]
@@ -3752,6 +3823,7 @@ Rails.logger.info("RWV remove_from_group B")
       end      
     end
     Rails.logger.info("RWV delete_array ids_for_deletion: #{ids_for_deletion.inspect}");
+    if(table_name!='Group')
     join_model_class = "Group#{table_name}".constantize
     group_ids = join_model_class
       .where("#{table_name.downcase}_id": ids_for_deletion)
@@ -3760,6 +3832,9 @@ Rails.logger.info("RWV remove_from_group B")
     Rails.logger.info("RWV delete_array group_ids: #{group_ids.inspect}");
 
     affected_groups = Group.where(id: group_ids)
+    else
+      affected_groups = []
+    end
     
     # Extract relationship data BEFORE destroying records
     deleted_attendees = nil
@@ -3942,23 +4017,7 @@ Rails.logger.info("RWV remove_from_group B")
 
     respond_to do |format|
       format.js  { render "delete_array" , :locals => { :success_str => success_str, :error_str => error_str, :deleted_ids => deleted_ids, :table_name => table_name, :delete_hash_str => delete_hash_str } }
-=begin
-      do
-        render :update do |page|
 
-          page << "alert(\"#{success_str}#{error_str}\")"
-          if deleted_ids.length>0
-
-            page << "on_del(\"#{table_name}\", [#{deleted_ids}]);"
-            delete_hash_str.each do |delete_table, delete_ids_str|
-              page << "on_del(\"#{delete_table.to_s}\", [#{delete_ids_str}]);"
-            end
-          end
-          page << "unwait();"
-
-        end
-      end
-=end      
     end
     Rails.logger.info("RWV delete_array END");
     

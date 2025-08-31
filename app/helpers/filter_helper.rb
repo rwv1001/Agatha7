@@ -699,6 +699,8 @@ module FilterHelper
       "array_to_string(ARRAY(SELECT  b1.first_name || ' ' || b1.second_name FROM people b1 INNER JOIN  attendees b2 ON b2.person_id = b1.id WHERE b2.lecture_id = a0.id AND b2.examined=true ORDER BY b1.first_name),',<br> ')", "")),
    ExtendedFilter.new(:subquery, SubQuery.new([],"Compulsory students", "compulsory_students" ,
       "array_to_string(ARRAY(SELECT  b1.first_name || ' ' || b1.second_name FROM people b1 INNER JOIN  attendees b2 ON b2.person_id = b1.id WHERE b2.lecture_id = a0.id AND b2.compulsory=true ORDER BY b1.first_name),',<br> ')", "")),
+   ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_lectures b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.lecture_id = a0.id ORDER BY b1_group_id asc),';<br>')", "")),
    ExtendedFilter.new(:external_filter, ExternalFilter.new("Lecture", #class_name
       "Lectures in group", #header
       "(SELECT COUNT(*) FROM group_lectures b1 WHERE b1.group_id = arg_value AND b1.lecture_id = a0.id)>0", #where_str_
@@ -931,6 +933,8 @@ module FilterHelper
     extended_filters["TutorialSchedule"]=[
       ExtendedFilter.new(:subquery, SubQuery.new([],"Students tutored", "students_tutored" ,
       "array_to_string(ARRAY(SELECT  b1.first_name || ' ' || b1.second_name FROM people b1 INNER JOIN  tutorials b2 ON b2.person_id = b1.id WHERE b2.tutorial_schedule_id = a0.id ORDER BY b1.first_name),',<br> ')", "")),
+      ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_tutorial_schedules b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.tutorial_schedule_id = a0.id ORDER BY b1_group_id asc),';<br>')", "")),
       ExtendedFilter.new(:external_filter, ExternalFilter.new("TutorialSchedule", #class_name
       "Tutorial schedules in group", #header
       "(SELECT COUNT(*) FROM group_tutorial_schedules b1 WHERE b1.group_id = arg_value AND b1.tutorial_schedule_id = a0.id)>0", #where_str_

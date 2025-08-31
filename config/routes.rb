@@ -45,6 +45,10 @@ Rails.application.routes.draw do
         to: "welcome#refresh_external_filter_select",
         via: [:get, :post]
 
+  match "welcome/get_object_display_name",
+        to: "welcome#get_object_display_name",
+        via: [:get, :post]
+
   match "welcome/fetch_updated_rows",
         to: "welcome#fetch_updated_rows",
         via: [:get, :post]
