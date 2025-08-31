@@ -614,11 +614,11 @@ function on_create(id) {
     switch (action_type) {
         case 'create_lecture_from_course': {
             const class_name = document.getElementById('action_class').value;
-            const lecturer_elt = document.getElementById('edit_lecture_schedule_person_id');
+            const lecturer_elt = document.getElementById('edit_Lecture_person_id');
             const person_id = lecturer_elt.value;
-            const term_elt = document.getElementById('lecture_term');
+            const term_elt = document.getElementById('edit_Lecture_term_id');
             const term_id = term_elt.value;
-            const day_elt = document.getElementById('lecture_day');
+            const day_elt = document.getElementById('edit_Lecture_day_id');
             const day_id = day_elt.value;
             const time_elt = document.getElementById('lecture_time');
             const lecture_time = time_elt.value;
@@ -682,9 +682,9 @@ function on_create(id) {
         }
         case 'create_tutorials_from_course': {
             const class_name = document.getElementById('action_class').value;
-            const tutor_elt = document.getElementById('edit_tutorial_schedule_person_id');
+            const tutor_elt = document.getElementById('edit_TutorialSchedule_person_id');
             const tutor_id = tutor_elt.value;
-            const term_elt = document.getElementById('tutorial_schedule_term');
+            const term_elt = document.getElementById('edit_TutorialSchedule_term_id');
             const term_id = term_elt.value;
             const num_tutorials_elt = document.getElementById('number_of_tutorials');
             const number_of_tutorials = num_tutorials_elt.value;
@@ -932,11 +932,11 @@ function on_suggest(course_id) {
     switch (action_type) {
         case 'create_lecture_from_course': {
             // schedule_div = action_div.querySelector('schedule_div:first-child'); // Not used
-            const lecturer_elt = document.getElementById('edit_lecture_schedule_person_id');
+            const lecturer_elt = document.getElementById('edit_Lecture_person_id');
             const person_id = lecturer_elt.value;
-            const term_elt = document.getElementById('lecture_term');
+            const term_elt = document.getElementById('edit_Lecture_term_id');
             const term_id = term_elt.value;
-            const day_elt = document.getElementById('lecture_day');
+            const day_elt = document.getElementById('edit_Lecture_day_id');
             const day_id = day_elt.value;
             const time_elt = document.getElementById('lecture_time');
             const lecture_time = time_elt.value;
@@ -993,9 +993,9 @@ function on_suggest(course_id) {
         }
         case 'create_tutorials_from_course': {
             // tutorial_schedule_div = action_div.querySelector('tutorial_schedule_div:first-child'); // Not used
-            const tutor_elt = document.getElementById('edit_tutorial_schedule_person_id');
+            const tutor_elt = document.getElementById('edit_TutorialSchedule_person_id');
             const tutor_id = tutor_elt.value;
-            const term_elt = document.getElementById('tutorial_schedule_term');
+            const term_elt = document.getElementById('edit_TutorialSchedule_term_id');
             const term_id = term_elt.value;
             const num_tutorials_elt = document.getElementById('number_of_tutorials');
             const number_of_tutorials = num_tutorials_elt.value;

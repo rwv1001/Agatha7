@@ -971,6 +971,41 @@ document.addEventListener('DOMContentLoaded', function() {
         triggerObjectIds = [triggeredBy.group_id];
         operation = 'create';
         console.log(`🔄 handleSelectBoxUpdates: Handling new_group operation - Group ID ${triggerObjectIds[0]}`);
+      } else if (triggeredBy.operation === 'create_tutorial_schedules') {
+        // For tutorial schedule creation, we need to handle multiple affected entities
+        console.log(`🔄 handleSelectBoxUpdates: Handling create_tutorial_schedules operation`);
+        
+        // Handle updates for Person (both tutor and students)
+        if (triggeredBy.tutor_id) {
+          this.handleCreateTutorialSchedulesUpdates('Person', [triggeredBy.tutor_id], 'update', affectedRelationships);
+        }
+        if (triggeredBy.student_ids && triggeredBy.student_ids.length > 0) {
+          this.handleCreateTutorialSchedulesUpdates('Person', triggeredBy.student_ids, 'update', affectedRelationships);
+        }
+        
+        // Handle updates for Course
+        if (triggeredBy.course_id) {
+          this.handleCreateTutorialSchedulesUpdates('Course', [triggeredBy.course_id], 'update', affectedRelationships);
+        }
+        
+        // Handle creation for TutorialSchedule and Tutorial
+        if (triggeredBy.tutorial_schedule_ids && triggeredBy.tutorial_schedule_ids.length > 0) {
+          this.handleCreateTutorialSchedulesUpdates('TutorialSchedule', triggeredBy.tutorial_schedule_ids, 'create', affectedRelationships);
+        }
+        if (triggeredBy.tutorial_ids && triggeredBy.tutorial_ids.length > 0) {
+          this.handleCreateTutorialSchedulesUpdates('Tutorial', triggeredBy.tutorial_ids, 'create', affectedRelationships);
+        }
+        
+        // Continue with edit page updates only (no external filter updates for tutorial creation)
+        if (triggeredBy.tutor_id) {
+          this.handleEditPageSelectBoxUpdates('Person', triggeredBy.tutor_id);
+        }
+        if (triggeredBy.student_ids && triggeredBy.student_ids.length > 0) {
+          triggeredBy.student_ids.forEach(studentId => {
+            this.handleEditPageSelectBoxUpdates('Person', studentId);
+          });
+        }
+        return; // Exit early since we handled everything
       } else if (triggeredBy.operation === 'delete' && triggeredBy.ids) {
         triggerTable = triggeredBy.table;
         triggerObjectIds = Array.isArray(triggeredBy.ids) ? triggeredBy.ids : [triggeredBy.ids];
@@ -1024,6 +1059,20 @@ document.addEventListener('DOMContentLoaded', function() {
       triggerObjectIds.forEach(objectId => {
         this.handleEditPageSelectBoxUpdates(triggerTable, objectId);
       });
+    },
+
+    handleCreateTutorialSchedulesUpdates(tableName, objectIds, operation, affectedRelationships) {
+      console.log(`🔄 handleCreateTutorialSchedulesUpdates: Handling ${operation} for ${tableName} IDs: ${objectIds.join(', ')}`);
+      
+      // For tutorial schedule creation, we mainly need to update existing rows, not add/remove options from selects
+      // The focus should be on refreshing the data in search tables
+      
+      objectIds.forEach(objectId => {
+        // Handle edit page select box updates for this table/ID
+        this.handleEditPageSelectBoxUpdates(tableName, objectId);
+      });
+      
+      console.log(`✅ handleCreateTutorialSchedulesUpdates: Completed updates for ${tableName}`);
     },
 
     handleExternalFilterCreateDelete(triggerTable, triggerObjectId, operation, affectedRelationships) {

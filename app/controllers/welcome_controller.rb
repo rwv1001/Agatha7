@@ -2365,6 +2365,9 @@ layout "welcome"
     tutor_id = params[:tutor_id];
     course_id =  params[:course_id];
     class_size = params[:tutorial_class_size].to_i;
+    new_tutorial_schedule_ids = [];
+    success_str = '';
+    error_str = '';
     if ids != nil && ids.length > 0
       if class_size < 1
         class_size =1;
@@ -2400,6 +2403,7 @@ layout "welcome"
         tutorial_schedule.number_of_tutorials = params[:number_of_tutorials];        
         tutorial_schedule.number_of_tutorial_hours = params[:number_of_tutorials];
         tutorial_schedule.save;
+        new_tutorial_schedule_ids << tutorial_schedule.id;
         tutorial_class.each do |student_id|
         tutorial = Tutorial.new;
         tutorial.person_id = student_id;
@@ -2417,17 +2421,121 @@ layout "welcome"
           willing_tutor.save;
         end
       end
+      
+      # ActionCable invalidation notification for create_tutorial_schedules
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for create_tutorial_schedules operation")
+        
+        # Collect all created tutorial schedule IDs and tutorial IDs
+        created_tutorial_schedule_ids = []
+        created_tutorial_ids = []
+        affected_person_ids = [tutor_id.to_i] + ids.map(&:to_i)
+
+        
+        # Get the tutorial schedules we just created to extract their IDs
+        recent_tutorial_schedules = TutorialSchedule.where(
+          course_id: course_id,
+          person_id: tutor_id,
+          term_id: params[:term_id]
+        ).order(created_at: :desc).limit(tutorial_classes.length)
+        
+        created_tutorial_schedule_ids = recent_tutorial_schedules.pluck(:id)
+        
+        # Get the tutorials we just created
+        if created_tutorial_schedule_ids.any?
+          created_tutorial_ids = Tutorial.where(tutorial_schedule_id: created_tutorial_schedule_ids).pluck(:id)
+        end
+        
+        # Build affected relationships for tutorial schedule creation
+        affected_relationships = []
+        
+        # New TutorialSchedule records created
+        affected_relationships << {
+          table: "TutorialSchedule",
+          operation: "create",
+          ids: created_tutorial_schedule_ids,
+          reason: "tutorial_schedules_created",
+          source_operation: "create_tutorial_schedules"
+        }
+        
+        # New Tutorial records created
+        if created_tutorial_ids.any?
+          affected_relationships << {
+            table: "Tutorial",
+            operation: "create",
+            ids: created_tutorial_ids,
+            reason: "tutorials_created",
+            source_operation: "create_tutorial_schedules"
+          }
+        end
+        
+        # Person records updated (tutor and all students now have new tutorial relationships)
+        affected_relationships << {
+          table: "Person",
+          operation: "update",
+          ids: affected_person_ids,
+          reason: "tutorial_relationships_added",
+          source_operation: "create_tutorial_schedules"
+        }
+        
+        # Course record updated (now has new tutorial schedules)
+        affected_relationships << {
+          table: "Course",
+          operation: "update",
+          ids: [course_id.to_i],
+          reason: "tutorial_schedules_added",
+          source_operation: "create_tutorial_schedules"
+        }
+        
+        # WillingTutor record potentially created
+        if tutorial_classes.length > 0
+          affected_relationships << {
+            table: "WillingTutor",
+            operation: "create",
+            ids: [], # We don't have the specific ID easily available
+            reason: "willing_tutor_created",
+            source_operation: "create_tutorial_schedules"
+          }
+        end
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for create_tutorial_schedules")
+
+        if affected_relationships.any? && new_tutorial_schedule_ids.length > 0
+           ActionCable.server.broadcast("search_table_updates", {
+             action: "data_invalidation",
+             triggered_by: {
+               user_id: session[:user_id] || 0,
+               table: "TutorialSchedule",
+               operation: "create",
+               object_id: new_tutorial_schedule_ids[0]
+             },
+             affected_relationships: affected_relationships,
+             timestamp: Time.current.to_f
+           })
+           Rails.logger.info("Broadcast data invalidation for lecture creation affecting: Course #{course_id}, Person #{person_id}, Lecture #{tutorial_schedule.id}")
+        end
+ 
+   
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for create_tutorial_schedules operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in create_tutorial_schedules: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
+      end
+      
       @pluralize_num = tutorial_classes.length;
-      alert_str = "#{@pluralize_num} Tutorial/Tutorial " + pl("Schedule") +" created";
+      success_str = "#{@pluralize_num} Tutorial/Tutorial " + pl("Schedule") +" created";
     else
       ids = [];
-      alert_str = "You did not select any students. "
+      error_str = "You did not select any students. "
     end
-    @search_ctls = session[:search_ctls];
-    respond_to do |format|
-      format.js  {render "create_tutorial_schedules", :locals => {:ids => ids, :search_ctls => @search_ctls, :alert_str => alert_str} }
-      
-    end
+    unwait_flag = true;
+    attribute_list = ['id'];
+    class_name = 'TutorialSchedule'
+    
+    update_main_(new_tutorial_schedule_ids, class_name, attribute_list, success_str, error_str, unwait_flag);
   end
   
   def create_lecture_schedule
