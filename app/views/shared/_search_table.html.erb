@@ -215,7 +215,7 @@
           <div class="email_template_div">
           <%  possible_terms = search_controller.filter_controller.GetOptions("term","Term", session[:current_term], true,false) %>
           <label>Term</label><br>
-        <select style="width: 115px"  name = "term_id"  id= "email_template_term">
+        <select style="width: 115px"  name = "term_id"  id= "edit_EmailTemplate_term_id">
           <% for p in possible_terms -%>
             <% if p.id == session[:current_term] %>
               <option selected value = "<%=p.id %>"><%= p.name %></option>
@@ -226,7 +226,7 @@
         </select>
         <%  possible_courses = search_controller.filter_controller.GetOptions("course","Course", 1, false,false) %>
           <label>Course</label><br>
-        <select style="width: 115px"  name = "course_id"  id= "email_template_course">
+        <select style="width: 115px"  name = "course_id"  id= "edit_EmailTemplate_course_id">
           <% for p in possible_courses -%>
             <% if p.id == 1 %>
               <option selected value = "<%=p.id %>"><%= p.name %></option>
@@ -253,7 +253,7 @@
         </div>
           <%  possible_terms = search_controller.filter_controller.GetOptions("term","Term", session[:current_term], true,false) %>
           <label>Term</label><br>
-        <select style="width: 115px"  name = "term_id"  id= "max_tutorials_term">
+        <select style="width: 115px"  name = "term_id"  id= "edit_MaximumTutorial_term_id">
           <% for p in possible_terms -%>
             <% if p.id == session[:current_term] %>
               <option selected value = "<%=p.id %>"><%= p.name %></option>

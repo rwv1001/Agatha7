@@ -367,16 +367,15 @@ def email_update()
                     if body_value !=nil && body_value.length !=0 #8
                         update_parent = true;
                         edit_cell2 = EditCell.new(attribute, object, @table_name, @filter_controller, update_parent, read_only_flag  );
-                        #page.replace_html("#{@table_name}_body", :partial => "shared/edit_cell", :object => edit_cell);
-                        #page << "yahoo_widget()";
+                        
                     else
-                        #page << "add_blur_listener(); myEditor.saveHTML();editBlur(\"\",\"\")";
+                       
                     end #8
                     end #7
                 end #5
                 attribute = @attribute_list.attribute_hash["updated_at"]
                 edit_cell3 = EditCell.new(attribute, object, @table_name, @filter_controller, update_parent, read_only_flag  );
-                #page.replace_html("#{@table_name}_updated_at", :partial => "shared/edit_cell", :object => edit_cell);
+               
                 if(field_name.length == 0)
 
                 end
@@ -387,7 +386,7 @@ def email_update()
                 end  #4 
                         
             else#3
-                #page << "alert('#{exception_str}')";
+               
                 respond_to do |format|#3
                     format.js {render :partial => "shared/alert", :locals => {:alert_str => exception_str, :status_flag => 'error'} }
                 end

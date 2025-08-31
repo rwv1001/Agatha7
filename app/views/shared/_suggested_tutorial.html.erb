@@ -5,7 +5,7 @@
 
 <%  possible_tutors = filter_controller.GetOptions("tutor","Person", tutorial_schedule.person_id, false,false) %>
         <label>Tutor</label><br>
-        <select  style="width: 115px" name = "person_id"  id= "new_tutor">
+        <select  style="width: 115px" name = "person_id"  class ="non_filter Person_select" id= "edit_TutorialSchedule_person_id">
           <% for p in possible_tutors -%>
             <% if p.id == tutorial_schedule.person_id %>
               <option selected value = "<%=p.id %>"><%= p.name %></option>
@@ -17,7 +17,7 @@
         <br>
           <%  possible_terms = filter_controller.GetOptions("term","Term", tutorial_schedule.term_id, true,false) %>
           <label>Term</label><br>
-        <select style="width: 115px"  name = "term_id"  id= "tutorial_schedule_term">
+        <select style="width: 115px"  name = "term_id"  class ="non_filter Term_select" id= "edit_TutorialSchedule_term_id">
           <% for p in possible_terms -%>
             <% if p.id == tutorial_schedule.term_id %>
               <option selected value = "<%=p.id %>"><%= p.name %></option>

@@ -968,140 +968,196 @@ document.addEventListener('DOMContentLoaded', function() {
 
       console.log(`🔄 handleSelectBoxUpdates: Trigger details: table=${triggerTable}, objectId=${triggerObjectId}`);
 
-      // Define model dependencies for select box refreshing
-      const modelDependencies = {
-        'Person': ['Person','Lecture', 'Tutorial', 'Attendee', 'TutorialSchedule'],
-        'Course': ['Lecture', 'TutorialSchedule'],
-        'Institution': ['Person'],
-        'Term': ['Lecture', 'TutorialSchedule'],
-        'Day': ['Lecture'],
-        'Location': ['Lecture'],
-        'Lecture': ['Attendee'],
-        'TutorialSchedule': ['Tutorial']
-      };
+      // Dynamic discovery: Find all external filter select elements that need updating
+      // Look for elements with both 'external_filter_argument_selection' and '{triggerTable}_select' classes
+      const selectorQuery = `.external_filter_argument_selection.${triggerTable}_select`;
+      const affectedSelects = document.querySelectorAll(selectorQuery);
       
-      // Get dependent models for the trigger table
-      const dependentModels = modelDependencies[triggerTable] || [];
-      console.log(`🔄 handleSelectBoxUpdates: Found ${dependentModels.length} dependent models for ${triggerTable}:`, dependentModels);
+      console.log(`🔄 handleSelectBoxUpdates: Found ${affectedSelects.length} external filter selects for ${triggerTable} using query: ${selectorQuery}`);
       
-      // Update select boxes for each dependent model
-      dependentModels.forEach(dependentModel => {
-        console.log(`🔄 handleSelectBoxUpdates: Refreshing ${dependentModel}_select elements due to ${triggerTable} update`);
+      affectedSelects.forEach(selectElement => {
+        console.log(`🔄 handleSelectBoxUpdates: Processing external filter select: ${selectElement.id}`);
         
-        // Find all select elements with class dependentModel_select
-        const selectElements = document.getElementsByClassName(`${dependentModel}_select`);
-        Array.from(selectElements).forEach(selectElement => {
-          console.log(`🔄 handleSelectBoxUpdates: Processing select element:`, selectElement.id);
+        // Parse the ID format: argument_selection_#{class_name}_#{filter_id}_#{element_id}
+        // Example: argument_selection_Person_5_0 -> class_name=Person, filter_id=5, element_id=0
+        const match = selectElement.id.match(/^argument_selection_(\w+)_(\d+)_(\d+)$/);
+        if (match) {
+          const className = match[1];
+          const filterId = parseInt(match[2]);
+          const elementId = parseInt(match[3]);
           
-          // For external filter selects, use refreshExternalFilterSelects
-          if (selectElement.classList.contains('external_filter_argument_selection')) {
-            console.log(`🔄 handleSelectBoxUpdates: Refreshing external filter select: ${selectElement.id}`);
-            
-            // Find the parent external filter container to get the table name
-            const externalFilterContainer = selectElement.closest('[id^="external_filters_"]');
-            if (externalFilterContainer && typeof window.refreshExternalFilterSelects === 'function') {
-              const containerTableName = externalFilterContainer.id.replace('external_filters_', '');
-              console.log(`🔄 handleSelectBoxUpdates: Calling refreshExternalFilterSelects for table: ${containerTableName}`);
-              setTimeout(() => {
-                 window.refreshExternalFilterSelects(containerTableName, triggerTable);
-              }, 1000);
-            }
-            else {
-              console.log(`⚠️ handleSelectBoxUpdates: No external filter container found for: ${selectElement.id}`);
-            }
-          }          
- 
-        });
+          console.log(`🔄 handleSelectBoxUpdates: Parsed select ID - className: ${className}, filterId: ${filterId}, elementId: ${elementId}`);
+          
+          // Update this specific external filter select
+          this.updateExternalFilterSelect(selectElement, className, filterId, elementId, triggerTable, triggerObjectId);
+        } else {
+          console.log(`⚠️ handleSelectBoxUpdates: Could not parse select element ID: ${selectElement.id}`);
+        }
       });
       
-      // Handle edit page select boxes
-      console.log(`🔄 About to call handleEditPageSelectBoxUpdates with: ${triggerTable}, ${triggerObjectId}`);
-      this.handleEditPageSelectBoxUpdates(triggerTable, triggerObjectId);
+      // Handle edit page select box updates
+      if (triggerObjectId) {
+        this.handleEditPageSelectBoxUpdates(triggerTable, triggerObjectId);
+      }
+    },
+
+    updateExternalFilterSelect(selectElement, className, filterId, elementId, triggerTable, triggerObjectId) {
+      console.log(`🔄 updateExternalFilterSelect: Updating select ${selectElement.id} for ${className} filter ${filterId}, element ${elementId}`);
+      
+      // Make AJAX request to get updated external filter element
+      const formData = new FormData();
+      formData.append('class_name', className);
+      formData.append('filter_id', filterId);
+      formData.append('element_id', elementId);
+      formData.append('trigger_table', triggerTable);
+      formData.append('trigger_object_id', triggerObjectId);
+      
+      // Get CSRF token
+      const csrfTokenElement = document.querySelector('meta[name="csrf-token"]');
+      if (!csrfTokenElement) {
+        console.log(`⚠️ updateExternalFilterSelect: Cannot find CSRF token for ${selectElement.id} - skipping refresh`);
+        return;
+      }
+      
+      fetch('/welcome/refresh_external_filter_select', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': csrfTokenElement.getAttribute('content'),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.text().then(text => {
+            console.log(`❌ updateExternalFilterSelect: Server error for ${selectElement.id}: ${response.status} ${response.statusText}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log(`✅ updateExternalFilterSelect: Received updated options for ${selectElement.id}:`, data);
+        
+        // Find the specific option that corresponds to the trigger object
+        if (data.updated_option && data.updated_option.id == triggerObjectId) {
+          const updatedOption = data.updated_option;
+          
+          // Find the option element in the select
+          const optionElement = selectElement.querySelector(`option[value="${updatedOption.id}"]`);
+          if (optionElement) {
+            // Update the option's text content
+            optionElement.textContent = updatedOption.name;
+            console.log(`✅ updateExternalFilterSelect: Updated option ${updatedOption.id} to "${updatedOption.name}" in ${selectElement.id}`);
+          } else {
+            console.log(`⚠️ updateExternalFilterSelect: Option ${updatedOption.id} not found in ${selectElement.id} - may need full refresh`);
+            // If the option doesn't exist, refresh all options
+            this.refreshAllOptionsInSelect(selectElement, data.all_options);
+          }
+        } else if (data.all_options) {
+          // Refresh all options if no specific update was provided
+          this.refreshAllOptionsInSelect(selectElement, data.all_options);
+        }
+      })
+      .catch(error => {
+        console.log(`❌ updateExternalFilterSelect: Failed to refresh ${selectElement.id}:`, error);
+      });
+    },
+
+    refreshAllOptionsInSelect(selectElement, newOptions) {
+      console.log(`🔄 refreshAllOptionsInSelect: Refreshing all options in ${selectElement.id}`);
+      
+      // Store the current selected value
+      const currentValue = selectElement.value;
+      
+      // Clear existing options
+      selectElement.innerHTML = '';
+      
+      // Add new options
+      newOptions.forEach(option => {
+        const optionElement = document.createElement('option');
+        optionElement.value = option.id;
+        optionElement.textContent = option.name;
+        optionElement.style.direction = 'rtl';
+        
+        // Restore selection if this was the previously selected option
+        if (option.id.toString() === currentValue) {
+          optionElement.selected = true;
+        }
+        
+        selectElement.appendChild(optionElement);
+      });
+      
+      console.log(`✅ refreshAllOptionsInSelect: Added ${newOptions.length} options to ${selectElement.id}`);
     },
 
     handleEditPageSelectBoxUpdates(triggerTable, triggerObjectId) {
       console.log("🔄 handleEditPageSelectBoxUpdates: Handling edit page select box updates for:", triggerTable, "ID:", triggerObjectId);
+            
+      // Find all edit select boxes with the new format: edit_ModelClass_foreign_key_id
+      // These should be refreshed when the triggerTable data changes
+      const allSelectElements = document.querySelectorAll('select[id^="edit_"]');
+      const selectElementsToUpdate = [];
       
-      // Check if we're actually on an edit page by looking for required DOM elements
-      const tableNameElement = document.querySelector('input[name="table_name"]');
-      const idElement = document.querySelector('input[name="id"], input[id="id_value_updater"]');
-      
+      allSelectElements.forEach(selectElement => {
+        const selectId = selectElement.id;
+        
+        // Parse the ID format: edit_ModelClass_foreign_key_id
+        // Example: edit_Lecture_person_id -> ModelClass=Lecture, foreign_key=person_id
+        const match = selectId.match(/^edit_(\w+)_(\w+_id)$/);
+        if (match) {
+          const modelClass = match[1];
+          const foreignKey = match[2];
+          const foreignClass = foreignKey.replace(/_id$/, '').replace(/^(\w)/, (m) => m.toUpperCase()); // person_id -> Person
+          console.log(`🔄 handleEditPageSelectBoxUpdates: Found edit select box: ${selectId} (${modelClass} -> ${foreignClass}) with foreign key: ${foreignKey}`);
 
-      
-      // Define which edit select boxes need updating based on the trigger table
-      // This maps from the changed table to the select boxes that display that data
-      const editSelectDependencies = {
-        'Person': ['edit_person_id','new_lecturer','new_tutor'],
-        'Course': ['edit_course_id'],
-        'Institution': ['edit_institution_id'], // When Institution changes, refresh Institution select boxes
-        'Term': ['edit_term_id'],
-        'Day': ['edit_day_id'],
-        'Location': ['edit_location_id'],
-        'Lecture': ['edit_lecture_id'],
-        'TutorialSchedule': ['edit_tutorial_schedule_id'],
-        'Tutorial': ['edit_tutorial_id'],
-        'Group': ['edit_group_id'],
-        'Programme': ['edit_programme_id']
-      };
-      
-      const selectIdsToUpdate = editSelectDependencies[triggerTable] || [];
-      console.log(`🔄 handleEditPageSelectBoxUpdates: Edit select dependencies for ${triggerTable}:`, selectIdsToUpdate);
-
-      selectIdsToUpdate.forEach(selectId => {
-        const selectElement = document.getElementById(selectId);
-        if (selectElement) {
-          console.log(`🔄 handleEditPageSelectBoxUpdates: Found edit page select box: ${selectId}`);
-
-          // Store the current selected value
-          const currentValue = selectElement.value;
-          
-          // Refresh the select box options by making an AJAX call
-          this.refreshEditSelectBox(selectElement, triggerTable, triggerObjectId, currentValue);
-        } else {
-          console.log(`⚠️ handleEditPageSelectBoxUpdates: Edit page select box not found: ${selectId} (this may be normal if the page doesn't have this select box)`);
+          // Check if this select box should be updated based on the trigger table
+          if (foreignClass === triggerTable) {
+            selectElementsToUpdate.push({
+              element: selectElement,
+              selectId: selectId,
+              modelClass: modelClass,
+              foreignKey: foreignKey,
+              foreignClass: foreignClass
+            });
+          }
         }
+      });
+      
+      console.log(`🔄 handleEditPageSelectBoxUpdates: Found ${selectElementsToUpdate.length} select boxes to update for ${triggerTable}`);
+
+      selectElementsToUpdate.forEach(selectInfo => {
+        console.log(`🔄 handleEditPageSelectBoxUpdates: Found edit page select box: ${selectInfo.selectId} (${selectInfo.modelClass} -> ${selectInfo.foreignClass})`);
+
+        // Store the current selected value
+        const currentValue = selectInfo.element.value;
+        
+        // Refresh the select box options by making an AJAX call
+        this.refreshEditSelectBox(selectInfo.element, selectInfo.modelClass, selectInfo.foreignKey, selectInfo.foreignClass, currentValue);
       });
     },
 
-    refreshEditSelectBox(selectElement, triggerTable, triggerObjectId, currentValue) {
-      const selectId = selectElement.id;
-      console.log(`🔄 refreshEditSelectBox: Refreshing edit select box: ${selectId}`);
+    refreshEditSelectBox(selectElement, modelClass, foreignKey, foreignClass, currentValue) {
+      const selectId = selectElement.id;      
+      console.log(`🔄 refreshEditSelectBox: Refreshing edit select box: ${selectId}, modelClass: ${modelClass}, foreignKey: ${foreignKey}, foreignClass: ${foreignClass}, currentValue: ${currentValue}`);
+            
       
-      // Extract the field name from the select ID (e.g., 'edit_person_id' -> 'person_id')
-      const fieldName = selectId.replace('edit_', '');
-      
-      // Get the table name from the current page (this should be available in the DOM)
-      const tableNameElement = document.querySelector('input[name="table_name"]');
-      if (!tableNameElement) {
-        console.log(`⚠️ refreshEditSelectBox: Cannot find table_name input for ${selectId} - skipping refresh`);
-        return;
-      }
-      
-      const tableName = tableNameElement.value;
-      
-      // Get the current object ID
-      const idElement = document.querySelector('input[name="id"], input[id="id_value_updater"]');
-      if (!idElement) {
-        console.log(`⚠️ refreshEditSelectBox: Cannot find object ID input for ${selectId} - skipping refresh`);
-        return;
-      }
-      
-      const objectId = idElement.value;
       
       // Validate that we have all required data
-      if (!tableName || !objectId || !fieldName) {
-        console.log(`⚠️ refreshEditSelectBox:Missing required data for ${selectId} (table: ${tableName}, object: ${objectId}, field: ${fieldName}) - skipping refresh`);
+      if (!modelClass || !foreignKey || !foreignClass) {
+        console.log(`⚠️ refreshEditSelectBox: Missing required data for ${selectId} (modelClass: ${modelClass}, foreignKey: ${foreignKey}, foreignClass: ${foreignClass}) - skipping refresh`);
         return;
       }
-      
-      console.log(`🔄 refreshEditSelectBox: Making AJAX request to refresh ${selectId} for ${tableName} ID ${objectId}`);
-      
+
+      console.log(`🔄 refreshEditSelectBox: Making AJAX request to refresh ${selectId} for ${modelClass} Foreign Key ID ${currentValue}`);
+
       // Make AJAX request to get updated select options
       const formData = new FormData();
-      formData.append('table_name', tableName);
-      formData.append('object_id', objectId);
-      formData.append('field_name', fieldName);
+      formData.append('model_class', modelClass);
+      formData.append('foreign_key', foreignKey);
+      formData.append('foreign_class', foreignClass);
       formData.append('current_value', currentValue);
+      formData.append('select_element_id', selectId);
       
       // Get CSRF token with fallback
       const csrfTokenElement = document.querySelector('meta[name="csrf-token"]');
@@ -1133,17 +1189,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`✅ refreshEditSelectBox: Received updated options for ${selectId}:`, data);
 
         // Validate user ID to prevent cross-user data contamination
-        let expectedUserId = null;
-        if (window.current_user_id) {
-          expectedUserId = window.current_user_id;
-        } else if (sessionStorage.getItem('current_user_id')) {
-          expectedUserId = sessionStorage.getItem('current_user_id');
-        } else {
-          const userIdElement = document.querySelector('input[name="user_id"], #user_id, [data-user-id]');
-          if (userIdElement) {
-            expectedUserId = userIdElement.value || userIdElement.getAttribute('data-user-id');
-          }
-        }
+        
+        let expectedUserId = this.getCurrentUserId();
+
         
         if (data.user_id && expectedUserId && data.user_id.toString() !== expectedUserId.toString()) {
           console.warn(`🚫 refreshEditSelectBox: User ID mismatch! Expected ${expectedUserId}, received ${data.user_id}. Discarding response to prevent data mixing.`);
@@ -1161,7 +1209,7 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .catch(error => {
         console.log(`❌ refreshEditSelectBox: Failed to refresh ${selectId}:`, error);
-        console.log(`❌ refreshEditSelectBox: This error occurred during data invalidation for ${triggerTable} ID ${triggerObjectId}`);
+        console.log(`❌ refreshEditSelectBox: This error occurred while refreshing select for ${modelClass} with ${foreignClass} data`);
         console.log(`❌ refreshEditSelectBox: The select box will not be updated but functionality should continue normally`);
       });
     },
@@ -1267,7 +1315,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     refreshTableWithContext(tableName, affectedRowIds = [], invalidationContext = {}) {
       console.log(`🔄 refreshTableWithContext: Processing ${tableName} with ${affectedRowIds.length} affected rows`);
-      console.log(`🔄 Invalidation context:`, invalidationContext);
+      console.log(`🔄 refreshTableWithContext: Invalidation context:`, invalidationContext);
       
       const operation = invalidationContext.operation;
       const reason = invalidationContext.reason;
@@ -1275,7 +1323,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Ensure we have the search results div before proceeding
       const searchResultsDiv = document.getElementById(`search_results_${tableName}`);
       if (!searchResultsDiv) {
-        console.log(`⚠️ No search results div found for table: ${tableName} - skipping refresh`);
+        console.log(`⚠️ refreshTableWithContext: No search results div found for table: ${tableName} - skipping refresh`);
         return;
       }
       
@@ -1284,13 +1332,13 @@ document.addEventListener('DOMContentLoaded', function() {
       // (b) UPDATE operations - update existing rows with new data
       
       if (operation === 'delete' || this.isRowRemovalOperation(reason)) {
-        console.log(`🗑️ Row removal operation detected for ${tableName}`);
+        console.log(`🗑️ refreshTableWithContext:Row removal operation detected for ${tableName}`);
         this.handleRowRemovals(tableName, affectedRowIds, invalidationContext);
         return;
       }
       
       // All other operations are row updates
-      console.log(`🔄 Row update operation detected for ${tableName}`);
+      console.log(`🔄 refreshTableWithContext:Row update operation detected for ${tableName}`);
       this.handleRowUpdates(tableName, affectedRowIds, invalidationContext);
     },
     

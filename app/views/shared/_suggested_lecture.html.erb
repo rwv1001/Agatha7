@@ -5,7 +5,7 @@
 
 <%  possible_lecturers = filter_controller.GetOptions("lecturer","Person", lecture.person_id, false,false) %>
         <label>Lecturer</label><br>
-        <select  style="width: 115px" name = "person_id" class ="Person_select" id= "new_lecturer">
+        <select  style="width: 115px" name = "person_id" class ="non_filter Person_select" id= "edit_Lecture_person_id">
           <% for p in possible_lecturers -%>
             <% if p.id == lecture.person_id %>
               <option selected value = "<%=p.id %>"><%= p.name %></option>
@@ -19,7 +19,7 @@
         <br>
           <%  possible_terms = filter_controller.GetOptions("term","Term", lecture.term_id, true,false) %>
           <label>Term</label><br>
-        <select style="width: 115px"  name = "term_id"  id= "lecture_term">
+        <select style="width: 115px"  name = "term_id"  class ="non_filter Term_select" id= "edit_Lecture_term_id">
           <% for p in possible_terms -%>
             <% if p.id == lecture.term_id %>
               <option selected value = "<%=p.id %>"><%= p.name %></option>
@@ -31,7 +31,7 @@
         <br>
           <%  possible_days= filter_controller.GetOptions("day","Day", lecture.day_id, true,false) %>
           <label>Day</label><br>
-        <select style="width: 115px" name = "day_id"  id= "lecture_day">
+        <select style="width: 115px" name = "day_id"  class ="non_filter Day_select" id= "edit_Lecture_day_id">
           <% for p in possible_days -%>
             <% if p.id == lecture.day_id %>
               <option selected value = "<%=p.id %>"><%= p.name %></option>

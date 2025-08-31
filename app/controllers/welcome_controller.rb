@@ -807,28 +807,28 @@ layout "welcome"
     current_user_id = session[:user_id]
     Rails.logger.info("refresh_edit_select: Request initiated by user_id=#{current_user_id}")
     
-    table_name = params[:table_name]
-    object_id = params[:object_id]
-    field_name = params[:field_name]
+    model_class = params[:model_class]
+    foreign_key = params[:foreign_key]
+    foreign_class = params[:foreign_class]
     current_value = params[:current_value]
+    select_element_id = params[:select_element_id]
 
-    Rails.logger.info("refresh_edit_select: Refreshing edit select: #{field_name} for #{table_name} ID #{object_id}, current_value: #{current_value} (user: #{current_user_id})")
+    Rails.logger.info("refresh_edit_select: Refreshing edit select: select_element_id=#{select_element_id} for #{model_class} foreign_key: #{foreign_key}, foreign_class: #{foreign_class}, current_value: #{current_value} (user: #{current_user_id})")
 
     begin
       # Get the search controllers from session
       @search_ctls = session[:search_ctls]
-      search_ctl = @search_ctls[table_name]
       
-      if !search_ctl
-        Rails.logger.error("refresh_edit_select: No search controller found for table: #{table_name}")
+      if !@search_ctls
+        Rails.logger.error("refresh_edit_select: No search controllers found in session")
         render json: { 
-          error: "No search controller found",
+          error: "No search controllers found",
           user_id: current_user_id,
           request_timestamp: Time.current.to_f
         }, status: 400
         return
       else
-        Rails.logger.info("refresh_edit_select: Using search controller for table: #{table_name}")
+        Rails.logger.info("refresh_edit_select: Using search controllers from session")
       end
       
       # Verify user ID hasn't changed during request processing
@@ -845,40 +845,29 @@ layout "welcome"
       end
       
       # Get the current object
-      object_class = table_name.classify.constantize
-      current_object = object_class.find(object_id)
+      object_class = foreign_class.classify.constantize
+      current_object = object_class.find(current_value)
       if !current_object
-        Rails.logger.error("refresh_edit_select: No current object found for #{table_name} ID #{object_id}")
+        Rails.logger.error("refresh_edit_select: No current object found for #{foreign_class} ID #{current_value}")
         render json: { error: "refresh_edit_select: No current object found" }, status: 400
         return
       else
-        Rails.logger.info("refresh_edit_select: Found current object for #{table_name} ID #{object_id}")
-      end
+        Rails.logger.info("refresh_edit_select: Found current object for #{foreign_class} ID #{current_value}")
+      end 
 
-      # Get the attribute list to understand the field
-      attribute_list = AttributeList.new(table_name.classify)
-      attribute = attribute_list.attribute_hash[field_name]
-      
-      if !attribute || attribute.foreign_key.length == 0
-        Rails.logger.error("Field #{field_name} is not a foreign key field")
-        render json: { error: "Field is not a foreign key" }, status: 400
-        return
-      else
-        Rails.logger.info("refresh_edit_select: Field #{field_name} is a valid foreign key of type #{attribute.foreign_class}")
-      end
-      
       # Create a filter controller to get the updated options
       user_id = session[:user_id] || 0
+      table_name = model_class # Using model_class as table_name parameter for FilterController
       filter_controller = FilterController.new(@search_ctls, table_name, user_id)
       
-      # Get the current value for this field
-      current_id = current_object.send(field_name)
+      # Get the current value for this field from the object
+      current_id = current_object.send(foreign_key) if current_object.respond_to?(foreign_key)
       
       # Get updated options using the filter controller
-      foreign_key = attribute.foreign_key
-      foreign_class = attribute.foreign_class
       possible_options = filter_controller.GetOptions(foreign_key, foreign_class, current_id, false, false)
+       
       
+       
       # Format the options for JSON response
       options_array = possible_options.map do |option|
         {
@@ -887,10 +876,12 @@ layout "welcome"
         }
       end
 
-      Rails.logger.info("refresh_edit_select: Returning #{options_array.length} options for #{field_name} (user: #{current_user_id})")
+      Rails.logger.info("refresh_edit_select: Returning #{options_array.length} options for #{foreign_key} (user: #{current_user_id})")
 
       render json: {
-        field_name: field_name,
+        foreign_key: foreign_key,
+        foreign_class: foreign_class,
+        model_class: model_class,
         options: options_array,
         current_value: current_id,
         user_id: current_user_id,
@@ -898,7 +889,98 @@ layout "welcome"
       }
       
     rescue Exception => e
-      Rails.logger.error("Error refreshing edit select for user #{current_user_id}: #{e.message}")
+      Rails.logger.error("refresh_edit_select: Error refreshing edit select for user #{current_user_id}: #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
+      render json: { 
+        error: e.message,
+        user_id: current_user_id,
+        request_timestamp: Time.current.to_f
+      }, status: 500
+    end
+  end
+
+  def refresh_external_filter_select
+    # Capture user ID at the start of the request to prevent race conditions
+    current_user_id = session[:user_id]
+    Rails.logger.info("refresh_external_filter_select: Request initiated by user_id=#{current_user_id}")
+    
+    class_name = params[:class_name]
+    filter_id = params[:filter_id].to_i
+    element_id = params[:element_id].to_i
+    trigger_table = params[:trigger_table]
+    trigger_object_id = params[:trigger_object_id].to_i
+
+    Rails.logger.info("refresh_external_filter_select: Refreshing external filter select for #{class_name} filter #{filter_id}, element #{element_id}, triggered by #{trigger_table} ID #{trigger_object_id}")
+
+    begin
+      # Get the search controllers from session
+      @search_ctls = session[:search_ctls]
+      
+      if !@search_ctls || !@search_ctls[class_name]
+        Rails.logger.error("refresh_external_filter_select: No search controller found for class: #{class_name}")
+        render json: { 
+          error: "No search controller found",
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }, status: 400
+        return
+      end
+      
+      search_ctl = @search_ctls[class_name]
+      Rails.logger.info("refresh_external_filter_select: Using search controller for class: #{class_name}")
+      
+      # Get the external filter element using the search controller
+      external_filter_element = search_ctl.GetExternalFilterElement(filter_id, element_id)
+      
+      if !external_filter_element
+        Rails.logger.error("refresh_external_filter_select: No external filter element found for filter #{filter_id}, element #{element_id}")
+        render json: { 
+          error: "External filter element not found",
+          user_id: current_user_id,
+          request_timestamp: Time.current.to_f
+        }, status: 400
+        return
+      else
+        Rails.logger.info("refresh_external_filter_select: Found external filter element for filter #{filter_id}, element #{element_id}")
+      end
+      
+      # Get the updated member selection
+      argument_selection = external_filter_element.MemberSelection()
+      
+      # Format all options for JSON response
+      all_options = argument_selection.map do |arg|
+        {
+          id: arg.id,
+          name: arg.name
+        }
+      end
+      
+      # Find the specific updated option that matches the trigger object
+      updated_option = argument_selection.find { |arg| arg.id.to_i == trigger_object_id }
+      
+      response_data = {
+        all_options: all_options,
+        user_id: current_user_id,
+        request_timestamp: Time.current.to_f
+      }
+      
+      # Include the specific updated option if found
+      if updated_option
+        response_data[:updated_option] = {
+          id: updated_option.id,
+          name: updated_option.name
+        }
+        Rails.logger.info("refresh_external_filter_select: Found updated option for #{trigger_table} ID #{trigger_object_id}: #{updated_option.name}")
+      else
+        Rails.logger.info("refresh_external_filter_select: No specific option found for #{trigger_table} ID #{trigger_object_id} - returning all options")
+      end
+
+      Rails.logger.info("refresh_external_filter_select: Returning #{all_options.length} total options for #{class_name} filter #{filter_id}, element #{element_id}")
+
+      render json: response_data
+      
+    rescue Exception => e
+      Rails.logger.error("Error refreshing external filter select for user #{current_user_id}: #{e.message}")
       Rails.logger.error(e.backtrace.join("\n"))
       render json: { 
         error: e.message,

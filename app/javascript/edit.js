@@ -117,7 +117,7 @@ function on_unload()
     const unloading = true;
     editBlur(attribute_name, data_type, unloading);
     const parent_win = window.opener;
-    const unload_table_obj = document.getElementById(('#unload_table_name').slice(1)); //rwv vanilla change
+    const unload_table_obj = document.getElementById('unload_table_name'); //rwv vanilla change
     const table = unload_table_obj.value; 
     if (parent_win && parent_win.showNotification) {
       parent_win.showNotification("" +table +" edit window has been closed and the database has been updated. Click search to see changes.", 'success');
@@ -566,9 +566,9 @@ function on_create_send(id) {
     const action_div = document.getElementById(class_name + '_action_div');
     // email_template_div is not used
 
-    const term_elt = document.getElementById('email_template_term');
+    const term_elt = document.getElementById('edit_email_template_term_id');
     const term_id = term_elt.value;
-    const course_elt = document.getElementById('email_template_course');
+    const course_elt = document.getElementById('edit_email_template_course_id');
     const course_id = course_elt.value;
 
     const sent_template = document.createElement('input');
@@ -614,7 +614,7 @@ function on_create(id) {
     switch (action_type) {
         case 'create_lecture_from_course': {
             const class_name = document.getElementById('action_class').value;
-            const lecturer_elt = document.getElementById('new_lecturer');
+            const lecturer_elt = document.getElementById('edit_lecture_schedule_person_id');
             const person_id = lecturer_elt.value;
             const term_elt = document.getElementById('lecture_term');
             const term_id = term_elt.value;
@@ -682,7 +682,7 @@ function on_create(id) {
         }
         case 'create_tutorials_from_course': {
             const class_name = document.getElementById('action_class').value;
-            const tutor_elt = document.getElementById('new_tutor');
+            const tutor_elt = document.getElementById('edit_tutorial_schedule_person_id');
             const tutor_id = tutor_elt.value;
             const term_elt = document.getElementById('tutorial_schedule_term');
             const term_id = term_elt.value;
@@ -751,9 +751,9 @@ function on_create(id) {
         }
         case 'create_email_from_template': {
             const class_name = document.getElementById('action_class').value;
-            const term_elt = document.getElementById('email_template_term');
+            const term_elt = document.getElementById('edit_email_template_term_id');
             const term_id = term_elt.value;
-            const course_elt = document.getElementById('email_template_course');
+            const course_elt = document.getElementById('edit_email_template_course_id');
             const course_id = course_elt.value;
 
             const sent_template = document.createElement('input');
@@ -932,7 +932,7 @@ function on_suggest(course_id) {
     switch (action_type) {
         case 'create_lecture_from_course': {
             // schedule_div = action_div.querySelector('schedule_div:first-child'); // Not used
-            const lecturer_elt = document.getElementById('new_lecturer');
+            const lecturer_elt = document.getElementById('edit_lecture_schedule_person_id');
             const person_id = lecturer_elt.value;
             const term_elt = document.getElementById('lecture_term');
             const term_id = term_elt.value;
@@ -993,7 +993,7 @@ function on_suggest(course_id) {
         }
         case 'create_tutorials_from_course': {
             // tutorial_schedule_div = action_div.querySelector('tutorial_schedule_div:first-child'); // Not used
-            const tutor_elt = document.getElementById('new_tutor');
+            const tutor_elt = document.getElementById('edit_tutorial_schedule_person_id');
             const tutor_id = tutor_elt.value;
             const term_elt = document.getElementById('tutorial_schedule_term');
             const term_id = term_elt.value;
@@ -1046,7 +1046,7 @@ function SetMaxTutorials() {
         specific_div.removeChild(specific_div.firstChild);
     }
 
-    const term_elt = document.getElementById('max_tutorials_term');
+    const term_elt = document.getElementById('edit_MaximumTutorial_term_id');
     const term_id = term_elt.value;
     const sent_term = document.createElement('input');
     sent_term.type = 'text';
@@ -1622,7 +1622,10 @@ function editBlur(attribute_name, data_type, unloading) {
     if (field_data_type_obj) field_data_type_obj.value = data_type;
     if (closing_flag_obj) closing_flag_obj.value = unloading ? '1' : '0';
 
-    let current_attribute_obj_str = "edit_" + attribute_name;
+    const unload_table_obj = document.getElementById('unload_table_name'); //rwv vanilla change
+    const table = unload_table_obj.value; 
+
+    let current_attribute_obj_str = "edit_" + table + "_" + attribute_name;
 
     if (attribute_name === "collection_status") {
         const radio_elts = document.querySelectorAll("input.collection_status");

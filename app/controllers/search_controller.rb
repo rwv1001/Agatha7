@@ -964,7 +964,7 @@ class SearchController
   def GetSelectFields(member_id, group_id, member_attribute_name, class_search_controller, order_by_id_)
     ret_val = []   
     
-    if group_id != 0
+    if !group_id.blank? && group_id != 0 
       if member_id != SearchController::NOT_SET
          group_member = GroupMember.new( NOT_SET_STR, NOT_SET);
          ret_val << group_member;
