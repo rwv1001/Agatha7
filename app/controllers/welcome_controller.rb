@@ -154,19 +154,7 @@ layout "welcome"
     end
   end
 
-  def display_page
-    respond_to do |format|
-      format.js  { render "display_page"}
-=begin      
-        render :update do |page|
-          page << "unwait();";
-        end
-      end
-=end      
-    end
-    Rails.logger.flush
-      
-  end
+
 
   def InitializeSessionController()
 
@@ -221,66 +209,11 @@ layout "welcome"
     Rails.logger.debug("inialization of search controllers complete");
 
   end
-  def child_unload
-    Rails.logger.info("Begin child_unload");
-       
-       
-    edited_table_name = params[:table_name];
-    id = params[:id];
-    attribute_name = params[:attribute_name];
-    ids = [];
-    ids << id.to_i;
-    @user_id = session[:user_id];
 
 
-    sql_str = "OpenRecord.find_by_sql(\"SELECT * FROM  open_records WHERE (user_id = " + @user_id.to_s + " AND table_name = '" + @table_name + "' AND  record_id = " +@id.to_s + "  AND in_use = true)\")"
-    open_records = eval(sql_str)
-    if(open_records.length >0)
-        open_records[0].in_use = false;
-        open_records[0].save;
-        Rails.logger.info("child_unload open records updated")
-    end 
-    @search_ctls = session[:search_ctls][edited_table_name]
-    respond_to do |format|
-      format.js  { render "child_unload", :locals => {:search_ctl => session[:search_ctls][edited_table_name], :edited_table_name => edited_table_name, :ids => ids, :id => id, :attribute_name => attribute_name  } }
-   
-    end
-    Rails.logger.debug("child_unload_end");
-    Rails.logger.flush
 
-  end
-
-   def update_main_(ids, edited_table_name, attribute_names,success_str,fail_str,unwait_flag)
-    
-    Rails.logger.info("update_main rwv args");
-    @search_ctls = session[:search_ctls];
-    #@search_ctls.each {|key, value| puts "#{key} is #{value}" }
-    respond_to do |format|
-      format.js { render "shared/update_main", :locals => {:search_ctls => @search_ctls, :edited_table_name => edited_table_name, :attribute_names => attribute_names, :ids => ids, :success_str => success_str, :fail_str => fail_str , :unwait_flag => unwait_flag } }  
-    
-    end
-    Rails.logger.debug("update_main end");
-  end
   
-  def update_main
-    Rails.logger.info("update_main 01" );
-    id = params[:id].to_i;
-    
-    ids = [];
-    ids << id;
 
-    edited_table_name = params[:table_name];
-    Rails.logger.info("update_main 02" );
-    attribute_name = params[:attribute_name];
-    Rails.logger.info("update_main 03" );
-    success_str="";
-    fail_str ="";
-    unwait_flag = false;
-    Rails.logger.info("update_main 04" );
-    update_main_([id], edited_table_name, [attribute_name], success_str, fail_str, unwait_flag);
-    Rails.logger.info("update_main 05" );
-       
-    end
    
 
   def update_search_controller
@@ -1542,7 +1475,7 @@ layout "welcome"
         field_str = ""
         field_count = 0;
         params.each do |key,value|
-            if(key =~ /^mi_edit_*/)
+            if(key =~ Regexp.new("^mi_edit_#{class_name}_"))
 
                 i_value = value.to_i
                 Rails.logger.debug("key = #{key}, i_value = #{i_value}, value.length = #{value.length}  ");
@@ -1550,7 +1483,7 @@ layout "welcome"
                   if(field_str.length > 0)
                     field_str << ", "
                   end
-                  field_name = key.gsub(/^mi_edit_*/,'');
+                  field_name = key.gsub(Regexp.new("^mi_edit_#{class_name}_"),'');
                   field_str << field_name;
                   attribute_list.push(field_name);
 
@@ -1558,12 +1491,12 @@ layout "welcome"
                   update_int_fields[field_name] = i_value;
                 end
 
-            elsif(key =~ /^mt_edit_*/)
+            elsif(key =~ Regexp.new("^mt_edit_#{class_name}_"))
                 if(value.length > 0)
                   if(field_str.length > 0)
                     field_str << ", "
                   end
-                  field_name = key.gsub(/^mt_edit_*/,'')
+                  field_name = key.gsub(Regexp.new("^mt_edit_#{class_name}_"),'')
                   field_str << field_name;
                   attribute_list.push(field_name);
                   field_count = field_count + 1;
@@ -1605,12 +1538,72 @@ layout "welcome"
           success_str << pl("value") + " for " + pl("field") + " " + field_str;
         end
     end
+    
+    # ActionCable invalidation notification for multi_update
+    if error_str.empty? && ids.any? && field_count > 0
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for multi_update operation")
+        
+        # Build affected relationships for multi-update
+        affected_relationships = []
+        
+        # Records of the target class updated
+        affected_relationships << {
+          table: class_name,
+          operation: "update",
+          ids: ids.map(&:to_i),
+          reason: "multi_update_fields_changed",
+          source_operation: "multi_update",
+          updated_fields: attribute_list,
+          updated_field_count: field_count
+        }
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for multi_update")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]} [fields: #{rel[:updated_fields]&.join(', ')}]")
+        end
+        
+        # Broadcast the invalidation notification
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            operation: "multi_update",
+            class_name: class_name,
+            object_ids: ids,
+            updated_fields: attribute_list,
+            field_count: field_count
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for multi_update operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in multi_update: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
+      end
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for multi_update due to error, no records, or no fields updated")
+    end
+    
             Rails.logger.debug(" multi_update 8");
 
 
+    if error_str.length>0
+      alert_str = error_str;
+      alert_status = 'error';
+    else
+      alert_str = success_str;
+      alert_status = 'success';
+    end
 
-    unwait_flag = true;
-    update_main_(ids, class_name, attribute_list, success_str, error_str, unwait_flag);
+    respond_to do |format|
+      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
+    end   
+    
             
 
   end  
@@ -1654,26 +1647,88 @@ layout "welcome"
       success_str << "You have added person with id #{person_id} to #{@pluralize_num} " + pl("tutorial schedules");
 
     end
-      @search_ctls = session[:search_ctls];
-      edited_table_name = "Tutorial";
-      Rails.logger.info("add_tutorial_student success_str = #{success_str}");
-      respond_to do |format|
-        format.js { render "shared/update_main", :locals => {:search_ctls => @search_ctls, :edited_table_name => edited_table_name, :attribute_names => ["id"], :ids => ids, :success_str => success_str, :fail_str => error_str , :unwait_flag => true } }
- 
-=begin        
-        do
-          render :update do |page|
-            if error_str.length >0
-              page << notification_alert(error_str, 'error');
-            else
-              page << notification_alert(success_str, 'success');
-              
-            end
-            page << "unwait();"
-          end
-
+    
+    # ActionCable invalidation notification for add_tutorial_student
+    if error_str.empty? && ids.any?
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for add_tutorial_student operation")
+        
+        # Build affected relationships for tutorial student addition
+        affected_relationships = []
+        
+        # Person record updated (shows new tutorial assignments)
+        person_id = params[:id].to_i
+        affected_relationships << {
+          table: "Person",
+          operation: "update",
+          ids: [person_id],
+          reason: "tutorial_assignments_added",
+          source_operation: "add_tutorial_student"
+        }
+        
+        # TutorialSchedule records updated (show new student assignments)
+        affected_relationships << {
+          table: "TutorialSchedule",
+          operation: "update",
+          ids: ids.map(&:to_i),
+          reason: "student_assignments_added",
+          source_operation: "add_tutorial_student"
+        }
+        
+        # New Tutorial records created
+        affected_relationships << {
+          table: "Tutorial",
+          operation: "create",
+          ids: [], # New records, so no specific IDs yet
+          reason: "new_tutorial_records",
+          source_operation: "add_tutorial_student",
+          related_person_id: person_id,
+          related_tutorial_schedule_ids: ids.map(&:to_i)
+        }
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for add_tutorial_student")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+        end
+        
+        # Broadcast the invalidation notification
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            operation: "add_tutorial_student",
+            person_id: person_id,
+            tutorial_schedule_ids: ids
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for add_tutorial_student operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in add_tutorial_student: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
       end
-=end      
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for add_tutorial_student due to error or no tutorial schedules")
+    end
+    
+    @search_ctls = session[:search_ctls];
+    edited_table_name = "Tutorial";
+    Rails.logger.info("add_tutorial_student success_str = #{success_str}");
+
+    if error_str.length>0
+      alert_str = error_str;
+      alert_status = 'error';
+    else
+      alert_str = success_str;
+      alert_status = 'success';
+    end
+
+    respond_to do |format|
+      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
     end
   end
   def attach_to_emails(ids)
@@ -2171,6 +2226,7 @@ layout "welcome"
 
   def assign_tutor(ids)
     success_str = "";
+    error_str = "";
     if(ids == nil || ids.length==0)
       error_str = "You have not selected any tutorial schedules"
     else
@@ -2188,6 +2244,62 @@ layout "welcome"
         tutorial_schedule.person_id = tutor_id;
         tutorial_schedule.save;
       end
+      
+      # ActionCable invalidation notification for assign_tutor
+      if tutorial_schedules.any?
+        begin
+          Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for assign_tutor operation")
+          
+          # Build affected relationships for tutor assignment
+          affected_relationships = []
+          
+          # TutorialSchedule records updated (new tutor assigned)
+          affected_relationships << {
+            table: "TutorialSchedule",
+            operation: "update",
+            ids: ids.map(&:to_i),
+            reason: "tutor_assigned",
+            source_operation: "assign_tutor"
+          }
+          
+          # Person record updated (shows new tutor assignments)
+          affected_relationships << {
+            table: "Person",
+            operation: "update",
+            ids: [tutor_id.to_i],
+            reason: "tutor_assignments_added",
+            source_operation: "assign_tutor"
+          }
+          
+          Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for assign_tutor")
+          affected_relationships.each do |rel|
+            Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+          end
+          
+          # Broadcast the invalidation notification
+          ActionCable.server.broadcast("search_table_updates", {
+            action: "data_invalidation",
+            triggered_by: {
+              user_id: session[:user_id],
+              operation: "assign_tutor",
+              tutor_id: tutor_id,
+              tutorial_schedule_ids: ids
+            },
+            affected_relationships: affected_relationships,
+            timestamp: Time.current.to_f
+          })
+          
+          Rails.logger.info("RWV Successfully broadcast invalidation notification for assign_tutor operation")
+          
+        rescue => e
+          Rails.logger.error "RWV ActionCable broadcast failed in assign_tutor: #{e.message}"
+          Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+          # Continue without ActionCable if it fails
+        end
+      else
+        Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for assign_tutor due to no tutorial schedules")
+      end
+      
       num_updates = tutorial_schedules.length;
       if (num_updates == 0)
         success_str = "No tutor updates were made. "
@@ -2199,21 +2311,16 @@ layout "welcome"
     end
     @search_ctls = session[:search_ctls];
     edited_table_name = "TutorialSchedule";
-    respond_to do |format|           
-      format.js { render "shared/update_main", :locals => {:search_ctls => @search_ctls, :edited_table_name => edited_table_name, :attribute_names => ["person_id"], :ids => ids, :success_str => success_str, :fail_str => error_str , :unwait_flag => true } }
+    if error_str.length>0
+      alert_str = error_str;
+      alert_status = 'error';
+    else
+      alert_str = success_str;
+      alert_status = 'success';
+    end
 
-=begin      
-      do
-        render :update do |page|
-          if error_str.length >0
-            page << "alert('#{error_str}')";
-          else
-            page << "alert('#{success_str}')";
-          end
-          page << "unwait();"
-        end
-      end
-=end      
+    respond_to do |format|
+      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
     end
     
   end
@@ -2531,11 +2638,19 @@ layout "welcome"
       ids = [];
       error_str = "You did not select any students. "
     end
-    unwait_flag = true;
-    attribute_list = ['id'];
-    class_name = 'TutorialSchedule'
+
+    if error_str.length>0
+      alert_str = error_str;
+      alert_status = 'error';
+    else
+      alert_str = success_str;
+      alert_status = 'success';
+    end
+
+    respond_to do |format|
+      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
+    end    
     
-    update_main_(new_tutorial_schedule_ids, class_name, attribute_list, success_str, error_str, unwait_flag);
   end
   
   def create_lecture_schedule
@@ -2553,6 +2668,7 @@ layout "welcome"
     lecture.number_of_classes = params[:number_of_classes];
     lecture.number_of_lectures = params[:number_of_lectures];
     lecture.save;
+    success_str = "Lecture schedule created successfully with id #{lecture.id}";
 
      present = WillingLecturer.find_by_sql("SELECT * FROM willing_lecturers WHERE person_id = #{person_id} AND course_id = #{course_id}");
         if present ==nil || present.length == 0
@@ -2563,6 +2679,47 @@ layout "welcome"
           willing_lecturer.order_of_preference = 1;
           willing_lecturer.save;
         end
+
+    # Check if Lecture table search has been performed to determine display update strategy
+    search_done = params[:search_done] == 'true'
+    Rails.logger.debug("WelcomeController:create_lecture_schedule search_done: #{search_done}")
+    
+    # Prepare Lecture table row for display (similar to new method and new_group)
+    search_ctls = session[:search_ctls]
+    new_row = nil
+    lecture_search_results = nil
+    
+    if search_ctls && search_ctls["Lecture"]
+      search_ctl_lecture = search_ctls["Lecture"]
+      begin
+        eval("Lecture.set_controller(search_ctl_lecture)")
+        
+        # Create a simple object with the required attributes for the template
+        new_row = OpenStruct.new(
+          id: lecture.id,
+          class_name: "Lecture",
+          search_controller: search_ctl_lecture
+        )
+        
+        # Copy all the lecture attributes to new_row so filter.eval_str can access them
+        lecture.attributes.each do |key, value|
+          new_row.send("#{key}=", value) unless new_row.respond_to?(key)
+        end
+        
+        Rails.logger.debug("DEBUG: Created Lecture row object for new Lecture with ID #{lecture.id}")
+        
+        # If no search has been performed on Lecture table, create a SearchResults with just the new row
+        if !search_done
+          lecture_search_results = SearchResults.new([new_row], :search_results, search_ctl_lecture)
+        end
+        
+      rescue => e
+        Rails.logger.error("ERROR creating Lecture row object: #{e.message}")
+        new_row = nil
+      end
+    else
+      Rails.logger.debug("DEBUG: No search controller found for Lecture")
+    end
 
     # Send data invalidation for lecture creation
     begin
@@ -2614,14 +2771,36 @@ layout "welcome"
       Rails.logger.error "ActionCable broadcast failed in create_lecture_schedule: #{e.message}"
     end
 
-    success_str = 'Lecture schedule created';
-    error_str = '';
-    unwait_flag = true;
-    attribute_list = ['id'];
-    class_name = 'Lecture'
-    id = lecture.id;
-    ids = [];
-    update_main_([id], class_name, attribute_list, success_str, error_str, unwait_flag);
+    @search_ctls = session[:search_ctls];
+    search_ctl_lecture = @search_ctls["Lecture"];
+
+    respond_to do |format|
+      if search_done
+        # If Lecture search was already performed, add to existing table
+        format.js { 
+          render "new", :locals => { 
+            :table_name => "Lecture", 
+            :id => lecture.id, 
+            :class_name => "Lecture", 
+            :new_row => new_row, 
+            :search_done => search_done, 
+            :search_ctl => search_ctl_lecture 
+          } 
+        }
+      else
+        # If no Lecture search was performed, render a new Lecture table with just this entry
+        format.js { 
+          render "table_search", :locals => {
+            :search_ctl => search_ctl_lecture, 
+            :params => params, 
+            :table_name => "Lecture", 
+            :search_results => lecture_search_results,
+            :new_entry_id => lecture.id,
+            :open_edit => false
+          }
+        }
+      end
+    end
   
   end
   def make_attendee(lecture_ids)
@@ -2779,11 +2958,20 @@ layout "welcome"
     else
       Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for make_attendee due to error or no lectures");
     end
-    
-    respond_to do |format|
-      format.js { render "make_attendee", :locals => { :error_str => error_str, :search_ctls => @search_ctls, :person_id => person_id, :lecture_ids => lecture_ids, :compulsory_ids => compulsory_ids, :exam_ids => exam_ids, :success_str => success_str } }
-      
+
+    if error_str.length>0
+      alert_str = error_str;
+      alert_status = 'error';
+    else
+      alert_str = success_str;
+      alert_status = 'success';
     end
+
+    respond_to do |format|
+      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
+    end
+    
+
   end
 
 
@@ -2907,9 +3095,16 @@ layout "welcome"
     end
 
     @search_ctls = session[:search_ctls];
+    if error_str.length>0
+      alert_str = error_str;
+      alert_status = 'error';
+    else
+      alert_str = success_str;
+      alert_status = 'success';
+    end
+
     respond_to do |format|
-      format.js { render "add_to_lectures", :locals => { :error_str => error_str, :search_ctls => @search_ctls, :people_ids => people_ids, :lecture_id => lecture_id, :compulsory_ids => compulsory_ids, :exam_ids => exam_ids, :success_str => success_str } }
-      
+      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
     end
   end
 
@@ -3650,6 +3845,8 @@ Rails.logger.info("RWV remove_from_group B")
   end
   def update_tutorial_number(ids, tutorial_number)
     tutorial_number = tutorial_number.to_i
+    error_str ='';
+    success_str = '';
     if(tutorial_number <0)
         alert_str = "Set Tutorial Number failed: the number of tutorial can't be negative."
         respond_to do |format|
@@ -3675,25 +3872,73 @@ Rails.logger.info("RWV remove_from_group B")
     end
     tutorial_schedules = TutorialSchedule.find_by_sql("SELECT * FROM tutorial_schedules WHERE id IN (#{id_str})");
 
-      tutorial_schedules.each do |tutorial_schedule|
-        tutorial_schedule.number_of_tutorials = tutorial_number;
-        tutorial_schedule.save;
+    tutorial_schedules.each do |tutorial_schedule|
+      tutorial_schedule.number_of_tutorials = tutorial_number;
+      tutorial_schedule.save;
+    end
+
+    # ActionCable invalidation notification for update_tutorial_number
+    if tutorial_schedules.any?
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for update_tutorial_number operation")
+        
+        # Build affected relationships for tutorial number updates
+        affected_relationships = []
+        
+        # TutorialSchedule records updated
+        affected_relationships << {
+          table: "TutorialSchedule",
+          operation: "update",
+          ids: ids.map(&:to_i),
+          reason: "tutorial_number_updated",
+          source_operation: "update_tutorial_number"
+        }
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for update_tutorial_number")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+        end
+        
+        # Broadcast the invalidation notification
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            operation: "update_tutorial_number",
+            tutorial_schedule_ids: ids,
+            tutorial_number: tutorial_number
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for update_tutorial_number operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in update_tutorial_number: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
       end
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for update_tutorial_number due to no tutorial schedules")
+    end
 
+    @pluralize_num = ids.length;
+    success_str = "#{@pluralize_num} "+ pl("tutorial schedule") +" updated to have "
+    @pluralize_num = tutorial_number;
+    success_str = success_str + "#{@pluralize_num} " + pl("tutorial");
 
-      @pluralize_num = ids.length;
-      success_str = "#{@pluralize_num} "+ pl("tutorial schedule") +" updated to have "
-      @pluralize_num = tutorial_number;
-      success_str = success_str + "#{@pluralize_num} " + pl("tutorial");
-      table_name = "TutorialSchedule"
-      @search_ctls = session[:search_ctls];
-      search_ctl = @search_ctls[table_name];
-      respond_to do |format|
-        format.js { render "shared/update_main", :locals => {:search_ctls => @search_ctls, :edited_table_name => table_name, :attribute_names => ["number_of_tutorials"], :ids => ids, :success_str => success_str, :fail_str => "" , :unwait_flag => true } }  
-          
- 
+    if error_str.length>0
+      alert_str = error_str;
+      alert_status = 'error';
+    else
+      alert_str = success_str;
+      alert_status = 'success';
+    end
 
-      end
+    respond_to do |format|
+      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
+    end
 
   end
   

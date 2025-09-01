@@ -46,8 +46,7 @@
             <ul id="emails2">
               <li> <a class="agatha_emails2" href="#" onclick="display_page2('Email','AgathaEmail');return false">Emails </a> </li>
               <li> <a class="email_templates"  href="#" onclick="display_page2('Email','EmailTemplate');return false">Email Templates </a> </li>
-              <li> <a class="agatha_files"  href="#" onclick="display_page2('Email','AgathaFile');return false">Agatha Files </a> </li>
-              <li> <a class="email_attachments"  href="#" onclick="display_page2('Email','EmailAttachment');return false">Email Attachments </a> </li>
+              
             </ul>
           </li>
         <%  end %>
@@ -182,33 +181,15 @@
         </div>
       </form>
     </div>
-    <%= form_with url: "/welcome/display_page", id: "display_page", method: :post, remote: true do |form| %>
-      <div  style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
-      <input name="page_name" id="display_page_name" type="text" style="display:none" />
-      <input name="option" id ="display_page_option" type="text" style="display:none"  />
-    <% end %>
+
     <div style= "display: none">
       <input name="opener_attribute_name" id ="stupid_update_opener_attribute_name" type="text" value="not_set" />
       <input name="opener_id" id ="stupid_update_opener_id" type="text" value ="1" />
       <input name="opener_attribute_name" id ="update_opener_attribute_name" type="text" value="not_set" />
       <input name="opener_id" id ="update_opener_id" type="text" value ="1" />
     </div>
-    <form action=<%= raw   "/welcome/update_main" %> id="update_main" method="post" data-remote="true" >
-      <div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
-      <div style="display:none">
-        <input name="id" id="update_main_id" type="text" />
-        <input name="table_name" id ="update_main_class_name" type="text"  />
-        <input name="attribute_name" id="update_main_attribute_name" type="text" />
-      </div>
-    </form>
-    <form action=<%= raw   "/welcome/child_unload" %> id="child_unload_main"  method="post" data-remote="true" >
-      <div style="margin:0;padding:0"><input name="authenticity_token" type="hidden" value= <%= raw  "#{form_authenticity_token}" %> /></div>
-      <div style="display:none">
-        <input name="id" id="child_unload_main_id" type="text" />
-        <input name="table_name" id ="child_unloade_main_table_name" type="text"  />
-        <input name="attribute_name" id ="child_unload_main_attribute_name" type="text"  />
-      </div>
-    </form>
+
+
     <div style="display:none">
       <input type="text" id= "x_height" /><label> dummy_x</label>
       <input type="text" id= "a_height" /><label> dummy_a</label>

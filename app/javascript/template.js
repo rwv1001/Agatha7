@@ -112,22 +112,7 @@ function content_end() {
 }
 window.content_end = content_end;
 
-function display_page(page_name, option_str) {
-  const page_name_id = "display_page_name";
-  const option_id = "display_page_option";
-  const form_id = "display_page";
 
-  const page_name_elt = document.getElementById(page_name_id);
-  const option_elt = document.getElementById(option_id);
-  const form_elt = document.getElementById(form_id);
-
-  if (page_name_elt) page_name_elt.value = page_name;
-  if (option_elt) option_elt.value = option_str;
-
-  // If you want to submit the form:
-  // if (form_elt) form_elt.submit();
-}
-window.display_page = display_page;
 
 function hide_div(div_id) {
 
@@ -1538,36 +1523,7 @@ window.end_drag = end_drag
 
 window.separate_resizing = separate_resizing;
 
-function action_select(table_name) {
-  wait();
-  const select_str = "action_select_" + table_name;
 
-  const select_str1459 = "#" + select_str;
-  const select_elt = document.getElementById((select_str1459).slice(1)); //rwv vanilla change
-  if (select_elt != null) {
-    const option_name = select_elt.val();
-    const page_name_id = "display_page_name"
-    const option_id = "display_page_option"
-    const form_id = "display_page"
-
-    const page_name_id1466 = "#" + page_name_id;
-    const page_name_elt = document.getElementById((page_name_id1466).slice(1)); //rwv vanilla change
-
-    const option_id1467 = "#" + option_id;
-    const option_elt = document.getElementById((option_id1467).slice(1)); //rwv vanilla change
-
-    const form_id1468 = "#" + form_id;
-    const form_elt = document.getElementById((form_id1468).slice(1)); //rwv vanilla change
-    page_name_elt.attr("value", table_name);
-    option_elt.attr("value", option_name);
-
-    //form_elt.submit();
-  }
-  else {
-    unwait();
-  }
-}
-window.action_select = action_select;
 
 
 window.set_double_scroll = set_double_scroll;

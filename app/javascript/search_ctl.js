@@ -373,7 +373,6 @@ function submitFormAsPost(form_id, endpoint = '/welcome/table_search') {
             // Assume it's JavaScript and execute it
             try {
               const script = document.createElement('script');
-              console.log("🔄 submitFormAsPost form_id: ", form_id, " endpoint: ", endpoint);
               console.log("🔄 submitFormAsPost gets html code: ", html);
               script.textContent = html;
               document.head.appendChild(script);
