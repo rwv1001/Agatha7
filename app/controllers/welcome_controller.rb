@@ -609,7 +609,14 @@ layout "welcome"
     
     respond_to do |format|
       format.json { render json: { status: 'success', table_name: table_name, field_name: field_name } }
-      format.js { render js: js_code }
+      format.js { 
+        render "delete_column", :locals => {
+          :search_ctl => search_ctl, 
+          :table_name => table_name, 
+          :field_name => field_name,
+          :js_code => js_code
+        }
+      }
     end
   end
   
@@ -646,17 +653,7 @@ layout "welcome"
 
     end
 
-#    result = RubyProf.stop
-#  printer = RubyProf::GraphHtmlPrinter.new(result)
-# file = File.open('profile-graph.html', File::WRONLY |  File::CREAT)
 
-  #  my_str = "";
-## printer.print(file, :min_percent=>0)
-# Rails.logger.error("Does this work?");
-# file.close
-
-
-#elapsed = Time.now  - start; Rails.logger.debug("table_search_end, time: #{elapsed}");
     Rails.logger.debug("RWV WelcomeController:table_search end");
     Rails.logger.flush;
   end
@@ -672,17 +669,7 @@ layout "welcome"
     respond_to do |format|
       format.js { render "add_external_filter", :locals => {:external_filter => external_filter, :table_name => table_name } } 
     end
-=begin
-    respond_to do |format|
-      format.js  do
-        render :update do |page|
-          page.insert_html(:bottom, "external_filters_#{table_name}", :partial => "shared/external_filter", :object => external_filter );
-          page << "resizeExternalFilters(\"#{table_name}\")"
-          page << "unwait();"
-        end
-      end
-    end
-=end
+
   end
   def update_external_filter
     class_name = params[:class_name];
@@ -699,15 +686,7 @@ layout "welcome"
     respond_to do |format|
       format.js  { render "update_external_filter", :locals => {:external_filter_element => external_filter_element, :class_name => class_name, :filter_id => filter_id, :elt_index=> elt_index} } 
     end
-=begin
-        render :update do |page|
-          page.replace("external_filter_argument_span_#{class_name}_#{filter_id}_#{elt_index}",  :partial => "shared/external_filter_element", :object=> external_filter_element)
-          page << "resizeExternalFilters(\"#{class_name}\")"
-          page << "unwait();"
-        end
-      end
-    end
-=end    
+  
   end
 
   def refresh_external_filter
@@ -1102,12 +1081,16 @@ layout "welcome"
     respond_to do |format|
       if search_done
         # If search was already performed, add to existing table
+        Rails.logger.debug("new rendering new for #{class_name}")
         format.js { render "new", :locals=>{:table_name => table_name, :id => id, :class_name => class_name, :new_row => new_row, :search_done => search_done, :search_ctl => search_ctl } }
+        
       else
         # If no search was performed, render a new table with just this entry
         # We'll need to handle opening the edit window in the table_search template
+        Rails.logger.debug("new rendering table_search for #{class_name}")
         format.js { render "table_search", :locals => {:search_ctl => search_ctl, :params => params, :table_name => class_name, :search_results=> search_results, :new_entry_id => id, :open_edit => true} }
       end
+      
       format.html do
         Rails.logger.debug "WARNING: Form submitted as HTML instead of JavaScript format"
         Rails.logger.debug "Request headers: #{request.headers['Accept']}"
@@ -2389,14 +2372,6 @@ layout "welcome"
     end
     respond_to do |format|
       format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => (alert_str.include?("did not select") ? 'error' : 'success')} }
-=begin      
-      do
-        render :update do |page|
-          page << "alert('#{alert_str}')"
-          page << "unwait();"
-        end
-      end
-=end      
     end
   end
 
@@ -2639,19 +2614,106 @@ layout "welcome"
       error_str = "You did not select any students. "
     end
 
+    # Check if TutorialSchedule table search has been performed to determine display update strategy
+    search_done = params[:search_done] == 'true'
+    Rails.logger.debug("WelcomeController:create_tutorial_schedules search_done: #{search_done}")
+    
+    # Prepare TutorialSchedule table rows for display (similar to create_lecture_schedule)
+    search_ctls = session[:search_ctls]
+    new_rows = []
+    tutorial_schedule_search_results = nil
+    
+    if search_ctls && search_ctls["TutorialSchedule"] && new_tutorial_schedule_ids.any?
+      search_ctl_tutorial_schedule = search_ctls["TutorialSchedule"]
+      begin
+        eval("TutorialSchedule.set_controller(search_ctl_tutorial_schedule)")
+        
+        # Create row objects for each new tutorial schedule
+        new_tutorial_schedule_ids.each do |tutorial_schedule_id|
+          tutorial_schedule = TutorialSchedule.find(tutorial_schedule_id)
+          
+          # Create a simple object with the required attributes for the template
+          new_row = OpenStruct.new(
+            id: tutorial_schedule.id,
+            class_name: "TutorialSchedule",
+            search_controller: search_ctl_tutorial_schedule
+          )
+          
+          # Copy all the tutorial_schedule attributes to new_row so filter.eval_str can access them
+          tutorial_schedule.attributes.each do |key, value|
+            new_row.send("#{key}=", value) unless new_row.respond_to?(key)
+          end
+          
+          new_rows << new_row
+        end
+        
+        Rails.logger.debug("DEBUG: Created TutorialSchedule row objects for #{new_rows.length} new TutorialSchedules")
+        
+        # If no search has been performed on TutorialSchedule table, create a SearchResults with the new rows
+        if !search_done
+          tutorial_schedule_search_results = SearchResults.new(new_rows, :search_results, search_ctl_tutorial_schedule)
+        end
+        
+      rescue => e
+        Rails.logger.error("ERROR creating TutorialSchedule row objects: #{e.message}")
+        new_rows = []
+      end
+    else
+      Rails.logger.debug("DEBUG: No search controller found for TutorialSchedule or no tutorial schedules created")
+    end
+
     if error_str.length>0
       alert_str = error_str;
       alert_status = 'error';
+      
+      respond_to do |format|
+        format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
+      end
     else
       alert_str = success_str;
       alert_status = 'success';
-    end
+      
+      @search_ctls = session[:search_ctls];
+      search_ctl_tutorial_schedule = @search_ctls["TutorialSchedule"];
 
-    respond_to do |format|
-      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
+      respond_to do |format|
+        if search_done
+          # If TutorialSchedule search was already performed, add to existing table
+          # For multiple new rows, we'll render the first one and let ActionCable handle the rest
+          format.js { 
+            render "new", :locals => { 
+              :table_name => "TutorialSchedule", 
+              :id => new_tutorial_schedule_ids.first, 
+              :class_name => "TutorialSchedule", 
+              :new_row => new_rows.first, 
+              :search_done => search_done, 
+              :search_ctl => search_ctl_tutorial_schedule,
+              :success_str => "Tutorial schedule created successfully"
+            } 
+          }
+        else
+          # If no TutorialSchedule search was performed, render a new TutorialSchedule table with all new entries
+          format.js { 
+            render "table_search", :locals => {
+              :search_ctl => search_ctl_tutorial_schedule, 
+              :params => params, 
+              :table_name => "TutorialSchedule", 
+              :search_results => tutorial_schedule_search_results,
+              :new_entry_id => new_tutorial_schedule_ids.first,
+              :open_edit => false,
+              :success_str => "Tutorial schedule created successfully",
+              :display_notification => true
+            }
+          }        
+        end
+        format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }        
+      end
     end    
     
   end
+
+
+
   
   def create_lecture_schedule
     lecture = Lecture.new;
@@ -2668,6 +2730,7 @@ layout "welcome"
     lecture.number_of_classes = params[:number_of_classes];
     lecture.number_of_lectures = params[:number_of_lectures];
     lecture.save;
+
     success_str = "Lecture schedule created successfully with id #{lecture.id}";
 
      present = WillingLecturer.find_by_sql("SELECT * FROM willing_lecturers WHERE person_id = #{person_id} AND course_id = #{course_id}");
@@ -2775,8 +2838,9 @@ layout "welcome"
     search_ctl_lecture = @search_ctls["Lecture"];
 
     respond_to do |format|
-      if search_done
+      if search_done && new_row
         # If Lecture search was already performed, add to existing table
+        Rails.logger.debug("WelcomeController:create_lecture_schedule rendering new.")
         format.js { 
           render "new", :locals => { 
             :table_name => "Lecture", 
@@ -2784,11 +2848,13 @@ layout "welcome"
             :class_name => "Lecture", 
             :new_row => new_row, 
             :search_done => search_done, 
-            :search_ctl => search_ctl_lecture 
-          } 
+            :search_ctl => search_ctl_lecture,
+            :success_str => success_str
+          }          
         }
-      else
+      elsif !search_done && lecture_search_results
         # If no Lecture search was performed, render a new Lecture table with just this entry
+        Rails.logger.debug("WelcomeController:create_lecture_schedule rendering table_search.")
         format.js { 
           render "table_search", :locals => {
             :search_ctl => search_ctl_lecture, 
@@ -2796,13 +2862,19 @@ layout "welcome"
             :table_name => "Lecture", 
             :search_results => lecture_search_results,
             :new_entry_id => lecture.id,
-            :open_edit => false
+            :open_edit => false,
+            :success_str => success_str,
+            :display_notification => true
           }
-        }
+        }        
+      else
+        # Fallback to showing success message if row creation failed
+        format.js { render :partial => "shared/alert", :locals => {:alert_str => success_str, :status_flag => 'success' } }
       end
     end
   
   end
+
   def make_attendee(lecture_ids)
     error_str = "";
     success_str="";
