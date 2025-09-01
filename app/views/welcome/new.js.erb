@@ -30,9 +30,17 @@ console.log('Welcome: Creating new entry for table: ' + '<%="#{table_name}"%>' +
         }
         
         if (window.showNotification) {
-          window.showNotification('New <%= class_name %> created successfully', 'success');
+          <% if local_assigns[:success_str] %>
+            window.showNotification('<%= j success_str %>', 'success');
+          <% else %>
+            window.showNotification('New <%= class_name %> created successfully', 'success');
+          <% end %>
         } else {
-          alert('New <%= class_name %> created successfully');
+          <% if local_assigns[:success_str] %>
+            alert('<%= j success_str %>');
+          <% else %>
+            alert('New <%= class_name %> created successfully');
+          <% end %>
         }
       } else {
         console.warn('❌ Could not find last row in search results table');

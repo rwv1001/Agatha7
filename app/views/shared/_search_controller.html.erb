@@ -26,7 +26,7 @@
 
 <div>
   <span id=<%= raw "possible_filters_div_#{search_controller.table_name}" %> >
-    <%= raw  render(:partial => "shared/possible_filters", :object => search_controller) %>
+    <%= raw  render(:partial => "shared/possible_filters", locals: { search_ctl: search_controller }) %>
   </span>
   <span>
      <%= raw  render(:partial => "shared/possible_external_filters", :object => search_controller) %>

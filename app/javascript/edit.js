@@ -678,6 +678,7 @@ function on_create(id) {
             specific_div.appendChild(sent_num_lectures);
             specific_div.appendChild(sent_num_classes);
             specific_div.appendChild(sent_previous_suggestions);
+            createNewEntryParams('Lecture','action_form');
             break;
         }
         case 'create_tutorials_from_course': {
@@ -747,6 +748,7 @@ function on_create(id) {
                 new_elt.removeAttribute('id');
                 specific_div.appendChild(new_elt);
             });
+            createNewEntryParams('TutorialSchedule','action_form');
             break;
         }
         case 'create_email_from_template': {
@@ -783,6 +785,7 @@ function on_create(id) {
                 new_elt.removeAttribute('id');
                 specific_div.appendChild(new_elt);
             });
+            createNewEntryParams('Email','action_form');
             break;
         }
     }

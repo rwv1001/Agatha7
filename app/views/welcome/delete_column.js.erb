@@ -1,0 +1,18 @@
+<%# Execute the DOM cleanup JavaScript first %>
+<%= raw js_code %>
+
+<%# Update the possible_filters partial with the updated search controller %>
+(function() {
+  console.log('🗑️ DELETE_COLUMN: Updating possible_filters partial for table <%= table_name %>');
+  
+  // Find the possible_filters container and update it
+  const possibleFiltersContainer = document.getElementById("possible_filters_<%= table_name %>");
+  if (possibleFiltersContainer) {
+    possibleFiltersContainer.innerHTML = '<%= escape_javascript(render partial: "shared/possible_filters", locals: { search_ctl: search_ctl }) %>';
+    console.log('🗑️ DELETE_COLUMN: Successfully updated possible_filters partial');
+  } else {
+    console.warn('🗑️ DELETE_COLUMN: Could not find possible_filters container for table <%= table_name %>');
+  }
+  
+  console.log('🗑️ DELETE_COLUMN: Column deletion and filter update completed');
+})();
