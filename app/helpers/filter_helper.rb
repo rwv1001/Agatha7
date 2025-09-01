@@ -76,6 +76,8 @@ module FilterHelper
       ))
     ]
     extended_filters["AgathaEmail"]=[
+      ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_agatha_emails b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.agatha_email_id = a0.id ORDER BY b1_group_id asc),';<br>')", "")),
        ExtendedFilter.new(:subquery, SubQuery.new([],"Email attachments", "agatha_email_attachments" ,
       %q{array_to_string(ARRAY(SELECT '<a class=attachment_links target=_blank href=\#{AgathaFile.find(' || b2.id || ').agatha_data.url}>'|| b2.agatha_data_file_name || '</a>'  FROM email_attachments b1 INNER JOIN agatha_files b2 ON b2.id = b1.agatha_file_id WHERE b1.agatha_email_id = a0.id ORDER BY b2.agatha_data_file_name ASC), '<br>')}, "")),
        ExtendedFilter.new(:external_filter, ExternalFilter.new("AgathaEmail", #class_name
@@ -215,6 +217,8 @@ module FilterHelper
       ))
     ]
     extended_filters["Attendee"]=[
+      ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_attendees b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.attendee_id = a0.id ORDER BY b1_group_id asc),';<br>')", "")),
       ExtendedFilter.new(:external_filter, ExternalFilter.new("Attendee", #class_name
       "Attendees in group", #header
       "(SELECT COUNT(*) FROM group_attendees b1 WHERE b1.group_id = arg_value AND b1.attendee_id = a0.id)>0", #where_str_
@@ -501,6 +505,8 @@ module FilterHelper
   ];
     extended_filters["Day"]=[]
     extended_filters["EmailTemplate"]=[
+      ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_email_templates b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.email_template_id = a0.id ORDER BY b1_group_id asc),';<br>')", "")),
       ExtendedFilter.new(:external_filter, ExternalFilter.new("EmailTemplate", #class_name
       "Email templates in group", #header
       "(SELECT COUNT(*) FROM group_email_templates b1 WHERE b1.email_template_id = a0.id AND b1.group_id = arg_value)>0", #where_str_
@@ -652,6 +658,8 @@ module FilterHelper
     extended_filters["EmailAttachment"]=[]
 
     extended_filters["Institution"]=[
+     ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_institutions b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.institution_id = a0.id ORDER BY b1_group_id asc),';<br>')", "")),
      ExtendedFilter.new(:external_filter, ExternalFilter.new("Institution", #class_name
       "Institutions in group", #header
       "(SELECT COUNT(*) FROM group_institutions b1 WHERE b1.institution_id = a0.id AND b1.group_id = arg_value)>0", #where_str_
@@ -792,7 +800,9 @@ module FilterHelper
       false#group_selector_
       ))
 ];
-    extended_filters["Location"]=[        
+    extended_filters["Location"]=[
+     ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_locations b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.location_id = a0.id ORDER BY b1_group_id asc),';<br>')", "")),        
      ExtendedFilter.new(:external_filter, ExternalFilter.new("Location", #class_name
       "Locations in group", #header
       "(SELECT COUNT(*) FROM group_locations b1 WHERE b1.location_id = a0.id AND b1.group_id = arg_value)>0", #where_str_
@@ -835,6 +845,8 @@ module FilterHelper
     extended_filters["Term"]=[];
     extended_filters["TermName"]=[];
     extended_filters["Tutorial"]=[
+      ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_tutorials b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.tutorial_id = a0.id ORDER BY b1_group_id asc),';<br>')", "")),
       ExtendedFilter.new(:foreign_filter, ForeignFilter.new("tutorial_schedule_id","person_id")),
        ExtendedFilter.new(:foreign_filter, ForeignFilter.new("tutorial_schedule_id","course_id")),
         ExtendedFilter.new(:foreign_filter, ForeignFilter.new("tutorial_schedule_id","term_id")),
@@ -1045,6 +1057,8 @@ module FilterHelper
       ))
   ];
     extended_filters["User"]=[
+      ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_users b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.user_id = a0.id ORDER BY b1_group_id asc),';<br>')", "")),
        ExtendedFilter.new(:external_filter, ExternalFilter.new("User", #class_name
       "Users in group", #header
       "(SELECT COUNT(*) FROM group_users b1 WHERE b1.user_id = a0.id AND b1.group_id = arg_value)>0", #where_str_
@@ -1083,9 +1097,16 @@ module FilterHelper
       false#group_selector_
       ))
   ];
-    extended_filters["WillingLecturer"]=[]
+    extended_filters["WillingLecturer"]=[
+      ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_willing_lecturers b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.willing_lecturer_id = a0.id ORDER BY b1_group_id asc),';<br>')", ""))
+    ]
     extended_filters["WillingTeacher"]=[]
-    extended_filters["WillingTutor"]=[]
+    extended_filters["WillingTutor"]=[ 
+      ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,
+      "array_to_string(ARRAY(SELECT CASE b1.group_id WHEN 1 THEN 'Not Set' ELSE b2.group_name END AS b1_group_id FROM group_willing_tutors b1 INNER JOIN groups b2 ON b1.group_id = b2.id WHERE b1.willing_tutor_id = a0.id ORDER BY b1_group_id asc),';<br>')", ""))
+     
+    ]
     
     extended_filters["Person"]=[
     ExtendedFilter.new(:subquery, SubQuery.new([],"Groups in", "groups_in" ,

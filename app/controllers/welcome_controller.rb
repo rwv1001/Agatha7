@@ -1714,6 +1714,7 @@ layout "welcome"
       format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
     end
   end
+
   def attach_to_emails(ids)
     error_str = "";
     success_str = "";
@@ -1911,17 +1912,7 @@ layout "welcome"
     
       respond_to do |format|
       format.js  { render "send_emails", :locals => { :status_val => status_val, :error_str => error_str } } 
-=begin
-        render :update do |page|
-          if error_str.length >0
-            page << notification_alert(status_val["error_str"], 'error');
-          else
-            page << notification_alert(status_val["success_str"], 'success');
-          end
-          page << "unwait();"
-        end
-      end
-=end
+
     end
   end
 
@@ -2053,19 +2044,7 @@ layout "welcome"
     search_ctl = @search_ctls["AgathaEmail"];
     respond_to do |format|
       format.js  {render "create_email_from_template", :locals => {:error_str => error_str, :success_str => success_str, :warning_str=> warning_str, :id_str=> id_str, :search_ctl => search_ctl } }
-=begin      
-      do
-        render :update do |page|
-          page << "unwait()";
-          if error_str.length >0
-            page << "alert('#{error_str}')";
-          else
-            j_str = "alert(\"#{success_str+warning_str}\")";
-            page << j_str;
-          end
-        end
-      end
-=end
+
     end
   end
   def max_tutorials(ids)
@@ -2191,18 +2170,7 @@ layout "welcome"
     
     respond_to do |format|
       format.js  {render "max_tutorials", :locals => {:search_ctl => search_ctl, :ids => people_ids, :success_str => success_str, :error_str => error_str} } 
-=begin      
-      do
-        render :update do |page|
-          if error_str.length >0
-            page << "alert('#{error_str}')";
-          else
-            page << "alert('#{success_str}')";
-          end
-          page << "unwait();"
-        end
-      end
-=end      
+    
     end
 
   end
@@ -2337,21 +2305,39 @@ layout "welcome"
             action: "data_invalidation",
             triggered_by: {
               user_id: session[:user_id] || 0,
-              table: "WillingLecturer",
-              operation: "create",
-              person_id: person_id.to_i
+              operation: "make_willing_lecturer",
+              person_id: person_id.to_i,
+              course_ids: affected_course_ids
             },
-            affected_relationships: [{
-              table: 'Course',
-              operation: 'update',
-              ids: affected_course_ids,
-              reason: "Person #{person_id} became willing lecturer for these courses"
-            }],
+            affected_relationships: [
+              {
+                table: 'WillingLecturer',
+                operation: 'create',
+                ids: [], # New records, so no specific IDs yet
+                reason: "New willing lecturer records created",
+                source_operation: "make_willing_lecturer"
+              },
+              {
+                table: 'Person',
+                operation: 'update',
+                ids: [person_id.to_i],
+                reason: "Person #{person_id} became willing lecturer for courses",
+                source_operation: "make_willing_lecturer"
+              },
+              {
+                table: 'Course',
+                operation: 'update',
+                ids: affected_course_ids,
+                reason: "Courses gained new willing lecturer (Person #{person_id})",
+                source_operation: "make_willing_lecturer"
+              }
+            ],
             timestamp: Time.current.to_f
           })
-          Rails.logger.info("Broadcast data invalidation for willing lecturer creation affecting courses: #{affected_course_ids}")
+          Rails.logger.info("RWV Successfully broadcast invalidation notification for make_willing_lecturer operation")
+          Rails.logger.info("RWV Affected tables: WillingLecturer (create), Person #{person_id} (update), Courses #{affected_course_ids} (update)")
         rescue => e
-          Rails.logger.error "ActionCable broadcast failed in make_willing_lecturer: #{e.message}"
+          Rails.logger.error "RWV ActionCable broadcast failed in make_willing_lecturer: #{e.message}"
         end
       end
       
@@ -2404,21 +2390,39 @@ layout "welcome"
             action: "data_invalidation",
             triggered_by: {
               user_id: session[:user_id] || 0,
-              table: "WillingTutor",
-              operation: "create",
-              person_id: person_id.to_i
+              operation: "make_willing_tutor",
+              person_id: person_id.to_i,
+              course_ids: affected_course_ids
             },
-            affected_relationships: [{
-              table: 'Course',
-              operation: 'update',
-              ids: affected_course_ids,
-              reason: "Person #{person_id} became willing tutor for these courses"
-            }],
+            affected_relationships: [
+              {
+                table: 'WillingTutor',
+                operation: 'create',
+                ids: [], # New records, so no specific IDs yet
+                reason: "New willing tutor records created",
+                source_operation: "make_willing_tutor"
+              },
+              {
+                table: 'Person',
+                operation: 'update',
+                ids: [person_id.to_i],
+                reason: "Person #{person_id} became willing tutor for courses",
+                source_operation: "make_willing_tutor"
+              },
+              {
+                table: 'Course',
+                operation: 'update',
+                ids: affected_course_ids,
+                reason: "Courses gained new willing tutor (Person #{person_id})",
+                source_operation: "make_willing_tutor"
+              }
+            ],
             timestamp: Time.current.to_f
           })
-          Rails.logger.info("Broadcast data invalidation for willing tutor creation affecting courses: #{affected_course_ids}")
+          Rails.logger.info("RWV Successfully broadcast invalidation notification for make_willing_tutor operation")
+          Rails.logger.info("RWV Affected tables: WillingTutor (create), Person #{person_id} (update), Courses #{affected_course_ids} (update)")
         rescue => e
-          Rails.logger.error "ActionCable broadcast failed in make_willing_tutor: #{e.message}"
+          Rails.logger.error "RWV ActionCable broadcast failed in make_willing_tutor: #{e.message}"
         end
       end
       
@@ -3327,6 +3331,9 @@ Rails.logger.info("RWV remove_from_group B")
 
   def add_to_groups(group_ids, class_id, class_name)
     @user_id = session[:user_id];
+    debug_prefix = "WelcomeController:add_to_groups  (#{Time.now.strftime('%H:%M:%S')})"
+    Rails.logger.info("#{debug_prefix}: BEGIN");
+    permissioned = [];
     if group_ids.length >0
       group_ids_str = "";
       group_ids.each do |group_id|
@@ -3337,13 +3344,13 @@ Rails.logger.info("RWV remove_from_group B")
       end
       group_ids_str = "(#{group_ids_str})";
       unpermissioned_str = "SELECT * FROM groups WHERE id IN #{group_ids_str} AND table_name = '#{class_name.tableize}' AND (owner_id != #{@user_id} AND private = true)"
-      Rails.logger.info("unpermissioned_str: #{unpermissioned_str}");
+      Rails.logger.info("#{debug_prefix}: unpermissioned_str: #{unpermissioned_str}");
       unpermissioned = Group.find_by_sql(unpermissioned_str)
       wrong_types_str = "SELECT * FROM groups WHERE id IN #{group_ids_str} AND table_name != '#{class_name.tableize}' AND (owner_id = #{@user_id} OR private = false)";
-      Rails.logger.info("wrong_types_str: #{wrong_types_str}");
+      Rails.logger.info("#{debug_prefix}: wrong_types_str: #{wrong_types_str}");
       wrong_types = Group.find_by_sql(wrong_types_str)
       permissioned_str = "SELECT * FROM groups WHERE id IN #{group_ids_str} AND table_name = '#{class_name.tableize}' AND (owner_id = #{@user_id} OR private = false)"
-      Rails.logger.info("permissioned_str: #{permissioned_str}");
+      Rails.logger.info("#{debug_prefix}: permissioned_str: #{permissioned_str}");
       permissioned = Group.find_by_sql(permissioned_str)
       if permissioned.length >0
         permission_id_str = "";
@@ -3372,8 +3379,8 @@ Rails.logger.info("RWV remove_from_group B")
     # ActionCable invalidation notification for add_to_groups
     if permissioned.length > 0 && unpresent.length > 0
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for add_to_groups operation")
-        
+        Rails.logger.info("#{debug_prefix}: RWV Broadcasting ActionCable invalidation notifications for add_to_groups operation")
+
         # Build affected relationships for adding to multiple groups
         affected_relationships = []
         
@@ -3407,10 +3414,10 @@ Rails.logger.info("RWV remove_from_group B")
           reason: "group_membership_added",
           source_operation: "add_to_groups"
         }
-        
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for add_to_groups")
+
+        Rails.logger.info("#{debug_prefix}: RWV Identified #{affected_relationships.length} affected table relationships for add_to_groups")
         affected_relationships.each do |rel|
-          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+          Rails.logger.info("#{debug_prefix}: RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
         end
         
         # Broadcast the invalidation notification
@@ -3426,16 +3433,16 @@ Rails.logger.info("RWV remove_from_group B")
           affected_relationships: affected_relationships,
           timestamp: Time.current.to_f
         })
-        
-        Rails.logger.info("RWV Successfully broadcast invalidation notification for add_to_groups operation")
-        
+
+        Rails.logger.info("#{debug_prefix}: RWV Successfully broadcast invalidation notification for add_to_groups operation")
+
       rescue => e
-        Rails.logger.error "RWV ActionCable broadcast failed in add_to_groups: #{e.message}"
-        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        Rails.logger.error "#{debug_prefix}: RWV ActionCable broadcast failed in add_to_groups: #{e.message}"
+        Rails.logger.error "#{debug_prefix}: RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for add_to_groups due to no valid operations");
+      Rails.logger.info("#{debug_prefix}: RWV Skipping ActionCable invalidation broadcast for add_to_groups due to no valid operations");
     end
     
     @search_ctls = session[:search_ctls];
@@ -4015,6 +4022,9 @@ Rails.logger.info("RWV remove_from_group B")
   end
   
   def update_collection_status(ids, new_status)
+    error_str = "";
+    success_str = "";
+    
     if (ids.length > 0)
       id_str = ""
       ids.each do |id|
@@ -4044,11 +4054,64 @@ Rails.logger.info("RWV remove_from_group B")
     else
       success_str = "no tutorials were selected"
     end
-      @search_ctls = session[:search_ctls];
-      respond_to do |format|
-        format.js  { render "update_collection_status", :locals => {:search_ctls => @search_ctls, :ids => ids, :success_str => success_str } }
-      
+
+    # ActionCable invalidation notification for update_collection_status
+    if ids.length > 0
+      begin
+        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for update_collection_status operation")
+        
+        # Build affected relationships for collection status updates
+        affected_relationships = []
+        
+        # Tutorial records updated
+        affected_relationships << {
+          table: "Tutorial",
+          operation: "update",
+          ids: ids.map(&:to_i),
+          reason: "collection_status_updated",
+          source_operation: "update_collection_status"
+        }
+        
+        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for update_collection_status")
+        affected_relationships.each do |rel|
+          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+        end
+        
+        # Broadcast the invalidation notification
+        ActionCable.server.broadcast("search_table_updates", {
+          action: "data_invalidation",
+          triggered_by: {
+            user_id: session[:user_id],
+            operation: "update_collection_status",
+            tutorial_ids: ids,
+            new_status: new_status
+          },
+          affected_relationships: affected_relationships,
+          timestamp: Time.current.to_f
+        })
+        
+        Rails.logger.info("RWV Successfully broadcast invalidation notification for update_collection_status operation")
+        
+      rescue => e
+        Rails.logger.error "RWV ActionCable broadcast failed in update_collection_status: #{e.message}"
+        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        # Continue without ActionCable if it fails
       end
+    else
+      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for update_collection_status due to no tutorials selected")
+    end
+
+    if error_str.length>0
+      alert_str = error_str;
+      alert_status = 'error';
+    else
+      alert_str = success_str;
+      alert_status = 'success';
+    end
+
+    respond_to do |format|
+      format.js  {render :partial => "shared/alert", :locals => {:alert_str => alert_str, :status_flag => alert_status } }
+    end
     end
 
   def check_dependencies(ids, table_name)
@@ -4248,7 +4311,7 @@ Rails.logger.info("RWV remove_from_group B")
       end      
     end
     Rails.logger.info("RWV delete_array ids_for_deletion: #{ids_for_deletion.inspect}");
-    if(table_name!='Group')
+    if(table_name!='Group' && table_name!='WillingLecturer' && table_name!= 'WillingTutor')
     join_model_class = "Group#{table_name}".constantize
     group_ids = join_model_class
       .where("#{table_name.downcase}_id": ids_for_deletion)
@@ -4581,14 +4644,6 @@ Rails.logger.info("RWV remove_from_group B")
     group_filters = FilterController.GetGroupFilters(table_name, @user_id)
     respond_to do |format|
       format.js {render "update_group_filters",  :locals => {:table_name =>table_name, :group_filters => group_filters } }
-=begin     
-        render :update do |page|
-         
-          page.replace_html("group_filters_#{table_name}", :partial => "shared/group_filters", :object => group_filters);
-          page << "unwait();"
-        end
-      end
-=end
     end
   end
 
