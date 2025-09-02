@@ -4179,9 +4179,11 @@ Rails.logger.info("RWV remove_from_group B")
   end
 
   def delete_array(ids, table_name)
+    debug_prefix = "WelcomeController:delete_array (#{Time.now.strftime('%H:%M:%S')})"
+    Rails.logger.info("#{debug_prefix} BEGIN");
     dependencies_present = check_dependencies(ids, table_name)
-    Rails.logger.info("RWV delete_array BEGIN");
-    Rails.logger.info("RWV delete_array dependencies_present: #{dependencies_present.inspect}");
+
+    Rails.logger.info("#{debug_prefix} dependencies_present: #{dependencies_present.inspect}");
 
     delete_hash = {}
     delete_hash_str ={}
@@ -4195,35 +4197,36 @@ Rails.logger.info("RWV remove_from_group B")
       do_delete = true;
       
       current_dependencies = dependencies_present[id_count];
-      Rails.logger.info("RWV delete_array current_dependencies: #{current_dependencies.inspect}");
+      Rails.logger.info("#{debug_prefix} delete_array current_dependencies: #{current_dependencies.inspect}");
       if table_name == "User" && ids[id_count] == session[:user_id]
         do_delete = false;
         error_str = "You cannot delete your user account whilst you are logged in. "
       elsif current_dependencies.length >0
         if  current_dependencies.has_key?("WillingTutor") || current_dependencies.has_key?("WillingLecturer") ||current_dependencies.has_key?("Group") || current_dependencies.has_key?("MaxTutorial") || current_dependencies.has_key?("User") || current_dependencies.has_key?("TutorialSchedule") || current_dependencies.has_key?("Lecture") ||  current_dependencies.has_key?("Term") ||current_dependencies.has_key?("Person")||current_dependencies.has_key?("AgathaEmail") ||current_dependencies.has_key?("AgathaFile")
           do_delete = false;
-          Rails.logger.info("RWV delete_array do_delete = false for current_dependencies: #{current_dependencies.inspect}");
+          Rails.logger.info("#{debug_prefix} delete_array do_delete = false for current_dependencies: #{current_dependencies.inspect}");
         elsif  table_name == "AgathaFile" && current_dependencies.has_key?("EmailAttachment")
           do_delete = false;
-          Rails.logger.info("RWV delete_array do_delete = false for AgathaFile}");
+          Rails.logger.info("#{debug_prefix} delete_array do_delete = false for AgathaFile");
         elsif table_name == "Lecture" && current_dependencies.has_key?("Attendee")
           do_delete = false;
-          Rails.logger.info("RWV delete_array do_delete = false for Lecture");
+          Rails.logger.info("#{debug_prefix} delete_array do_delete = false for Lecture");
         elsif table_name == "TutorialSchedule" && current_dependencies.has_key?("Tutorial") && current_dependencies["Tutorial"].length >1
           do_delete = false;
-          Rails.logger.info("RWV delete_array do_delete = false for TutorialSchedule with multiple Tutorials");
+          Rails.logger.info("#{debug_prefix} delete_array do_delete = false for TutorialSchedule with multiple Tutorials");
         elsif table_name == "Person" && current_dependencies.has_key?("TutorialSchedule")
           do_delete = false;
-          Rails.logger.info("RWV delete_array do_delete = false for Person with TutorialSchedule");
+          Rails.logger.info("#{debug_prefix} delete_array do_delete = false for Person with TutorialSchedule");
         else
           do_delete = true;
-          Rails.logger.info("RWV delete_array do_delete = true for current_dependencies: #{current_dependencies.inspect}");
+          Rails.logger.info("#{debug_prefix} delete_array do_delete = true for current_dependencies: #{current_dependencies.inspect}");
         end
       end
       if do_delete
+        Rails.logger.info("#{debug_prefix} do_delete = true");
         delete_tutorial_schedule = false;
         ids_for_deletion << ids[id_count];
-        Rails.logger.info("RWV delete_array added #{ids[id_count]} to ids_for_deletion: #{ids_for_deletion.inspect}");
+        Rails.logger.info("#{debug_prefix} delete_array added #{ids[id_count]} to ids_for_deletion: #{ids_for_deletion.inspect}");
         num_deletes = num_deletes +1;
         if table_name == "Tutorial"
           tutorial = Tutorial.find(ids[id_count]);
@@ -4234,6 +4237,7 @@ Rails.logger.info("RWV remove_from_group B")
           end
 
         elsif table_name == "Person"
+          Rails.logger.info("#{debug_prefix} table_name = Person");
           tutorials = Tutorial.find_by_sql("SELECT * FROM tutorials WHERE person_id IN (#{ids[id_count]})");
           tutorial_schedule_id_str = "";
           tutorials.each do |tutorial2|
@@ -4244,6 +4248,7 @@ Rails.logger.info("RWV remove_from_group B")
           end
           tutorial_schedules = [];
           if tutorials.length >0
+             Rails.logger.info("#{debug_prefix} tutorials.length >0");
             tutorial_schedules = TutorialSchedule.find_by_sql("SELECT * FROM tutorial_schedules a1 WHERE id IN (#{tutorial_schedule_id_str}) AND (SELECT COUNT(*) FROM tutorials a2 WHERE a2.tutorial_schedule_id = a1.id)=1");
           end
           if tutorial_schedules.length >0
@@ -4253,7 +4258,8 @@ Rails.logger.info("RWV remove_from_group B")
               tutorial_schedule_ids << tutorial_schedule.id;
             end
           end          
-        end        
+        end
+        Rails.logger.info("#{debug_prefix} table_name not Tutorial or Person.length >0");        
         current_dependencies.each do |dependent_table, dependent_ids|
           if(delete_hash.has_key?(dependent_table) == false)          
             delete_hash[dependent_table] ={}
@@ -4264,10 +4270,14 @@ Rails.logger.info("RWV remove_from_group B")
         end
         
         if deleted_ids.length >0
+          Rails.logger.info("#{debug_prefix} deleted_ids.length >0");   
           deleted_ids << ", ";
+        else 
+          Rails.logger.info("#{debug_prefix} deleted_ids.length =0"); 
         end
         deleted_ids << ids[id_count].to_s;
         if delete_tutorial_schedule
+          Rails.logger.info("#{debug_prefix} delete_tutorial_schedule = true"); 
           if(delete_hash.has_key?("TutorialSchedule") == false)
             delete_hash["TutorialSchedule"] ={}
           end
@@ -4295,6 +4305,7 @@ Rails.logger.info("RWV remove_from_group B")
           end
         end
       else
+        Rails.logger.info("#{debug_prefix} do_delete = false");
         current_dependencies.each do |dependent_table, dependent_ids|
           @pluralize_num = dependent_ids.length ;
           error_str << "#{table_name} id = #{ids[id_count]} depends on #{dependent_table} with " + pl("id") + " = "
@@ -4310,14 +4321,16 @@ Rails.logger.info("RWV remove_from_group B")
         end       
       end      
     end
-    Rails.logger.info("RWV delete_array ids_for_deletion: #{ids_for_deletion.inspect}");
+    Rails.logger.info("#{debug_prefix} ids_for_deletion: #{ids_for_deletion.inspect}");
     if(table_name!='Group' && table_name!='WillingLecturer' && table_name!= 'WillingTutor')
     join_model_class = "Group#{table_name}".constantize
+    Rails.logger.info("#{debug_prefix} join_model_class: #{join_model_class.inspect}");
+    Rails.logger.info("#{debug_prefix} table_name.name.underscore for #{table_name}: #{table_name.constantize.name.underscore}");
     group_ids = join_model_class
-      .where("#{table_name.downcase}_id": ids_for_deletion)
+      .where("#{table_name.constantize.name.underscore}_id": ids_for_deletion)
       .distinct
       .pluck(:group_id)
-    Rails.logger.info("RWV delete_array group_ids: #{group_ids.inspect}");
+    Rails.logger.info("#{debug_prefix} delete_array group_ids: #{group_ids.inspect}");
 
     affected_groups = Group.where(id: group_ids)
     else
@@ -4470,6 +4483,25 @@ Rails.logger.info("RWV remove_from_group B")
           end
         else
           Rails.logger.info("RWV Not processing Attendee deletions - table_name is: #{table_name}")
+        end
+        
+        # Tutorial schedule enrollment count changes when Tutorial is deleted
+        if table_name == "Tutorial"
+          # Find tutorial schedules that had the deleted tutorials
+          tutorial_schedule_ids = Tutorial.where(id: ids_for_deletion).distinct.pluck(:tutorial_schedule_id)
+          if tutorial_schedule_ids.any?
+            affected_relationships << {
+              table: "TutorialSchedule",
+              operation: "update", 
+              ids: tutorial_schedule_ids,
+              reason: "enrollment_count_change",
+              source_table: table_name,
+              source_operation: "delete"
+            }
+            Rails.logger.info("RWV Added TutorialSchedule relationship for Tutorial deletions - schedules: #{tutorial_schedule_ids}")
+          else
+            Rails.logger.info("RWV No tutorial_schedule_ids found for deleted tutorials")
+          end
         end
         
         Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships")

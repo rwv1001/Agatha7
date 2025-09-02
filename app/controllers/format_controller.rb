@@ -20,11 +20,11 @@ class FormatController
       # Handle nil user_id by defaulting to 0
       safe_user_id = user_id || 0
       sql_str = "FormatElement.find_by_sql(\"SELECT field_name, insert_string, element_order FROM format_elements WHERE (user_id = " + safe_user_id.to_s +  " AND table_name = '" + table + "' AND in_use = true) ORDER BY element_order asc\")"
-  #    Rails.logger.error( "DEBUG: before eval(#{sql_str})" );
+      Rails.logger.debug( "FormatElements: before eval(#{sql_str})" );
       results = eval(sql_str);
       if(results.length == 0)
         sql_str = "FormatElement.find_by_sql(\"SELECT field_name, insert_string, element_order FROM format_elements WHERE (user_id = 0 AND table_name = '" + table + "' AND in_use = true) ORDER BY element_order asc\")"
- #       Rails.logger.error( "DEBUG: before eval(#{sql_str})" );
+        Rails.logger.error( "FormatElements: v2 before eval(#{sql_str})" );
         results = eval(sql_str);
       end
       format_elements_array = Array.new();

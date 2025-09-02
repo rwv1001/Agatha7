@@ -1232,7 +1232,7 @@ function SetTutorialNumber() {
     action_table.value = "TutorialSchedule";
 
     // Submit the form via Rails UJS
-    csubmitFormAsPost('action_form','/welcome/select_action')
+    submitFormAsPost('action_form','/welcome/select_action')
 }
 
 window.SetTutorialNumber = SetTutorialNumber;
