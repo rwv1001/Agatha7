@@ -87,6 +87,20 @@ class MicrosoftGraphService
   end
   
   def build_email_data(agatha_email, to_email)
+    # Map the from address using EmailAddressMapper
+    original_from = extract_email_address(agatha_email.from_email)
+    mapping_result = EmailAddressMapper.map_from_address(original_from)
+    
+    unless mapping_result[:success]
+      Rails.logger.error "MicrosoftGraphService: #{mapping_result[:error]}"
+      raise StandardError, mapping_result[:error]
+    end
+    
+    actual_from = mapping_result[:send_from]
+    reply_to = mapping_result[:reply_to]
+    
+    Rails.logger.info "MicrosoftGraphService: #{mapping_result[:message]}"
+    
     # Determine content type based on person preferences (default to HTML if not set)
     is_html = agatha_email.person&.html_email.nil? ? true : agatha_email.person.html_email
     
@@ -106,9 +120,16 @@ class MicrosoftGraphService
         ],
         from: {
           emailAddress: {
-            address: extract_email_address(agatha_email.from_email)
+            address: actual_from
           }
-        }
+        },
+        replyTo: [
+          {
+            emailAddress: {
+              address: reply_to
+            }
+          }
+        ]
       }
     }
     
@@ -123,6 +144,9 @@ class MicrosoftGraphService
   end
   
   def format_email_content(content, is_html)
+    # Handle nil content
+    content = content.to_s if content.nil?
+    
     if is_html
       # For HTML emails, use content as-is
       content
@@ -142,40 +166,54 @@ class MicrosoftGraphService
   
   def extract_email_address(from_email_string)
     # Extract clean email address from string like "<email@domain.com>"
-    cleaned = from_email_string.gsub(/\s+/, '').split(';')[0]
-    cleaned = cleaned.gsub(/[<>]/, '') # Remove angle brackets
-    cleaned
+    # Also clean up any template artifacts
+    cleaned = from_email_string.to_s.gsub(/\s+/, '').split(';')[0]
+    
+    # Remove ERB template artifacts
+    cleaned = cleaned.gsub(/!--BEGINinlinetemplate--/, '')
+    cleaned = cleaned.gsub(/!--ENDinlinetemplate--/, '')
+    
+    # Remove angle brackets
+    cleaned = cleaned.gsub(/[<>]/, '')
+    
+    # Remove trailing semicolons
+    cleaned = cleaned.gsub(/;$/, '')
+    
+    cleaned.strip
   end
   
   def build_attachments(agatha_email)
     attachments = []
     
     # Get attachments through the email_attachments association
-    agatha_email.email_attachments.includes(:agatha_file).each do |email_attachment|
-      agatha_file = email_attachment.agatha_file
-      
-      if agatha_file&.agatha_data_file_name.present?
-        begin
-          # Read file content and encode as base64
-          file_path = agatha_file.agatha_data.path
-          if File.exist?(file_path)
-            file_content = File.read(file_path)
-            base64_content = Base64.strict_encode64(file_content)
+    # Handle case where email_attachments is nil (for testing)
+    if agatha_email.email_attachments.present?
+      agatha_email.email_attachments.includes(:agatha_file).each do |email_attachment|
+        agatha_file = email_attachment.agatha_file
+        
+        if agatha_file&.agatha_data_file_name.present?
+          begin
+            # Read file content and encode as base64
+            file_path = agatha_file.agatha_data.path
+            if File.exist?(file_path)
+              file_content = File.read(file_path)
+              base64_content = Base64.strict_encode64(file_content)
             
-            attachment = {
-              "@odata.type" => "#microsoft.graph.fileAttachment",
-              "name" => agatha_file.agatha_data_file_name,
-              "contentType" => agatha_file.agatha_data_content_type || "application/octet-stream",
-              "contentBytes" => base64_content
-            }
-            
-            attachments << attachment
-            Rails.logger.debug("MicrosoftGraphService: Added attachment - #{agatha_file.agatha_data_file_name}")
-          else
-            Rails.logger.warn("MicrosoftGraphService: Attachment file not found - #{file_path}")
+              attachment = {
+                "@odata.type" => "#microsoft.graph.fileAttachment",
+                "name" => agatha_file.agatha_data_file_name,
+                "contentType" => agatha_file.agatha_data_content_type || "application/octet-stream",
+                "contentBytes" => base64_content
+              }
+              
+              attachments << attachment
+              Rails.logger.debug("MicrosoftGraphService: Added attachment - #{agatha_file.agatha_data_file_name}")
+            else
+              Rails.logger.warn("MicrosoftGraphService: Attachment file not found - #{file_path}")
+            end
+          rescue => e
+            Rails.logger.error("MicrosoftGraphService: Error processing attachment #{agatha_file.agatha_data_file_name}: #{e.message}")
           end
-        rescue => e
-          Rails.logger.error("MicrosoftGraphService: Error processing attachment #{agatha_file.agatha_data_file_name}: #{e.message}")
         end
       end
     end
@@ -184,7 +222,7 @@ class MicrosoftGraphService
   end
   
   def send_via_graph_api(email_data, access_token)
-    # Determine the sender email for the API endpoint
+    # Use the mapped 'from' address for the API endpoint (the actual sender)
     from_email = email_data[:message][:from][:emailAddress][:address]
     
     uri = URI("#{GRAPH_API_URL}/users/#{from_email}/sendMail")
@@ -198,6 +236,7 @@ class MicrosoftGraphService
     request.body = email_data.to_json
     
     Rails.logger.debug("MicrosoftGraphService: Sending request to Microsoft Graph API")
+    Rails.logger.debug("MicrosoftGraphService: Using sender address: #{from_email}")
     response = http.request(request)
     
     Rails.logger.debug("MicrosoftGraphService: API Response - Status: #{response.code}")

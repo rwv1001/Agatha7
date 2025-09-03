@@ -566,9 +566,9 @@ function on_create_send(id) {
     const action_div = document.getElementById(class_name + '_action_div');
     // email_template_div is not used
 
-    const term_elt = document.getElementById('edit_email_template_term_id');
+    const term_elt = document.getElementById('edit_EmailTemplate_term_id');
     const term_id = term_elt.value;
-    const course_elt = document.getElementById('edit_email_template_course_id');
+    const course_elt = document.getElementById('edit_EmailTemplate_course_id');
     const course_id = course_elt.value;
 
     const sent_template = document.createElement('input');
@@ -753,9 +753,9 @@ function on_create(id) {
         }
         case 'create_email_from_template': {
             const class_name = document.getElementById('action_class').value;
-            const term_elt = document.getElementById('edit_email_template_term_id');
+            const term_elt = document.getElementById('edit_EmailTemplate_term_id');
             const term_id = term_elt.value;
-            const course_elt = document.getElementById('edit_email_template_course_id');
+            const course_elt = document.getElementById('edit_EmailTemplate_course_id');
             const course_id = course_elt.value;
 
             const sent_template = document.createElement('input');

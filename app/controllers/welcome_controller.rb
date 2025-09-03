@@ -1865,21 +1865,8 @@ layout "welcome"
           Rails.logger.debug("email to address is #{to_email}");
           Rails.logger.debug("email from address is #{agatha_email.from_email}");
           Rails.logger.debug("email subject is #{agatha_email.subject}");
-          
-          begin
-            # Try to send the email using AgathaMailer (which may use Microsoft Graph or SMTP)
-            AgathaMailer.with(agatha_email: agatha_email, to_email: to_email).email.deliver_now
-            agatha_email.sent = true;
-            Rails.logger.info("Email sent successfully to #{to_email}")
-          rescue => e
-            Rails.logger.error("Failed to send email to #{to_email}: #{e.message}")
-            Rails.logger.error(e.backtrace.join("\n"))
-            agatha_email.sent = false;
-            # You could add additional error handling here, such as:
-            # - Adding to a retry queue
-            # - Sending notification to administrators
-            # - Setting error flags on the email record
-          end
+          AgathaMailer.with(agatha_email: agatha_email, to_email: to_email).email.deliver_now
+          agatha_email.sent = true;
         else
           non_emails = non_emails + 1;
           if non_email_str.length >0
@@ -2018,13 +2005,19 @@ layout "welcome"
           Rails.logger.info("Create email, term_year=#{term.year}");
           Rails.logger.info("Create email, body_str=#{body_str}");
 
-          agatha_email.from_email = render_to_string( :inline => template.from_email , :locals => { :me => user_person})
+          agatha_email.from_email = process_email_template(template.from_email, { :me => user_person})
           agatha_email.to_email = person.email
           subject_str = render_to_string( :inline => template.subject , :locals => { :person => person, :term => term, :course => course })
-          agatha_email.subject = conv(subject_str);
+          # Clean up any template artifacts
+          subject_str = subject_str.gsub(/!--BEGINinlinetemplate--/, '').gsub(/!--ENDinlinetemplate--/, '')
+          subject_str = subject_str.gsub(/<!--\s*BEGIN\s*inline\s*template\s*-->/, '').gsub(/<!--\s*END\s*inline\s*template\s*-->/, '')
+          agatha_email.subject = conv(subject_str.strip);
           Rails.logger.debug("pre-rendered body string = #{body_str}");
           begin
              body_str = render_to_string( :inline => body_str , :locals => { :person => person, :term => term, :course => course });
+             # Clean up any template artifacts
+             body_str = body_str.gsub(/!--BEGINinlinetemplate--/, '').gsub(/!--ENDinlinetemplate--/, '')
+             body_str = body_str.gsub(/<!--\s*BEGIN\s*inline\s*template\s*-->/, '').gsub(/<!--\s*END\s*inline\s*template\s*-->/, '')
           rescue Exception =>exc
             body_str = "";
             error_str = "Agatha Email Error has occurred. There is something wrong with the template" 
@@ -4338,7 +4331,7 @@ Rails.logger.info("RWV remove_from_group B")
     if(table_name!='Group' && table_name!='WillingLecturer' && table_name!= 'WillingTutor')
     join_model_class = "Group#{table_name}".constantize
     Rails.logger.info("#{debug_prefix} join_model_class: #{join_model_class.inspect}");
-    Rails.logger.info("#{debug_prefix} table_name.underscore for #{table_name}: #{table_name.underscore}");
+    Rails.logger.info("#{debug_prefix} table_name.name.underscore for #{table_name}: #{table_name.constantize.name.underscore}");
     group_ids = join_model_class
       .where("#{table_name.underscore}_id": ids_for_deletion)
       .distinct
@@ -5574,6 +5567,37 @@ end
         user_id: current_user_id,
         request_timestamp: Time.current.to_f
       }, status: :internal_server_error
+    end
+  end
+  
+  private
+  
+  def process_email_template(template_string, locals = {})
+    # Simple ERB processing without inline template markers
+    # This is used for email fields that contain simple ERB expressions
+    
+    # Create a binding with the local variables
+    binding_context = binding
+    locals.each do |key, value|
+      binding_context.local_variable_set(key, value)
+    end
+    
+    begin
+      # Use ERB to process the template string directly
+      erb = ERB.new(template_string)
+      result = erb.result(binding_context)
+      
+      # Clean up any potential template artifacts that might slip through
+      result = result.gsub(/!--BEGINinlinetemplate--/, '')
+      result = result.gsub(/!--ENDinlinetemplate--/, '')
+      result = result.gsub(/<!--\s*BEGIN\s*inline\s*template\s*-->/, '')
+      result = result.gsub(/<!--\s*END\s*inline\s*template\s*-->/, '')
+      result.strip
+      
+    rescue => e
+      Rails.logger.error "Email template processing error: #{e.message}"
+      # Fallback: return the original string if ERB processing fails
+      template_string
     end
   end
 end  

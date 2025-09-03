@@ -30,8 +30,11 @@ Before setting up Microsoft Graph integration, ensure you have:
 3. Select **Microsoft Graph**
 4. Choose **Application permissions**
 5. Search for and select **Mail.Send**
-6. Click **Add permissions**
-7. Click **Grant admin consent** (requires admin privileges)
+6. Search for and select **User.Read.All** (needed for email address mapping)
+7. Click **Add permissions**
+8. Click **Grant admin consent** (requires admin privileges)
+
+**Note**: The `User.Read.All` permission allows the application to automatically discover valid email accounts in your organization for the email address mapping feature.
 
 ### 3. Create Client Secret
 
