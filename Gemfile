@@ -63,5 +63,9 @@ group :test do
   gem "chromedriver-helper"
 end
 
+# Microsoft Graph API for sending emails
+gem "microsoft_graph_mailer", "~> 0.1.0"
+gem "oauth2", "~> 2.0"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: [ :mingw, :mswin, :x64_mingw, :jruby ]

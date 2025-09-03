@@ -1,14 +1,38 @@
 class AgathaMailer < ApplicationMailer  
   layout 'mailer'
+  
   def email
     agatha_email = params[:agatha_email]
     to_email = params[:to_email]
     email_subject = agatha_email.subject
     from_email = "<#{agatha_email.from_email.gsub(/\s+/,'').split(';')[0];}>"
     email_date = Time.now
-    email_content_type = "multipart/mixed"
     @body_text = agatha_email.body
     Rails.logger.info("email body text = #{@body_text}");
+    
+    # Check if Microsoft Graph should be used
+    use_microsoft_graph = Rails.application.config.respond_to?(:use_microsoft_graph) && 
+                         Rails.application.config.use_microsoft_graph
+    
+    if use_microsoft_graph
+      # Use Microsoft Graph API to send email
+      Rails.logger.info("AgathaMailer: Using Microsoft Graph to send email")
+      graph_service = MicrosoftGraphService.new
+      result = graph_service.send_email(agatha_email, to_email)
+      
+      if result[:success]
+        Rails.logger.info("AgathaMailer: Email sent successfully via Microsoft Graph")
+        # Return a dummy mail object since we're not using ActionMailer delivery
+        return mail(to: to_email, from: from_email, subject: "[SENT VIA GRAPH] #{email_subject}")
+      else
+        Rails.logger.error("AgathaMailer: Microsoft Graph send failed: #{result[:error]}")
+        # Fall back to traditional email sending
+        Rails.logger.info("AgathaMailer: Falling back to traditional SMTP")
+      end
+    end
+    
+    # Traditional ActionMailer sending (fallback or when Graph is disabled)
+    Rails.logger.info("AgathaMailer: Using traditional ActionMailer SMTP")
     if agatha_email.person.html_email
         mail(to: to_email, from: from_email, subject: email_subject, date: email_date, content_type: "text/html") do |format|          
         format.html
