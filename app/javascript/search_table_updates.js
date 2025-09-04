@@ -573,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('🔧 updateChangedCells: updateChangedCells called with:', {
         updateType,
         affectedExtendedFilters,
-        newRowHtml: newRowHtml.substring(0, 200) + '...'
+        newRowHtml: newRowHtml.substring(0, 800) + '...'
       });
       
       // Clean up the HTML and try multiple parsing approaches

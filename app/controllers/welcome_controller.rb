@@ -4222,7 +4222,7 @@ class WelcomeController < ApplicationController
       end
     end
     Rails.logger.info("#{debug_prefix} ids_for_deletion: #{ids_for_deletion.inspect}")
-    if table_name != "Group" && table_name != "WillingLecturer" && table_name != "WillingTutor"
+    if !table_name.start_with?("Group")
       join_model_class = "Group#{table_name}".constantize
       Rails.logger.info("#{debug_prefix} join_model_class: #{join_model_class.inspect}")
       Rails.logger.info("#{debug_prefix} table_name.name.underscore for #{table_name}: #{table_name.constantize.name.underscore}")
