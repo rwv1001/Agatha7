@@ -1,16 +1,17 @@
-<% if error_str.length >0  %>
-    <% str = "error_str"; %>
-    if (window.showNotification) {
-      window.showNotification('<%="#{status_val[str]}"%>', 'error');
-    } else {
-      alert('<%="#{status_val[str]}"%>');
-    }
-<% else  %>
-    <% str = "success_str"; %>
-    if (window.showNotification) {
-      window.showNotification('<%="#{status_val[str]}"%>', 'success');
-    } else {
-      alert('<%="#{status_val[str]}"%>');
-    }
+<% if (status_val["error_str"].length > 0) %>
+  <% str = "error_str"; %>
+  if (window.showNotification) {
+  window.showNotification('<%= raw(status_val[str].gsub("\n", "<br>"))  %>', 'error');
+  } else {
+  alert('<%= raw(status_val[str].gsub("\n", "<br>"))  %>');
+  }
+<% end  %>
+<% if (status_val["success_str"].length > 0) %>
+  <% str = "success_str"; %>
+  if (window.showNotification) {
+  window.showNotification('<%= raw(status_val[str].gsub("\n", "<br>"))  %>', 'success');
+  } else {
+  alert('<%= raw(status_val[str].gsub("\n", "<br>"))  %>');
+  }
 <% end  %>
 unwait();  

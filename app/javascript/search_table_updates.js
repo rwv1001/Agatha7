@@ -3,18 +3,24 @@ import consumer from "./consumer";
 
 // Notification System
 function showNotification(message, type = 'success') {
-  // Remove any existing notifications first
+  // Calculate position for new notification
   const existingNotifications = document.querySelectorAll('.custom-notification');
-  existingNotifications.forEach(notification => notification.remove());
+  let topPosition = 20; // Start at 20px from top
+  
+  // Stack notifications vertically
+  existingNotifications.forEach(notification => {
+    const rect = notification.getBoundingClientRect();
+    topPosition = Math.max(topPosition, rect.bottom + 10); // 10px gap between notifications
+  });
   
   // Create notification element
   const notification = document.createElement('div');
-  notification.className = 'custom-notification';
-  notification.textContent = message;
+  notification.className = 'custom-notification';  
+  notification.innerHTML = message;
   
   // Style the notification
   notification.style.position = 'fixed';
-  notification.style.top = '20px';
+  notification.style.top = topPosition + 'px';
   notification.style.right = '20px';
   notification.style.padding = '12px 20px';
   notification.style.borderRadius = '8px';
