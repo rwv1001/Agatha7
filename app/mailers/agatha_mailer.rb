@@ -8,7 +8,7 @@ class AgathaMailer < ApplicationMailer
     agatha_email = params[:agatha_email]
     to_email = params[:to_email]
     @body_text = agatha_email.body
-    Rails.logger.info("email body text = #{@body_text}")
+    Rails.logger.debug("email body text = #{@body_text}")
 
     # Check if Microsoft Graph should be used
     use_microsoft_graph = Rails.application.config.respond_to?(:use_microsoft_graph) &&
@@ -16,7 +16,7 @@ class AgathaMailer < ApplicationMailer
 
     if use_microsoft_graph
       # Use Microsoft Graph API to send email
-      Rails.logger.info("AgathaMailer: Using Microsoft Graph to send email")
+      Rails.logger.debug("AgathaMailer: Using Microsoft Graph to send email")
       graph_service = MicrosoftGraphService.new
       result = graph_service.send_email(agatha_email, to_email)
 
@@ -24,7 +24,7 @@ class AgathaMailer < ApplicationMailer
       @@last_microsoft_graph_result = result
 
       if result[:success]
-        Rails.logger.info("AgathaMailer: Email sent successfully via Microsoft Graph result= #{result.inspect}")
+        Rails.logger.debug("AgathaMailer: Email sent successfully via Microsoft Graph result= #{result.inspect}")
       else
         Rails.logger.error("AgathaMailer: Microsoft Graph send failed: #{result[:error]}")
       end

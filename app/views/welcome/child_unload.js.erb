@@ -1,9 +1,8 @@
 <%eval("#{edited_table_name}.set_controller(search_ctl)"); %>
-
-<% updated_objects = search_ctl.GetUpdateObjects(edited_table_name, "id", ids); %>  
+<% updated_objects = search_ctl.GetUpdateObjects(edited_table_name, "id", ids); %>
 <% if updated_objects.length>0 %>
-    <% row = updated_objects[0]; %>
-    open_windows.unset('<%="#{edited_table_name}_#{row.id}"%>')
-    <% Rails.logger.info("child unload.js.erb rwv ") %>    
-<% Rails.logger.info("child unload.js.erb rwv 2") %>
+  <% row = updated_objects[0]; %>
+  open_windows.unset('<%="#{edited_table_name}_#{row.id}"%>')
+  <% Rails.logger.debug("child unload.js.erb rwv ") %>
+  <% Rails.logger.debug("child unload.js.erb rwv 2") %>
 <% end %>

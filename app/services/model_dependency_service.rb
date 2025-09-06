@@ -265,13 +265,13 @@ class ModelDependencyService
     # Get all affected relationships for this update
     affected_relationships = get_affected_relationships_for_update(table_name, object_id, field_name)
 
-    Rails.logger.info("=== Data Invalidation for #{table_name} Update ===")
-    Rails.logger.info("Updated object: #{table_name} ID #{object_id}, field: #{field_name}")
-    Rails.logger.info("Affected relationships (#{affected_relationships.length}):")
+    Rails.logger.debug("=== Data Invalidation for #{table_name} Update ===")
+    Rails.logger.debug("Updated object: #{table_name} ID #{object_id}, field: #{field_name}")
+    Rails.logger.debug("Affected relationships (#{affected_relationships.length}):")
 
     affected_relationships.each_with_index do |rel, index|
-      Rails.logger.info("  [#{index}] #{rel[:table]} #{rel[:operation]} (#{rel[:ids].length} records): #{rel[:reason]}")
-      Rails.logger.info("      IDs: #{rel[:ids].inspect}")
+      Rails.logger.debug("  [#{index}] #{rel[:table]} #{rel[:operation]} (#{rel[:ids].length} records): #{rel[:reason]}")
+      Rails.logger.debug("      IDs: #{rel[:ids].inspect}")
     end
 
     # Broadcast the invalidation notification
@@ -288,7 +288,7 @@ class ModelDependencyService
       timestamp: Time.current.to_f
     })
 
-    Rails.logger.info("Successfully broadcast data invalidation notification for #{table_name} update")
+    Rails.logger.debug("Successfully broadcast data invalidation notification for #{table_name} update")
   rescue => e
     Rails.logger.error "ActionCable broadcast failed in ModelDependencyService.send_data_invalidation_for_update: #{e.message}"
     Rails.logger.error "Backtrace: #{e.backtrace.first(5).join('\n')}"

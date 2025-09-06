@@ -1,226 +1,200 @@
-<% Rails.logger.info("update_main.js.erb"); %>
-
+<% Rails.logger.debug("update_main.js.erb"); %>
 <% if fail_str.empty? && attribute_names.any? && ids.any? %>
   <% search_ctls.each do |table_name, search_ctl| %>
     <% eval("#{table_name}.set_controller(search_ctl)") %>
     <% updated_objects = search_ctl.GetUpdateObjects(edited_table_name, attribute_names, ids) %>
-
     <% updated_objects.each do |row| %>
       (function(){
-        const elId   = "<%= "#{row.id}_#{table_name}" %>";
-        const el     = document.getElementById(elId);
-        if (el) {
-          // Store checkbox states before replacement
-          const checkboxes = el.querySelectorAll('input[type="checkbox"]');
-          const checkboxStates = {};
-          checkboxes.forEach(checkbox => {
-            checkboxStates[checkbox.id] = checkbox.checked;
-          });
-          
-          // replaceWith
-          el.outerHTML = "<%= j render(partial: 'shared/search_results_row_button', object: row) %>";
-
-          // Restore checkbox states
-          Object.keys(checkboxStates).forEach(checkboxId => {
-            const checkbox = document.getElementById(checkboxId);
-            if (checkbox) {
-              checkbox.checked = checkboxStates[checkboxId];
-            }
-          });
-          
-          // Add highlighting for updated cells
-          setTimeout(function() {
-            console.log("🎯 update_main.js.erb: MULTI-UPDATE: Attempting to highlight cells for row:", elId);
-            const updatedRowEl = document.getElementById(elId);
-            if (updatedRowEl) {
-              console.log("✅ update_main.js.erb: Found updated row element:", updatedRowEl);
-              <% attribute_names.each do |attr_name| %>
-                (function() {
-                  // Try multiple possible cell class patterns
-                  const possibleClasses = [
-                    "<%= "#{attr_name}_#{table_name}" %>",
-                    "<%= "#{table_name.downcase}_#{attr_name}_#{table_name}" %>",
-                    "<%= "#{table_name.downcase}_#{attr_name.gsub(/_id$/, '')}_#{table_name}" %>"
-                  ];
-                  
-                  let cell = null;
-                  let foundClass = "";
-                  
-                  for (const cellClass of possibleClasses) {
-                    console.log("🔍 Trying cell class:", cellClass);
-                    cell = updatedRowEl.querySelector('.' + cellClass);
-                    if (cell) {
-                      foundClass = cellClass;
-                      break;
-                    }
-                  }
-                  
-                  console.log("🎯 Found cell:", cell, "with class:", foundClass);
-                  if (cell) {
-                    console.log("✨ update_main.js.erb: Adding cell-updated class to:", cell);
-                    cell.classList.add('cell-updated');
-                    setTimeout(() => {
-                      cell.classList.remove('cell-updated');
-                      console.log("🔄 update_main.js.erb: Removed cell-updated class from:", cell);
-                    }, 1500);
-                  } else {
-                    console.log("❌ update_main.js.erb: Could not find cell for attribute: <%= attr_name %>");
-                  }
-                })();
-              <% end %>
-            } else {
-              console.log("❌ update_main.js.erb: Could not find updated row element:", elId);
-            }
-          }, 100);
+      const elId   = "<%= "#{row.id}_#{table_name}" %>";
+      const el     = document.getElementById(elId);
+      if (el) {
+      // Store checkbox states before replacement
+      const checkboxes = el.querySelectorAll('input[type="checkbox"]');
+      const checkboxStates = {};
+      checkboxes.forEach(checkbox => {
+      checkboxStates[checkbox.id] = checkbox.checked;
+      });
+      // replaceWith
+      el.outerHTML = "<%= j render(partial: 'shared/search_results_row_button', object: row) %>";
+      // Restore checkbox states
+      Object.keys(checkboxStates).forEach(checkboxId => {
+      const checkbox = document.getElementById(checkboxId);
+      if (checkbox) {
+      checkbox.checked = checkboxStates[checkboxId];
+      }
+      });
+      // Add highlighting for updated cells
+      setTimeout(function() {
+      console.log("🎯 update_main.js.erb: MULTI-UPDATE: Attempting to highlight cells for row:", elId);
+      const updatedRowEl = document.getElementById(elId);
+      if (updatedRowEl) {
+      console.log("✅ update_main.js.erb: Found updated row element:", updatedRowEl);
+      <% attribute_names.each do |attr_name| %>
+        (function() {
+        // Try multiple possible cell class patterns
+        const possibleClasses = [
+        "<%= "#{attr_name}_#{table_name}" %>",
+        "<%= "#{table_name.downcase}_#{attr_name}_#{table_name}" %>",
+        "<%= "#{table_name.downcase}_#{attr_name.gsub(/_id$/, '')}_#{table_name}" %>"
+        ];
+        let cell = null;
+        let foundClass = "";
+        for (const cellClass of possibleClasses) {
+        console.log("🔍 Trying cell class:", cellClass);
+        cell = updatedRowEl.querySelector('.' + cellClass);
+        if (cell) {
+        foundClass = cellClass;
+        break;
         }
-
-        // update the select option text
-        const newOptionText = "<%= search_ctl.GetShortField(row.id) %>";
-        select_update("<%= table_name %>", <%= row.id %>, newOptionText);
+        }
+        console.log("🎯 Found cell:", cell, "with class:", foundClass);
+        if (cell) {
+        console.log("✨ update_main.js.erb: Adding cell-updated class to:", cell);
+        cell.classList.add('cell-updated');
+        setTimeout(() => {
+        cell.classList.remove('cell-updated');
+        console.log("🔄 update_main.js.erb: Removed cell-updated class from:", cell);
+        }, 1500);
+        } else {
+        console.log("❌ update_main.js.erb: Could not find cell for attribute: <%= attr_name %>");
+        }
+        })();
+      <% end %>
+      } else {
+      console.log("❌ update_main.js.erb: Could not find updated row element:", elId);
+      }
+      }, 100);
+      }
+      // update the select option text
+      const newOptionText = "<%= search_ctl.GetShortField(row.id) %>";
+      select_update("<%= table_name %>", <%= row.id %>, newOptionText);
       })();
     <% end %>
-
     <% if table_name == edited_table_name %>
       <% results_table_name  = "search_results_table_#{table_name}" %>
       <% current_filter_name = "current_filters_#{table_name}" %>
       // hide current filters
       (function() {
-        const filtersEl = document.getElementById("<%= current_filter_name %>");
-        if (filtersEl) filtersEl.style.display = "none";
+      const filtersEl = document.getElementById("<%= current_filter_name %>");
+      if (filtersEl) filtersEl.style.display = "none";
       })();
-
       <% select_string = search_ctl.get_sql_id_string(ids) %>
       <% eval("#{table_name}.set_controller(search_ctl)") %>
       <% new_rows = eval("#{table_name}.find_by_sql(\"#{select_string}\")") %>
-
       <% new_rows.each do |new_row| %>
         (function(){
-          const rowId    = "<%= "#{new_row.id}_#{table_name}" %>";
-          const rowEl    = document.getElementById(rowId);
-          const tableEl  = document.getElementById("<%= results_table_name %>");
-          const htmlStr  = "<%= j render(partial: 'shared/search_results_row_button', object: new_row) %>";
-
-          // Store checkbox states before any replacement
-          let checkboxStates = {};
-          if (rowEl) {
-            const checkboxes = rowEl.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-              checkboxStates[checkbox.id] = checkbox.checked;
-            });
+        const rowId    = "<%= "#{new_row.id}_#{table_name}" %>";
+        const rowEl    = document.getElementById(rowId);
+        const tableEl  = document.getElementById("<%= results_table_name %>");
+        const htmlStr  = "<%= j render(partial: 'shared/search_results_row_button', object: new_row) %>";
+        // Store checkbox states before any replacement
+        let checkboxStates = {};
+        if (rowEl) {
+        const checkboxes = rowEl.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+        checkboxStates[checkbox.id] = checkbox.checked;
+        });
+        }
+        if (rowEl) {
+        // replace existing row
+        rowEl.outerHTML = htmlStr;
+        } else if (tableEl) {
+        // append after last 
+        <tr>
+          const lastTr = tableEl.querySelector("tr:last-child");
+          if (lastTr) {
+          lastTr.insertAdjacentHTML("afterend", htmlStr);
+          // Apply proper cell display based on current display settings
+          setTimeout(() => {
+          const newRowElement = document.getElementById('<%= new_row.id %>_<%= table_name %>');
+          if (newRowElement && typeof window.hideCellsBasedOnCurrentDisplay === 'function') {
+          console.log('🔧 Applying hideCellsBasedOnCurrentDisplay to newly added row in update_main');
+          window.hideCellsBasedOnCurrentDisplay(newRowElement, '<%= table_name %>');
           }
-
-          if (rowEl) {
-            // replace existing row
-            rowEl.outerHTML = htmlStr;
-
-          } else if (tableEl) {
-            // append after last <tr>
-            const lastTr = tableEl.querySelector("tr:last-child");
-            if (lastTr) {
-              lastTr.insertAdjacentHTML("afterend", htmlStr);
-              
-              // Apply proper cell display based on current display settings
-              setTimeout(() => {
-                const newRowElement = document.getElementById('<%= new_row.id %>_<%= table_name %>');
-                if (newRowElement && typeof window.hideCellsBasedOnCurrentDisplay === 'function') {
-                  console.log('🔧 Applying hideCellsBasedOnCurrentDisplay to newly added row in update_main');
-                  window.hideCellsBasedOnCurrentDisplay(newRowElement, '<%= table_name %>');
-                }
-              }, 10);
-            }
-
+          }, 10);
+          }
           } else {
-            // render whole results block
-            const container = document.getElementById("search_results_<%= table_name %>");
-            if (container) {
-              container.innerHTML = "<%= j render(partial: 'shared/search_results', object: SearchResults.new([new_row], :search_results, search_ctl)) %>";
-              resizeX();
-            }
+          // render whole results block
+          const container = document.getElementById("search_results_<%= table_name %>");
+          if (container) {
+          container.innerHTML = "<%= j render(partial: 'shared/search_results', object: SearchResults.new([new_row], :search_results, search_ctl)) %>";
+          resizeX();
           }
-          
+          }
           // Restore checkbox states after replacement
           Object.keys(checkboxStates).forEach(checkboxId => {
-            const checkbox = document.getElementById(checkboxId);
-            if (checkbox) {
-              checkbox.checked = checkboxStates[checkboxId];
-            }
+          const checkbox = document.getElementById(checkboxId);
+          if (checkbox) {
+          checkbox.checked = checkboxStates[checkboxId];
+          }
           });
-          
           // Add highlighting for updated cells in new/replaced rows
           setTimeout(function() {
-            console.log("🎯 MULTI-UPDATE: Attempting to highlight cells for new row:", rowId);
-            const updatedRowEl = document.getElementById(rowId);
-            if (updatedRowEl) {
-              console.log("✅ Found new row element:", updatedRowEl);
-              <% attribute_names.each do |attr_name| %>
-                (function() {
-                  // Try multiple possible cell class patterns
-                  const possibleClasses = [
-                    "<%= "#{attr_name}_#{table_name}" %>",
-                    "<%= "#{table_name.downcase}_#{attr_name}_#{table_name}" %>",
-                    "<%= "#{table_name.downcase}_#{attr_name.gsub(/_id$/, '')}_#{table_name}" %>"
-                  ];
-                  
-                  let cell = null;
-                  let foundClass = "";
-                  
-                  for (const cellClass of possibleClasses) {
-                    console.log("🔍 Trying cell class:", cellClass);
-                    cell = updatedRowEl.querySelector('.' + cellClass);
-                    if (cell) {
-                      foundClass = cellClass;
-                      break;
-                    }
-                  }
-                  
-                  console.log("🎯 Found cell:", cell, "with class:", foundClass);
-                  if (cell) {
-                    console.log("✨ update_main.js.erb: Adding cell-updated class to:", cell);
-                    cell.classList.add('cell-updated');
-                    setTimeout(() => {
-                      cell.classList.remove('cell-updated');
-                      console.log("🔄 update_main.js.erb: Removed cell-updated class from:", cell);
-                    }, 1500);
-                  } else {
-                    console.log("❌ update_main.js.erb: Could not find cell for attribute: <%= attr_name %>");
-                  }
-                })();
-              <% end %>
-            } else {
-              console.log("❌ update_main.js.erb: Could not find new row element:", rowId);
+          console.log("🎯 MULTI-UPDATE: Attempting to highlight cells for new row:", rowId);
+          const updatedRowEl = document.getElementById(rowId);
+          if (updatedRowEl) {
+          console.log("✅ Found new row element:", updatedRowEl);
+          <% attribute_names.each do |attr_name| %>
+            (function() {
+            // Try multiple possible cell class patterns
+            const possibleClasses = [
+            "<%= "#{attr_name}_#{table_name}" %>",
+            "<%= "#{table_name.downcase}_#{attr_name}_#{table_name}" %>",
+            "<%= "#{table_name.downcase}_#{attr_name.gsub(/_id$/, '')}_#{table_name}" %>"
+            ];
+            let cell = null;
+            let foundClass = "";
+            for (const cellClass of possibleClasses) {
+            console.log("🔍 Trying cell class:", cellClass);
+            cell = updatedRowEl.querySelector('.' + cellClass);
+            if (cell) {
+            foundClass = cellClass;
+            break;
             }
+            }
+            console.log("🎯 Found cell:", cell, "with class:", foundClass);
+            if (cell) {
+            console.log("✨ update_main.js.erb: Adding cell-updated class to:", cell);
+            cell.classList.add('cell-updated');
+            setTimeout(() => {
+            cell.classList.remove('cell-updated');
+            console.log("🔄 update_main.js.erb: Removed cell-updated class from:", cell);
+            }, 1500);
+            } else {
+            console.log("❌ update_main.js.erb: Could not find cell for attribute: <%= attr_name %>");
+            }
+            })();
+          <% end %>
+          } else {
+          console.log("❌ update_main.js.erb: Could not find new row element:", rowId);
+          }
           }, 100);
-
           // update the select option text
           const optText = "<%= search_ctl.GetShortField(new_row.id) %>";
           select_update("<%= table_name %>", <%= new_row.id %>, optText);
-        })();
+          })();
+        <% end %>
       <% end %>
+      // recolour the updated table
+      recolour("<%= table_name %>");
     <% end %>
-
-    // recolour the updated table
-    recolour("<%= table_name %>");
-  <% end %>
-
-  action_select_no_js();
-  <% unless success_str.empty? %>
-    if (window.showNotification) {
+    action_select_no_js();
+    <% unless success_str.empty? %>
+      if (window.showNotification) {
       window.showNotification("<%= j success_str %>", 'success');
-    } else {
+      } else {
       alert("<%= j success_str %>");
-    }
-  <% end %>
-
-<% else %>
-  <% unless fail_str.empty? %>
-    if (window.showNotification) {
+      }
+    <% end %>
+  <% else %>
+    <% unless fail_str.empty? %>
+      if (window.showNotification) {
       window.showNotification("<%= j fail_str %>", 'error');
-    } else {
+      } else {
       alert("<%= j fail_str %>");
-    }
+      }
+    <% end %>
   <% end %>
-<% end %>
-
-<% if unwait_flag %>
-  unwait();
-<% end %>
+  <% if unwait_flag %>
+    unwait();
+  <% end %>

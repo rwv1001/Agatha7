@@ -1,5 +1,141 @@
 // ActionCable Search Table Updates
-import consumer from "./consumer";
+// Note: Consumer is created in shared_head.html.erb and available globally
+
+// Check if debug logging is enabled via meta tag (set from environment variable)
+const debugMetaTag = document.querySelector('meta[name="agatha-debug-logging"]');
+const debugLoggingEnabled = debugMetaTag ? debugMetaTag.getAttribute('content') === 'true' : false;
+
+// Disable debug console logs based on environment variable
+if (!debugLoggingEnabled) {
+  // Store original console.log for errors
+  const originalConsoleLog = console.log;
+  console.log = function() {
+    // Only show logs that start with ❌ or ⚠️ (errors and warnings)
+    if (arguments.length > 0 && typeof arguments[0] === 'string' && (arguments[0].startsWith('❌') || arguments[0].startsWith('⚠️'))) {
+      originalConsoleLog.apply(console, arguments);
+    }
+  };
+}
+
+// Global function to hide cells based on current display settings
+// This can be called from anywhere, including ERB templates
+window.hideCellsBasedOnCurrentDisplay = function(rowElement, tableName) {
+  console.log(`🔧 Applying proper display classes for row in table ${tableName}`);
+  
+  // FIRST: Check for manually deleted columns by comparing with existing rows
+  hideDeletedColumns(rowElement, tableName);
+  
+  // SECOND: Apply PageView-based visibility for multi-table actions
+  // Get the current page view configuration from the global variables
+  if (typeof window.displayPageCl === 'undefined' || typeof window.old_page_name === 'undefined') {
+    console.log(`⚠️ Display configuration not available, skipping PageView class updates`);
+    return;
+  }
+  
+  // Use the current page being displayed (e.g., "Person" for Make attendee action)
+  const currentPageName = window.old_page_name;
+  console.log(`🔧 Current page being displayed: ${currentPageName}`);
+  
+  // Get the current option ID from the action_select DOM element for the current page
+  const selectStr = "action_select_" + currentPageName;
+  const selectElement = document.getElementById(selectStr);
+  
+  if (!selectElement) {
+    console.log(`⚠️ No action select element found for ${currentPageName} (looking for ${selectStr}), skipping PageView class updates`);
+    return;
+  }
+  
+  const currentOptionId = parseInt(selectElement.value);
+  console.log(`🔧 Found current option ID from DOM element ${selectStr}: ${currentOptionId}`);
+  
+  // Get the page views for the current page
+  const pageViews = window.displayPageCl.get(currentPageName);
+  if (!pageViews || currentOptionId >= pageViews.length) {
+    console.log(`⚠️ No page view found for ${currentPageName} option ${currentOptionId}, skipping PageView class updates`);
+    return;
+  }
+  
+  const currentPageView = pageViews[currentOptionId];
+  console.log(`🔧 Using page view: ${currentPageView.page_name} - ${currentPageView.option_name} (option ${currentOptionId})`);
+  
+  // Find the display div configuration for the table we're updating
+  // For "Make attendee", this could be welcome_Person or welcome_Lecture
+  let targetDisplayDiv = null;
+  currentPageView.display_divs.forEach(displayDiv => {
+    if (displayDiv.div_id === `welcome_${tableName}`) {
+      targetDisplayDiv = displayDiv;
+    }
+  });
+  
+  if (!targetDisplayDiv) {
+    console.log(`⚠️ No display div found for welcome_${tableName} in current page view, skipping PageView class updates`);
+    console.log(`⚠️ Available display divs: ${currentPageView.display_divs.map(d => d.div_id).join(', ')}`);
+    return;
+  }
+  
+  console.log(`🔧 Found display div config for welcome_${tableName}:`);
+  console.log(`   Visible classes: [${targetDisplayDiv.visible_classes.join(', ')}]`);
+  console.log(`   Invisible classes: [${targetDisplayDiv.invisible_classes.join(', ')}]`);
+  
+  // Apply the invisible classes (hide them)
+  targetDisplayDiv.invisible_classes.forEach(invisibleClass => {
+    const elementsToHide = rowElement.querySelectorAll(invisibleClass);
+    elementsToHide.forEach(element => {
+      element.style.display = 'none';
+      console.log(`🔧 Hidden element with class: ${invisibleClass}`);
+    });
+  });
+  
+  // Apply the visible classes (show them)
+  targetDisplayDiv.visible_classes.forEach(visibleClass => {
+    const elementsToShow = rowElement.querySelectorAll(visibleClass);
+    elementsToShow.forEach(element => {
+      element.style.display = '';
+      console.log(`🔧 Shown element with class: ${visibleClass}`);
+    });
+  });
+  
+  console.log(`✅ Applied PageView display classes for ${tableName} row based on current page view ${currentPageName} option ${currentOptionId}`);
+};
+
+// Helper function for checking deleted columns
+function hideDeletedColumns(rowElement, tableName) {
+  console.log(`🔧 Checking for manually deleted columns in ${tableName} table`);
+  
+  // Find the search results table to see which columns are currently visible
+  const searchResultsDiv = document.getElementById(`search_results_${tableName}`);
+  if (!searchResultsDiv) {
+    console.log(`⚠️ No search results div found for ${tableName}, skipping deleted column check`);
+    return;
+  }
+  
+  // Find an existing row to use as a template for visibility
+  const existingRow = searchResultsDiv.querySelector('tr[id*="_' + tableName + '"]');
+  if (!existingRow) {
+    console.log(`⚠️ No existing rows found in ${tableName} table, skipping deleted column check`);
+    return;
+  }
+  
+  // Get the cells from both the existing row and the new row
+  const existingCells = Array.from(existingRow.querySelectorAll('td'));
+  const newCells = Array.from(rowElement.querySelectorAll('td'));
+  
+  console.log(`🔧 Comparing visibility: existing row has ${existingCells.length} cells, new row has ${newCells.length} cells`);
+  
+  // Apply the same visibility to the new row's cells
+  newCells.forEach((newCell, index) => {
+    if (index < existingCells.length) {
+      const existingCell = existingCells[index];
+      const isHidden = existingCell.style.display === 'none' || 
+                       window.getComputedStyle(existingCell).display === 'none';
+      
+      if (isHidden) {
+        newCell.style.display = 'none';
+        console.log(`🔧 Hidden new cell ${index} to match existing row visibility`);
+      }
+    }
+  });
+}
 
 // Notification System
 function showNotification(message, type = 'success') {
@@ -144,143 +280,6 @@ function initializeExternalFilters() {
   console.log("✅ External filter initialization completed");
 }
 
-// Fallback function to get ActionCable consumer across browsers
-function getActionCableConsumer() {
-  // Try multiple ways to get the consumer for cross-browser compatibility
-  if (typeof consumer !== 'undefined') {
-    return consumer;
-  } else if (window.actionCableConsumer) {
-    return window.actionCableConsumer;
-  } else if (window.consumer) {
-    return window.consumer;
-  } else if (window.ActionCable) {
-    return window.ActionCable.createConsumer();
-  } else {
-    console.error("ActionCable not available in this browser");
-    return null;
-  }
-}
-
-// Global function to hide cells based on current display settings
-// This can be called from anywhere, including ERB templates
-window.hideCellsBasedOnCurrentDisplay = function(rowElement, tableName) {
-  console.log(`🔧 Applying proper display classes for row in table ${tableName}`);
-  
-  // FIRST: Check for manually deleted columns by comparing with existing rows
-  hideDeletedColumns(rowElement, tableName);
-  
-  // SECOND: Apply PageView-based visibility for multi-table actions
-  // Get the current page view configuration from the global variables
-  if (typeof window.displayPageCl === 'undefined' || typeof window.old_page_name === 'undefined') {
-    console.log(`⚠️ Display configuration not available, skipping PageView class updates`);
-    return;
-  }
-  
-  // Use the current page being displayed (e.g., "Person" for Make attendee action)
-  const currentPageName = window.old_page_name;
-  console.log(`🔧 Current page being displayed: ${currentPageName}`);
-  
-  // Get the current option ID from the action_select DOM element for the current page
-  const selectStr = "action_select_" + currentPageName;
-  const selectElement = document.getElementById(selectStr);
-  
-  if (!selectElement) {
-    console.log(`⚠️ No action select element found for ${currentPageName} (looking for ${selectStr}), skipping PageView class updates`);
-    return;
-  }
-  
-  const currentOptionId = parseInt(selectElement.value);
-  console.log(`🔧 Found current option ID from DOM element ${selectStr}: ${currentOptionId}`);
-  
-  // Get the page views for the current page
-  const pageViews = window.displayPageCl.get(currentPageName);
-  if (!pageViews || currentOptionId >= pageViews.length) {
-    console.log(`⚠️ No page view found for ${currentPageName} option ${currentOptionId}, skipping PageView class updates`);
-    return;
-  }
-  
-  const currentPageView = pageViews[currentOptionId];
-  console.log(`🔧 Using page view: ${currentPageView.page_name} - ${currentPageView.option_name} (option ${currentOptionId})`);
-  
-  // Find the display div configuration for the table we're updating
-  // For "Make attendee", this could be welcome_Person or welcome_Lecture
-  let targetDisplayDiv = null;
-  currentPageView.display_divs.forEach(displayDiv => {
-    if (displayDiv.div_id === `welcome_${tableName}`) {
-      targetDisplayDiv = displayDiv;
-    }
-  });
-  
-  if (!targetDisplayDiv) {
-    console.log(`⚠️ No display div found for welcome_${tableName} in current page view, skipping PageView class updates`);
-    console.log(`⚠️ Available display divs: ${currentPageView.display_divs.map(d => d.div_id).join(', ')}`);
-    return;
-  }
-  
-  console.log(`🔧 Found display div config for welcome_${tableName}:`);
-  console.log(`   Visible classes: [${targetDisplayDiv.visible_classes.join(', ')}]`);
-  console.log(`   Invisible classes: [${targetDisplayDiv.invisible_classes.join(', ')}]`);
-  
-  // Apply the invisible classes (hide them)
-  targetDisplayDiv.invisible_classes.forEach(invisibleClass => {
-    const elementsToHide = rowElement.querySelectorAll(invisibleClass);
-    elementsToHide.forEach(element => {
-      element.style.display = 'none';
-      console.log(`🔧 Hidden element with class: ${invisibleClass}`);
-    });
-  });
-  
-  // Apply the visible classes (show them)
-  targetDisplayDiv.visible_classes.forEach(visibleClass => {
-    const elementsToShow = rowElement.querySelectorAll(visibleClass);
-    elementsToShow.forEach(element => {
-      element.style.display = '';
-      console.log(`🔧 Shown element with class: ${visibleClass}`);
-    });
-  });
-  
-  console.log(`✅ Applied PageView display classes for ${tableName} row based on current page view ${currentPageName} option ${currentOptionId}`);
-};
-
-// Helper function for checking deleted columns
-function hideDeletedColumns(rowElement, tableName) {
-  console.log(`🔧 Checking for manually deleted columns in ${tableName} table`);
-  
-  // Find the search results table to see which columns are currently visible
-  const searchResultsDiv = document.getElementById(`search_results_${tableName}`);
-  if (!searchResultsDiv) {
-    console.log(`⚠️ No search results div found for ${tableName}, skipping deleted column check`);
-    return;
-  }
-  
-  // Find an existing row to use as a template for visibility
-  const existingRow = searchResultsDiv.querySelector('tr[id*="_' + tableName + '"]');
-  if (!existingRow) {
-    console.log(`⚠️ No existing rows found in ${tableName} table, skipping deleted column check`);
-    return;
-  }
-  
-  // Get the cells from both the existing row and the new row
-  const existingCells = Array.from(existingRow.querySelectorAll('td'));
-  const newCells = Array.from(rowElement.querySelectorAll('td'));
-  
-  console.log(`🔧 Comparing visibility: existing row has ${existingCells.length} cells, new row has ${newCells.length} cells`);
-  
-  // Apply the same visibility to the new row's cells
-  newCells.forEach((newCell, index) => {
-    if (index < existingCells.length) {
-      const existingCell = existingCells[index];
-      const isHidden = existingCell.style.display === 'none' || 
-                       window.getComputedStyle(existingCell).display === 'none';
-      
-      if (isHidden) {
-        newCell.style.display = 'none';
-        console.log(`🔧 Hidden new cell ${index} to match existing row visibility`);
-      }
-    }
-  });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   console.log("🚀 DOM loaded, initializing ActionCable...");
   console.log("🔍 Checking for ActionCable consumer availability...");
@@ -288,21 +287,58 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize external filters on page load
   initializeExternalFilters();
   
-  const actionCableConsumer = getActionCableConsumer();
-  
-  if (!actionCableConsumer) {
-    console.error("❌ Failed to initialize ActionCable consumer");
-    console.error("❌ Available objects:", {
-      consumer: typeof consumer,
-      window_actionCableConsumer: typeof window.actionCableConsumer,
-      window_consumer: typeof window.consumer,
-      window_ActionCable: typeof window.ActionCable
-    });
-    return;
+  // Wait for ActionCable consumer to be available
+  function waitForActionCableConsumer(attempts = 0) {
+    const maxAttempts = 50; // Wait up to 5 seconds (50 * 100ms)
+    
+    // Try multiple ways to get the consumer for cross-browser compatibility
+    let actionCableConsumer = null;
+    
+    if (window.actionCableConsumer) {
+      actionCableConsumer = window.actionCableConsumer;
+      console.log("✅ Found window.actionCableConsumer");
+    } else if (window.cable) {
+      actionCableConsumer = window.cable;
+      console.log("✅ Found window.cable");
+    } else if (window.searchTableChannel && window.searchTableChannel.consumer) {
+      actionCableConsumer = window.searchTableChannel.consumer;
+      console.log("✅ Found window.searchTableChannel.consumer");
+    } else if (window.ActionCable) {
+      // Create a new consumer if ActionCable is available
+      actionCableConsumer = window.ActionCable.createConsumer();
+      console.log("✅ Created new consumer from window.ActionCable");
+    }
+    
+    if (actionCableConsumer) {
+      console.log("✅ ActionCable consumer available:", actionCableConsumer);
+      console.log("� Attempting to create SearchTableChannel subscription...");
+      initializeActionCable(actionCableConsumer);
+      return;
+    }
+    
+    if (attempts < maxAttempts) {
+      console.log(`⏳ ActionCable consumer not yet available (attempt ${attempts + 1}/${maxAttempts}), retrying...`);
+      console.log("� Available objects:", {
+        window_actionCableConsumer: typeof window.actionCableConsumer,
+        window_consumer: typeof window.consumer,
+        window_ActionCable: typeof window.ActionCable
+      });
+      
+      setTimeout(() => waitForActionCableConsumer(attempts + 1), 100);
+    } else {
+      console.error("❌ Failed to initialize ActionCable consumer after", maxAttempts, "attempts");
+      console.error("❌ Available objects:", {
+        window_actionCableConsumer: typeof window.actionCableConsumer,
+        window_consumer: typeof window.consumer,
+        window_ActionCable: typeof window.ActionCable
+      });
+    }
   }
   
-  console.log("✅ ActionCable consumer available:", actionCableConsumer);
-  console.log("🔗 Attempting to create SearchTableChannel subscription...");
+  // Start waiting for the consumer
+  waitForActionCableConsumer();
+  
+  function initializeActionCable(actionCableConsumer) {
   
   // Add reconnection logic and connection monitoring
   let reconnectAttempts = 0;
@@ -2193,4 +2229,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log("✨ Applied visual highlights to attendee rows");
   });
+  
+  // End of initializeActionCable function
+  }
 });

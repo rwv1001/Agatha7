@@ -1,63 +1,81 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
-    <%= action_cable_meta_tag %>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<%= csrf_meta_tags %>
+<%= csp_meta_tag %>
+<%= action_cable_meta_tag %>
+<meta name="agatha-debug-logging" content="<%= ENV['AGATHA_ENABLE_DEBUG_LOGGING'].to_s.downcase == 'true' ? 'true' : 'false' %>">
+<title><%= yield :title %></title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.png" type="image/png">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon.png">
+<!-- Quill.js CSS -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+<%= stylesheet_link_tag "application" %>
+<%= javascript_importmap_tags %>
+<!-- Quill.js JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script type="module">
+  import { createConsumer } from "@rails/actioncable";
 
-    <title><%= yield :title %></title>
+  // Check if debug logging is enabled via environment variable
+  const debugLoggingEnabled = <%= ENV['AGATHA_ENABLE_DEBUG_LOGGING'].to_s.downcase == 'true' ? 'true' : 'false' %>;
 
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-    
-    <!-- Quill.js CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
-    
-    <%= stylesheet_link_tag "application" %>
-    <%= javascript_importmap_tags %>
-    
-    <!-- Quill.js JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
-    <script type="module">
-      import { createConsumer } from "@rails/actioncable";
-      
-      document.addEventListener('DOMContentLoaded', function() {
-        const cable = createConsumer();
-        const searchTableChannel = cable.subscriptions.create("SearchTableChannel", {
-          connected() { console.log("Connected to SearchTableChannel b"); },
-          disconnected() { console.log("Disconnected from SearchTableChannel"); },
-          received(data) {
-            console.log("Received search table update:", data);
-            if (data.action === 'update_search_table') {
-              updateSearchTableRow(data);
+  // Disable console.log based on environment variable
+  if (!debugLoggingEnabled) {
+    console.log = function() {};
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Create consumer with dynamic URL for Docker environment
+    const getWebSocketURL = () => {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.host;
+      return `${protocol}//${host}/cable`;
+    };
+
+    const cable = createConsumer(getWebSocketURL());
+
+    // Make ActionCable consumer available globally
+    window.actionCableConsumer = cable;
+    window.ActionCable = { createConsumer };
+
+    // console.log("ActionCable consumer initialized with URL:", getWebSocketURL());
+
+    const searchTableChannel = cable.subscriptions.create("SearchTableChannel", {
+      connected() { /* console.log("Connected to SearchTableChannel b"); */ },
+      disconnected() { /* console.log("Disconnected from SearchTableChannel"); */ },
+      received(data) {
+        // console.log("Received search table update:", data);
+        if (data.action === 'update_search_table') {
+          updateSearchTableRow(data);
+        }
+      }
+    });
+
+    function updateSearchTableRow(data) {
+      try {
+        const searchTables = document.querySelectorAll('table[id*="search_table"], .search-table, [data-search-table]');
+        searchTables.forEach(table => {
+          const rowToUpdate = table.querySelector(`tr[data-id="${data.record_id}"], #row_${data.record_id}`);
+          if (rowToUpdate) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = data.html;
+            const newRow = tempDiv.querySelector('tr');
+            if (newRow) {
+              rowToUpdate.innerHTML = newRow.innerHTML;
+              rowToUpdate.style.backgroundColor = '#fff3cd';
+              setTimeout(() => { rowToUpdate.style.backgroundColor = ''; }, 2000);
+              // console.log(`Successfully updated row for record ${data.record_id}`);
             }
           }
         });
-        
-        function updateSearchTableRow(data) {
-          try {
-            const searchTables = document.querySelectorAll('table[id*="search_table"], .search-table, [data-search-table]');
-            searchTables.forEach(table => {
-              const rowToUpdate = table.querySelector(`tr[data-id="${data.record_id}"], #row_${data.record_id}`);
-              if (rowToUpdate) {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = data.html;
-                const newRow = tempDiv.querySelector('tr');
-                if (newRow) {
-                  rowToUpdate.innerHTML = newRow.innerHTML;
-                  rowToUpdate.style.backgroundColor = '#fff3cd';
-                  setTimeout(() => { rowToUpdate.style.backgroundColor = ''; }, 2000);
-                  console.log(`Successfully updated row for record ${data.record_id}`);
-                }
-              }
-            });
-          } catch (error) {
-            console.error('Error updating search table row:', error);
-          }
-        }
-        
-        window.searchTableChannel = searchTableChannel;
-      });
-    </script>
-    <%= yield :head %>
+      } catch (error) {
+        console.error('Error updating search table row:', error);
+      }
+    }
+
+    window.searchTableChannel = searchTableChannel;
+  });
+</script>
+<%= yield :head %>

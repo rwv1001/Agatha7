@@ -61,7 +61,7 @@ class WelcomeController < ApplicationController
     string_update
 
     if session[:search_ctls]
-      #   Rails.logger.error("no need for initialization");
+      #   Rails.logger.debug("no need for initialization");
 
     else
       FilterService.create_external_filters(session)
@@ -113,7 +113,7 @@ class WelcomeController < ApplicationController
     session[:counter] = new_counter
     session[:last_counter_update] = Time.current.to_s
 
-    Rails.logger.info "🔢 Welcome: Counter incremented from #{current_counter} to #{new_counter}"
+    Rails.logger.debug "🔢 Welcome: Counter incremented from #{current_counter} to #{new_counter}"
 
     render json: {
       counter: new_counter,
@@ -126,7 +126,7 @@ class WelcomeController < ApplicationController
     session[:counter] = 0
     session[:last_counter_update] = Time.current.to_s
 
-    Rails.logger.info "🔢 Welcome: Counter reset to 0"
+    Rails.logger.debug "🔢 Welcome: Counter reset to 0"
 
     render json: {
       counter: 0,
@@ -277,7 +277,7 @@ class WelcomeController < ApplicationController
     @user_id = session[:user_id]
     table_name = params["table_change_text"]
     @tables_name = QualifiersStr(table_name)
-    Rails.logger.info("update_external_filters table_name:#{table_name}, tables_name:#{@tables_name}, user_id:#{@user_id}")
+    Rails.logger.debug("update_external_filters table_name:#{table_name}, tables_name:#{@tables_name}, user_id:#{@user_id}")
     search_ctl = @search_ctls[table_name]
     external_filters = search_ctl.external_filters
     # number_of_external_filters = params[:number_of_external_filters];
@@ -300,10 +300,10 @@ class WelcomeController < ApplicationController
       if params.has_key?(num_elements_str)
 
         num_elts = params[num_elements_str].to_i
-        Rails.logger.info("update_external_filters  param #{num_elements_str} = #{num_elts} ")
+        Rails.logger.debug("update_external_filters  param #{num_elements_str} = #{num_elts} ")
         if num_elts < current_arguments.length
           current_arguments = current_arguments[0, num_elts]
-          Rails.logger.info("update_external_filters num_elts:#{num_elts}, current_arguments:#{current_arguments.length}")
+          Rails.logger.debug("update_external_filters num_elts:#{num_elts}, current_arguments:#{current_arguments.length}")
         end
         elt_off_set = 0
         for elt_id in (0..(num_elts - 1))
@@ -352,11 +352,11 @@ class WelcomeController < ApplicationController
           external_filter_elt.group_id = group_id
           external_filter_elt.save
           filter_count += 1
-          Rails.logger.info("update_external_filters hum current_arguments:#{current_arguments.length}")
-          Rails.logger.info("update_external_filters, group_id:#{group_id}, member_id:#{member_id}")
+          Rails.logger.debug("update_external_filters hum current_arguments:#{current_arguments.length}")
+          Rails.logger.debug("update_external_filters, group_id:#{group_id}, member_id:#{member_id}")
         end
       else
-        Rails.logger.info("update_external_filters no param #{num_elements_str}")
+        Rails.logger.debug("update_external_filters no param #{num_elements_str}")
         external_filter.filter_object.current_arguments = []
 
       end
@@ -382,7 +382,7 @@ class WelcomeController < ApplicationController
   end
 
   def order_toggle
-    Rails.logger.error("🧪 TEST: order_toggle called with params: #{params.inspect}")
+    Rails.logger.debug("🧪 TEST: order_toggle called with params: #{params.inspect}")
 
     # unless session[:search_ctls]
     #  InitializeSessionController
@@ -408,15 +408,15 @@ class WelcomeController < ApplicationController
     session_counter_key = :test_toggle_counter_Person
     # Rails.logger.error("🧪 TEST: Session before - #{session_order_key}: #{session[session_order_key].inspect}")
     # Rails.logger.error("🧪 TEST: Session before - #{session_direction_key}: #{session[session_direction_key].inspect}")
-    Rails.logger.error("🧪 TEST: Session before - #{session_counter_key}: #{session[session_counter_key].inspect}")
+    Rails.logger.debug("🧪 TEST: Session before - #{session_counter_key}: #{session[session_counter_key].inspect}")
 
     # Call our test method, passing the session
     # search_ctl.TestOrderToggle(field_name, session)
 
     # Show session data after the call
-    # Rails.logger.error("🧪 TEST: Session after - #{session_order_key}: #{session[session_order_key].inspect}")
-    # Rails.logger.error("🧪 TEST: Session after - #{session_direction_key}: #{session[session_direction_key].inspect}")
-    Rails.logger.error("🧪 TEST: Session after - #{session_counter_key}: #{session[session_counter_key].inspect}")
+    # Rails.logger.debug("🧪 TEST: Session after - #{session_order_key}: #{session[session_order_key].inspect}")
+    # Rails.logger.debug("🧪 TEST: Session after - #{session_direction_key}: #{session[session_direction_key].inspect}")
+    Rails.logger.debug("🧪 TEST: Session after - #{session_counter_key}: #{session[session_counter_key].inspect}")
 
     # Read counter from session, increment it, and update session
     current_counter = session[:test_toggle_counter_Person] || 0
@@ -428,8 +428,8 @@ class WelcomeController < ApplicationController
     session[:_force_save] = Time.current.to_f  # Add dummy value to force dirty flag
     request.session_options[:renew] = true if request.respond_to?(:session_options)  # Force session renewal
 
-    Rails.logger.error("🧪 TEST: Counter incremented from #{current_counter} to #{session[:test_toggle_counter_Person].inspect}")
-    Rails.logger.error("🧪 TEST: Forced session save using delete-set pattern + dummy value + renewal")
+    Rails.logger.debug("🧪 TEST: Counter incremented from #{current_counter} to #{session[:test_toggle_counter_Person].inspect}")
+    Rails.logger.debug("🧪 TEST: Forced session save using delete-set pattern + dummy value + renewal")
 
     # Prepare the response data
     response_data = {
@@ -441,7 +441,7 @@ class WelcomeController < ApplicationController
       status: "success"  # Add status field like the working increment counter
     }
 
-    Rails.logger.error("🧪 TEST: Returning response: #{response_data}")
+    Rails.logger.debug("🧪 TEST: Returning response: #{response_data}")
     session[:search_ctls] = @search_ctls
 
     respond_to do |format|
@@ -454,12 +454,12 @@ class WelcomeController < ApplicationController
   def handle_display_filter_update(search_ctl, table_name, logger_prefix = "")
     return unless params.has_key?("update_display_filters") && params["update_display_filters"] == "true"
 
-    Rails.logger.info("#{logger_prefix} Processing display filter update for #{table_name}")
+    Rails.logger.debug("#{logger_prefix} Processing display filter update for #{table_name}")
 
     return unless params.has_key?("removed_column")
 
     removed_field = params["removed_column"]
-    Rails.logger.info("#{logger_prefix} Removing column: #{removed_field} from #{table_name}")
+    Rails.logger.debug("#{logger_prefix} Removing column: #{removed_field} from #{table_name}")
 
     # Find the index of the removed field in the current filter indices
     field_index_to_remove = nil
@@ -483,19 +483,19 @@ class WelcomeController < ApplicationController
     end
 
     if field_index_to_remove
-      Rails.logger.info("#{logger_prefix} Found field #{removed_field} at position #{field_index_to_remove}, removing from current_filter_indices")
+      Rails.logger.debug("#{logger_prefix} Found field #{removed_field} at position #{field_index_to_remove}, removing from current_filter_indices")
       search_ctl.current_filter_indices.delete_at(field_index_to_remove)
 
       # Save the updated display filter configuration to the database
       search_ctl.updateFilters(search_ctl.current_filter_indices, true)  # Pass current indices and update_display=true
-      Rails.logger.info("#{logger_prefix} Updated display filters for #{table_name}, new indices: #{search_ctl.current_filter_indices}")
+      Rails.logger.debug("#{logger_prefix} Updated display filters for #{table_name}, new indices: #{search_ctl.current_filter_indices}")
     else
       Rails.logger.warn("#{logger_prefix} Could not find field #{removed_field} in current filter indices")
     end
   end
 
   def delete_column
-    Rails.logger.info("🗑️ DELETE_COLUMN: called with params: #{params.inspect}")
+    Rails.logger.debug("🗑️ DELETE_COLUMN: called with params: #{params.inspect}")
 
     table_name = params[:table_name] || "Person"
     field_name = params[:field_name]
@@ -507,8 +507,8 @@ class WelcomeController < ApplicationController
     params[:update_display_filters] = "true"  # Signal that we're updating display filters
     params[:removed_column] = field_name  # The field being removed
 
-    Rails.logger.info("🗑️ DELETE_COLUMN: Setting up table_search parameters")
-    Rails.logger.info("🗑️ DELETE_COLUMN: table_name=#{table_name}, field_name=#{field_name}")
+    Rails.logger.debug("🗑️ DELETE_COLUMN: Setting up table_search parameters")
+    Rails.logger.debug("🗑️ DELETE_COLUMN: table_name=#{table_name}, field_name=#{field_name}")
 
     # Initialize and update controllers
     unless session[:search_ctls]
@@ -575,7 +575,7 @@ class WelcomeController < ApplicationController
       })();
     JAVASCRIPT
 
-    Rails.logger.info("🗑️ DELETE_COLUMN: Column removal processed server-side, returning DOM cleanup JavaScript")
+    Rails.logger.debug("🗑️ DELETE_COLUMN: Column removal processed server-side, returning DOM cleanup JavaScript")
 
     respond_to do |format|
       format.json { render json: {status: "success", table_name: table_name, field_name: field_name} }
@@ -684,7 +684,7 @@ class WelcomeController < ApplicationController
   def refresh_edit_select
     # Capture user ID at the start of the request to prevent race conditions
     current_user_id = session[:user_id]
-    Rails.logger.info("refresh_edit_select: Request initiated by user_id=#{current_user_id}")
+    Rails.logger.debug("refresh_edit_select: Request initiated by user_id=#{current_user_id}")
 
     model_class = params[:model_class]
     foreign_key = params[:foreign_key]
@@ -692,14 +692,14 @@ class WelcomeController < ApplicationController
     current_value = params[:current_value]
     select_element_id = params[:select_element_id]
 
-    Rails.logger.info("refresh_edit_select: Refreshing edit select: select_element_id=#{select_element_id} for #{model_class} foreign_key: #{foreign_key}, foreign_class: #{foreign_class}, current_value: #{current_value} (user: #{current_user_id})")
+    Rails.logger.debug("refresh_edit_select: Refreshing edit select: select_element_id=#{select_element_id} for #{model_class} foreign_key: #{foreign_key}, foreign_class: #{foreign_class}, current_value: #{current_value} (user: #{current_user_id})")
 
     begin
       # Get the search controllers from session
       @search_ctls = session[:search_ctls]
 
       if !@search_ctls
-        Rails.logger.error("refresh_edit_select: No search controllers found in session")
+        Rails.logger.debug("refresh_edit_select: No search controllers found in session")
         render json: {
           error: "No search controllers found",
           user_id: current_user_id,
@@ -707,7 +707,7 @@ class WelcomeController < ApplicationController
         }, status: 400
         return
       else
-        Rails.logger.info("refresh_edit_select: Using search controllers from session")
+        Rails.logger.debug("refresh_edit_select: Using search controllers from session")
       end
 
       # Verify user ID hasn't changed during request processing
@@ -720,18 +720,18 @@ class WelcomeController < ApplicationController
         }, status: 409
         return
       else
-        Rails.logger.info("refresh_edit_select: User ID #{session[:user_id]} is still valid")
+        Rails.logger.debug("refresh_edit_select: User ID #{session[:user_id]} is still valid")
       end
 
       # Get the current object
       object_class = foreign_class.classify.constantize
       current_object = object_class.find(current_value)
       if !current_object
-        Rails.logger.error("refresh_edit_select: No current object found for #{foreign_class} ID #{current_value}")
+        Rails.logger.debug("refresh_edit_select: No current object found for #{foreign_class} ID #{current_value}")
         render json: {error: "refresh_edit_select: No current object found"}, status: 400
         return
       else
-        Rails.logger.info("refresh_edit_select: Found current object for #{foreign_class} ID #{current_value}")
+        Rails.logger.debug("refresh_edit_select: Found current object for #{foreign_class} ID #{current_value}")
       end
 
       # Create a filter controller to get the updated options
@@ -753,7 +753,7 @@ class WelcomeController < ApplicationController
         }
       end
 
-      Rails.logger.info("refresh_edit_select: Returning #{options_array.length} options for #{foreign_key} (user: #{current_user_id})")
+      Rails.logger.debug("refresh_edit_select: Returning #{options_array.length} options for #{foreign_key} (user: #{current_user_id})")
 
       render json: {
         foreign_key: foreign_key,
@@ -765,7 +765,7 @@ class WelcomeController < ApplicationController
         request_timestamp: Time.current.to_f
       }
     rescue => e
-      Rails.logger.error("refresh_edit_select: Error refreshing edit select for user #{current_user_id}: #{e.message}")
+      Rails.logger.debug("refresh_edit_select: Error refreshing edit select for user #{current_user_id}: #{e.message}")
       Rails.logger.error(e.backtrace.join("\n"))
       render json: {
         error: e.message,
@@ -778,7 +778,7 @@ class WelcomeController < ApplicationController
   def refresh_external_filter_select
     # Capture user ID at the start of the request to prevent race conditions
     current_user_id = session[:user_id]
-    Rails.logger.info("refresh_external_filter_select: Request initiated by user_id=#{current_user_id}")
+    Rails.logger.debug("refresh_external_filter_select: Request initiated by user_id=#{current_user_id}")
 
     class_name = params[:class_name]
     filter_id = params[:filter_id].to_i
@@ -786,14 +786,14 @@ class WelcomeController < ApplicationController
     trigger_table = params[:trigger_table]
     trigger_object_id = params[:trigger_object_id].to_i
 
-    Rails.logger.info("refresh_external_filter_select: Refreshing external filter select for #{class_name} filter #{filter_id}, element #{element_id}, triggered by #{trigger_table} ID #{trigger_object_id}")
+    Rails.logger.debug("refresh_external_filter_select: Refreshing external filter select for #{class_name} filter #{filter_id}, element #{element_id}, triggered by #{trigger_table} ID #{trigger_object_id}")
 
     begin
       # Get the search controllers from session
       @search_ctls = session[:search_ctls]
 
       if !@search_ctls || !@search_ctls[class_name]
-        Rails.logger.error("refresh_external_filter_select: No search controller found for class: #{class_name}")
+        Rails.logger.debug("refresh_external_filter_select: No search controller found for class: #{class_name}")
         render json: {
           error: "No search controller found",
           user_id: current_user_id,
@@ -803,13 +803,13 @@ class WelcomeController < ApplicationController
       end
 
       search_ctl = @search_ctls[class_name]
-      Rails.logger.info("refresh_external_filter_select: Using search controller for class: #{class_name}")
+      Rails.logger.debug("refresh_external_filter_select: Using search controller for class: #{class_name}")
 
       # Get the external filter element using the search controller
       external_filter_element = search_ctl.GetExternalFilterElement(filter_id, element_id)
 
       if !external_filter_element
-        Rails.logger.error("refresh_external_filter_select: No external filter element found for filter #{filter_id}, element #{element_id}")
+        Rails.logger.debug("refresh_external_filter_select: No external filter element found for filter #{filter_id}, element #{element_id}")
         render json: {
           error: "External filter element not found",
           user_id: current_user_id,
@@ -817,7 +817,7 @@ class WelcomeController < ApplicationController
         }, status: 400
         return
       else
-        Rails.logger.info("refresh_external_filter_select: Found external filter element for filter #{filter_id}, element #{element_id}")
+        Rails.logger.debug("refresh_external_filter_select: Found external filter element for filter #{filter_id}, element #{element_id}")
       end
 
       # Get the updated member selection
@@ -846,12 +846,12 @@ class WelcomeController < ApplicationController
           id: updated_option.id,
           name: updated_option.name
         }
-        Rails.logger.info("refresh_external_filter_select: Found updated option for #{trigger_table} ID #{trigger_object_id}: #{updated_option.name}")
+        Rails.logger.debug("refresh_external_filter_select: Found updated option for #{trigger_table} ID #{trigger_object_id}: #{updated_option.name}")
       else
-        Rails.logger.info("refresh_external_filter_select: No specific option found for #{trigger_table} ID #{trigger_object_id} - returning all options")
+        Rails.logger.debug("refresh_external_filter_select: No specific option found for #{trigger_table} ID #{trigger_object_id} - returning all options")
       end
 
-      Rails.logger.info("refresh_external_filter_select: Returning #{all_options.length} total options for #{class_name} filter #{filter_id}, element #{element_id}")
+      Rails.logger.debug("refresh_external_filter_select: Returning #{all_options.length} total options for #{class_name} filter #{filter_id}, element #{element_id}")
 
       render json: response_data
     rescue => e
@@ -870,11 +870,11 @@ class WelcomeController < ApplicationController
     class_name = params[:class_name]
     object_id = params[:object_id].to_i
 
-    Rails.logger.info("get_object_display_name: Getting display name for #{class_name} ID #{object_id}")
+    Rails.logger.debug("get_object_display_name: Getting display name for #{class_name} ID #{object_id}")
 
     # Validate parameters
     if class_name.blank? || object_id <= 0
-      Rails.logger.error("get_object_display_name: Invalid parameters - class_name: #{class_name}, object_id: #{object_id}")
+      Rails.logger.debug("get_object_display_name: Invalid parameters - class_name: #{class_name}, object_id: #{object_id}")
       render json: {
         error: "Invalid parameters",
         user_id: current_user_id,
@@ -886,7 +886,7 @@ class WelcomeController < ApplicationController
     # Get search controllers from session
     search_ctls = session[:search_ctls]
     if !search_ctls || !search_ctls[class_name]
-      Rails.logger.error("get_object_display_name: No search controller found for #{class_name}")
+      Rails.logger.debug("get_object_display_name: No search controller found for #{class_name}")
       render json: {
         error: "No search controller found for #{class_name}",
         user_id: current_user_id,
@@ -905,7 +905,7 @@ class WelcomeController < ApplicationController
       class_name.constantize.find(object_id)
       display_name = search_ctl.GetShortField(object_id)
 
-      Rails.logger.info("get_object_display_name: Found display name '#{display_name}' for #{class_name} ID #{object_id}")
+      Rails.logger.debug("get_object_display_name: Found display name '#{display_name}' for #{class_name} ID #{object_id}")
 
       render json: {
         display_name: display_name,
@@ -915,7 +915,7 @@ class WelcomeController < ApplicationController
         request_timestamp: Time.current.to_f
       }
     rescue ActiveRecord::RecordNotFound
-      Rails.logger.error("get_object_display_name: #{class_name} with ID #{object_id} not found")
+      Rails.logger.debug("get_object_display_name: #{class_name} with ID #{object_id} not found")
       render json: {
         error: "#{class_name} with ID #{object_id} not found",
         user_id: current_user_id,
@@ -936,7 +936,7 @@ class WelcomeController < ApplicationController
   def new
     #     RubyProf.start
     #
-    Rails.logger.info("WelcomeController:new, params: #{params.inspect}")
+    Rails.logger.debug("WelcomeController:new, params: #{params.inspect}")
     class_name = params[:class_name]
     table_name = class_name.tableize
     search_done = params[:search_done] == "true"
@@ -1357,7 +1357,7 @@ class WelcomeController < ApplicationController
       error_str = "You have not selected any rows to update. "
     else
 
-      Rails.logger.info(" multi_update 1")
+      Rails.logger.debug(" multi_update 1")
       update_int_fields = {}
       update_text_fields = {}
       field_str = ""
@@ -1425,7 +1425,7 @@ class WelcomeController < ApplicationController
     # ActionCable invalidation notification for multi_update
     if error_str.empty? && ids.any? && field_count > 0
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for multi_update operation")
+        Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for multi_update operation")
 
         # Build affected relationships for multi-update
         affected_relationships = []
@@ -1441,9 +1441,9 @@ class WelcomeController < ApplicationController
           updated_field_count: field_count
         }
 
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for multi_update")
+        Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for multi_update")
         affected_relationships.each do |rel|
-          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]} [fields: #{rel[:updated_fields]&.join(", ")}]")
+          Rails.logger.debug("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]} [fields: #{rel[:updated_fields]&.join(", ")}]")
         end
 
         # Broadcast the invalidation notification
@@ -1461,14 +1461,14 @@ class WelcomeController < ApplicationController
           timestamp: Time.current.to_f
         })
 
-        Rails.logger.info("RWV Successfully broadcast invalidation notification for multi_update operation")
+        Rails.logger.debug("RWV Successfully broadcast invalidation notification for multi_update operation")
       rescue => e
         Rails.logger.error "RWV ActionCable broadcast failed in multi_update: #{e.message}"
         Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for multi_update due to error, no records, or no fields updated")
+      Rails.logger.debug("RWV Skipping ActionCable invalidation broadcast for multi_update due to error, no records, or no fields updated")
     end
 
     Rails.logger.debug(" multi_update 8")
@@ -1530,7 +1530,7 @@ class WelcomeController < ApplicationController
     # ActionCable invalidation notification for add_tutorial_student
     if error_str.empty? && ids.any?
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for add_tutorial_student operation")
+        Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for add_tutorial_student operation")
 
         # Build affected relationships for tutorial student addition
         affected_relationships = []
@@ -1565,9 +1565,9 @@ class WelcomeController < ApplicationController
           related_tutorial_schedule_ids: ids.map(&:to_i)
         }
 
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for add_tutorial_student")
+        Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for add_tutorial_student")
         affected_relationships.each do |rel|
-          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+          Rails.logger.debug("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
         end
 
         # Broadcast the invalidation notification
@@ -1583,19 +1583,19 @@ class WelcomeController < ApplicationController
           timestamp: Time.current.to_f
         })
 
-        Rails.logger.info("RWV Successfully broadcast invalidation notification for add_tutorial_student operation")
+        Rails.logger.debug("RWV Successfully broadcast invalidation notification for add_tutorial_student operation")
       rescue => e
-        Rails.logger.error "RWV ActionCable broadcast failed in add_tutorial_student: #{e.message}"
+        Rails.logger.debug "RWV ActionCable broadcast failed in add_tutorial_student: #{e.message}"
         Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for add_tutorial_student due to error or no tutorial schedules")
+      Rails.logger.debug("RWV Skipping ActionCable invalidation broadcast for add_tutorial_student due to error or no tutorial schedules")
     end
 
     @search_ctls = session[:search_ctls]
     edited_table_name = "Tutorial"
-    Rails.logger.info("add_tutorial_student success_str = #{success_str}")
+    Rails.logger.debug("add_tutorial_student success_str = #{success_str}")
 
     if error_str.length > 0
       alert_str = error_str
@@ -1765,21 +1765,21 @@ class WelcomeController < ApplicationController
                 if microsoft_graph_result
                   # Microsoft Graph was used - check if it actually succeeded
                   if microsoft_graph_result[:success]
-                    Rails.logger.info("send_emails_routine: Microsoft Graph email sent successfully for #{agatha_email.subject}")
+                    Rails.logger.debug("send_emails_routine: Microsoft Graph email sent successfully for #{agatha_email.subject}")
                     agatha_email.sent = true
                     success_str << "Email sent to #{to_email}.<br>"
                     has_emails += 1
                   else
-                    Rails.logger.error("send_emails_routine: Microsoft Graph email failed for #{agatha_email.subject}: #{microsoft_graph_result[:error]}")
+                    Rails.logger.debug("send_emails_routine: Microsoft Graph email failed for #{agatha_email.subject}: #{microsoft_graph_result[:error]}")
                     error_str << "Failed to send email to #{to_email}: #{microsoft_graph_result[:error] || microsoft_graph_result[:message]}.<br>"
                   end
                 else
                   # No Microsoft Graph result - this shouldn't happen with our current setup
-                  Rails.logger.error("send_emails_routine: No Microsoft Graph result found - email sending may not be properly configured")
+                  Rails.logger.debug("send_emails_routine: No Microsoft Graph result found - email sending may not be properly configured")
                   error_str << "Failed to send email to #{to_email}: Email service not properly configured for sending from #{agatha_email.from_email}.<br>"
                 end
               rescue => e
-                Rails.logger.error("send_emails_routine: Email sending failed for #{agatha_email.subject}: #{e.message}")
+                Rails.logger.debug("send_emails_routine: Email sending failed for #{agatha_email.subject}: #{e.message}")
                 error_str << "Failed to send email to #{to_email}: #{e.message}.<br>"
               end
 
@@ -1820,7 +1820,7 @@ class WelcomeController < ApplicationController
             affected_relationships: affected_relationships,
             timestamp: Time.current.to_f
           })
-          Rails.logger.info("send_emails_routine: ActionCable broadcast sent for email status updates")
+          Rails.logger.debug("send_emails_routine: ActionCable broadcast sent for email status updates")
         end
 
         if test_flag == 1
@@ -1838,7 +1838,7 @@ class WelcomeController < ApplicationController
         error_str << "You are logged in as user #{user.name} which is associated with the person #{me.first_name} #{me.second_name}, but this person does not have a valid email which can be used for testing. "
       end
     end
-    Rails.logger.info("send_emails_routine: success_str = #{success_str}, error_str = #{error_str}")
+    Rails.logger.debug("send_emails_routine: success_str = #{success_str}, error_str = #{error_str}")
     ret_val = {}
     ret_val["success_str"] = success_str
     ret_val["error_str"] = error_str
@@ -1911,7 +1911,7 @@ class WelcomeController < ApplicationController
         ids.each do |id|
           person = Person.find(id)
           if !person.salutation.nil? && person.salutation.length > 0
-          # Rails.logger.error("email test #{person.salutation.length }");
+          # Rails.logger.debug("email test #{person.salutation.length }");
           else
             # Rails.logger.error("email test nil or 0");
           end
@@ -1932,8 +1932,8 @@ class WelcomeController < ApplicationController
           user = User.find(user_id)
           user_person_id = user.person_id
           user_person = Person.find(user_person_id)
-          Rails.logger.info("Create email, term_year=#{term.year}")
-          Rails.logger.info("Create email, body_str=#{body_str}")
+          Rails.logger.debug("Create email, term_year=#{term.year}")
+          Rails.logger.debug("Create email, body_str=#{body_str}")
 
           agatha_email.from_email = process_email_template(template.from_email, {me: user_person})
           agatha_email.to_email = person.email
@@ -1952,7 +1952,7 @@ class WelcomeController < ApplicationController
             body_str = ""
             error_str = "Agatha Email Error has occurred. There is something wrong with the template"
           end
-          Rails.logger.info("body_string_ = #{body_str}")
+          Rails.logger.debug("body_string_ = #{body_str}")
           agatha_email.body = conv(body_str)
           agatha_email.sent = false
           agatha_email.email_template_id = email_template_id
@@ -1960,7 +1960,7 @@ class WelcomeController < ApplicationController
           agatha_email.term_id = term_id
           agatha_email.course_id = course_id
           agatha_email.save
-          Rails.logger.info("Created email with id = #{agatha_email.id}")
+          Rails.logger.debug("Created email with id = #{agatha_email.id}")
           # new_emails << agatha_email;
           email_ids << agatha_email.id
           if id_str.length > 0
@@ -1985,7 +1985,7 @@ class WelcomeController < ApplicationController
 
   def max_tutorials(ids)
     people_ids = ids[0..-1]
-    Rails.logger.info("b max_tutorials ids = #{ids.length}")
+    Rails.logger.debug("b max_tutorials ids = #{ids.length}")
     success_str = ""
     if ids.nil? || ids.length == 0
       error_str = "You have not selected any people"
@@ -2089,13 +2089,13 @@ class WelcomeController < ApplicationController
           }
         })
 
-        Rails.logger.info("RWV ActionCable broadcast sent for max_tutorials: #{affected_relationships.length} relationships affected")
+        Rails.logger.debug("RWV ActionCable broadcast sent for max_tutorials: #{affected_relationships.length} relationships affected")
       rescue => e
-        Rails.logger.error("RWV ActionCable broadcast failed for max_tutorials: #{e.message}")
+        Rails.logger.debug("RWV ActionCable broadcast failed for max_tutorials: #{e.message}")
         Rails.logger.error(e.backtrace.join("\n"))
       end
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for max_tutorials due to error or no people")
+      Rails.logger.debug("RWV Skipping ActionCable invalidation broadcast for max_tutorials due to error or no people")
     end
 
     table_name = "Person"
@@ -2131,7 +2131,7 @@ class WelcomeController < ApplicationController
       # ActionCable invalidation notification for assign_tutor
       if tutorial_schedules.any?
         begin
-          Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for assign_tutor operation")
+          Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for assign_tutor operation")
 
           # Build affected relationships for tutor assignment
           affected_relationships = []
@@ -2154,9 +2154,9 @@ class WelcomeController < ApplicationController
             source_operation: "assign_tutor"
           }
 
-          Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for assign_tutor")
+          Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for assign_tutor")
           affected_relationships.each do |rel|
-            Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+            Rails.logger.debug("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
           end
 
           # Broadcast the invalidation notification
@@ -2172,14 +2172,14 @@ class WelcomeController < ApplicationController
             timestamp: Time.current.to_f
           })
 
-          Rails.logger.info("RWV Successfully broadcast invalidation notification for assign_tutor operation")
+          Rails.logger.debug("RWV Successfully broadcast invalidation notification for assign_tutor operation")
         rescue => e
-          Rails.logger.error "RWV ActionCable broadcast failed in assign_tutor: #{e.message}"
-          Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+          Rails.logger.debug "RWV ActionCable broadcast failed in assign_tutor: #{e.message}"
+          Rails.logger.debug "RWV #{e.backtrace.first(5).join("\n")}"
           # Continue without ActionCable if it fails
         end
       else
-        Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for assign_tutor due to no tutorial schedules")
+        Rails.logger.debug("RWV Skipping ActionCable invalidation broadcast for assign_tutor due to no tutorial schedules")
       end
 
       num_updates = tutorial_schedules.length
@@ -2264,10 +2264,10 @@ class WelcomeController < ApplicationController
             ],
             timestamp: Time.current.to_f
           })
-          Rails.logger.info("RWV Successfully broadcast invalidation notification for make_willing_lecturer operation")
-          Rails.logger.info("RWV Affected tables: WillingLecturer (create), Person #{person_id} (update), Courses #{affected_course_ids} (update)")
+          Rails.logger.debug("RWV Successfully broadcast invalidation notification for make_willing_lecturer operation")
+          Rails.logger.debug("RWV Affected tables: WillingLecturer (create), Person #{person_id} (update), Courses #{affected_course_ids} (update)")
         rescue => e
-          Rails.logger.error "RWV ActionCable broadcast failed in make_willing_lecturer: #{e.message}"
+          Rails.logger.debug "RWV ActionCable broadcast failed in make_willing_lecturer: #{e.message}"
         end
       end
 
@@ -2349,10 +2349,10 @@ class WelcomeController < ApplicationController
             ],
             timestamp: Time.current.to_f
           })
-          Rails.logger.info("RWV Successfully broadcast invalidation notification for make_willing_tutor operation")
-          Rails.logger.info("RWV Affected tables: WillingTutor (create), Person #{person_id} (update), Courses #{affected_course_ids} (update)")
+          Rails.logger.debug("RWV Successfully broadcast invalidation notification for make_willing_tutor operation")
+          Rails.logger.debug("RWV Affected tables: WillingTutor (create), Person #{person_id} (update), Courses #{affected_course_ids} (update)")
         rescue => e
-          Rails.logger.error "RWV ActionCable broadcast failed in make_willing_tutor: #{e.message}"
+          Rails.logger.debug "RWV ActionCable broadcast failed in make_willing_tutor: #{e.message}"
         end
       end
 
@@ -2439,7 +2439,7 @@ class WelcomeController < ApplicationController
 
       # ActionCable invalidation notification for create_tutorial_schedules
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for create_tutorial_schedules operation")
+        Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for create_tutorial_schedules operation")
 
         # Collect all created tutorial schedule IDs and tutorial IDs
         created_tutorial_schedule_ids = []
@@ -2512,7 +2512,7 @@ class WelcomeController < ApplicationController
           }
         end
 
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for create_tutorial_schedules")
+        Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for create_tutorial_schedules")
 
         if affected_relationships.any? && new_tutorial_schedule_ids.length > 0
           ActionCable.server.broadcast("search_table_updates", {
@@ -2526,13 +2526,13 @@ class WelcomeController < ApplicationController
             affected_relationships: affected_relationships,
             timestamp: Time.current.to_f
           })
-          Rails.logger.info("Broadcast data invalidation for lecture creation affecting: Course #{course_id}, Person #{person_id}, Lecture #{tutorial_schedule.id}")
+          Rails.logger.debug("Broadcast data invalidation for lecture creation affecting: Course #{course_id}, Person #{person_id}, Lecture #{tutorial_schedule.id}")
         end
 
-        Rails.logger.info("RWV Successfully broadcast invalidation notification for create_tutorial_schedules operation")
+        Rails.logger.debug("RWV Successfully broadcast invalidation notification for create_tutorial_schedules operation")
       rescue => e
-        Rails.logger.error "RWV ActionCable broadcast failed in create_tutorial_schedules: #{e.message}"
-        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        Rails.logger.debug "RWV ActionCable broadcast failed in create_tutorial_schedules: #{e.message}"
+        Rails.logger.debug "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
 
@@ -2751,10 +2751,10 @@ class WelcomeController < ApplicationController
           affected_relationships: affected_relationships,
           timestamp: Time.current.to_f
         })
-        Rails.logger.info("Broadcast data invalidation for lecture creation affecting: Course #{course_id}, Person #{person_id}, Lecture #{lecture.id}")
+        Rails.logger.debug("Broadcast data invalidation for lecture creation affecting: Course #{course_id}, Person #{person_id}, Lecture #{lecture.id}")
       end
     rescue => e
-      Rails.logger.error "ActionCable broadcast failed in create_lecture_schedule: #{e.message}"
+      Rails.logger.debug "ActionCable broadcast failed in create_lecture_schedule: #{e.message}"
     end
 
     @search_ctls = session[:search_ctls]
@@ -2890,7 +2890,7 @@ class WelcomeController < ApplicationController
     # ActionCable invalidation notification for make_attendee
     if error_str.empty? && lecture_ids.any?
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for make_attendee operation")
+        Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for make_attendee operation")
 
         # Build affected relationships for attendee addition
         affected_relationships = []
@@ -2924,9 +2924,9 @@ class WelcomeController < ApplicationController
           related_lecture_ids: lecture_ids.map(&:to_i)
         }
 
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for make_attendee")
+        Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for make_attendee")
         affected_relationships.each do |rel|
-          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids].length} records): #{rel[:reason]}")
+          Rails.logger.debug("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids].length} records): #{rel[:reason]}")
         end
 
         # Broadcast the invalidation notification
@@ -2942,14 +2942,14 @@ class WelcomeController < ApplicationController
           timestamp: Time.current.to_f
         })
 
-        Rails.logger.info("RWV Successfully broadcast invalidation notification for make_attendee operation")
+        Rails.logger.debug("RWV Successfully broadcast invalidation notification for make_attendee operation")
       rescue => e
-        Rails.logger.error "RWV ActionCable broadcast failed in make_attendee: #{e.message}"
-        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        Rails.logger.debug "RWV ActionCable broadcast failed in make_attendee: #{e.message}"
+        Rails.logger.debug "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for make_attendee due to error or no lectures")
+      Rails.logger.debug("RWV Skipping ActionCable invalidation broadcast for make_attendee due to error or no lectures")
     end
 
     if error_str.length > 0
@@ -3056,7 +3056,7 @@ class WelcomeController < ApplicationController
 
     # ActionCable invalidation notifications for attendance changes
     if error_str.empty?
-      Rails.logger.info("ActionCable: Broadcasting invalidation for add_to_lectures")
+      Rails.logger.debug("ActionCable: Broadcasting invalidation for add_to_lectures")
 
       # Broadcast proper search table updates for affected objects
       if people_ids.present? && lecture_id.present?
@@ -3076,17 +3076,17 @@ class WelcomeController < ApplicationController
             end
             if person
               # Broadcast person update (attendance status changed)
-              ModelDependencyService.ModelDependencyService.send_data_invalidation_for_updateinvalidation_for_update("Person", person, "lectures_attended_in_term", person_id, session[:user_id])
+              ModelDependencyService.send_data_invalidation_for_update("Person", person, "lectures_attended_in_term", person_id, session[:user_id])
             end
           end
 
           # Broadcast lecture update (attendee list changed)
-          ModelDependencyService.ModelDependencyService.send_data_invalidation_for_update("Lecture", lecture, "attendees", lecture_id, session[:user_id])
+          ModelDependencyService.send_data_invalidation_for_update("Lecture", lecture, "attendees", lecture_id, session[:user_id])
 
           # Also broadcast any attendee objects that were created
           new_attendees = Attendee.where(person_id: people_ids, lecture_id: lecture_id)
           new_attendees.each do |attendee|
-            ModelDependencyService.ModelDependencyService.send_data_invalidation_for_update("Attendee", attendee, "person_id", attendee.id, session[:user_id])
+            ModelDependencyService.send_data_invalidation_for_update("Attendee", attendee, "person_id", attendee.id, session[:user_id])
           end
         end
       end
@@ -3107,26 +3107,26 @@ class WelcomeController < ApplicationController
   end
 
   def remove_from_group(group_id, ids, class_name2)
-    Rails.logger.info("RWV remove_from_group BEGIN")
+    Rails.logger.debug("RWV remove_from_group BEGIN")
     @user_id = session[:user_id]
     db_group = Group.find(group_id)
     permission = false
     class_ok = false
     num_existing = 0
-    Rails.logger.info("RWV remove_from_group A")
+    Rails.logger.debug("RWV remove_from_group A")
     if !db_group.nil?
       if db_group.private == false || db_group.owner_id = @user_id
         permission = true
       end
     end
-    Rails.logger.info("RWV remove_from_group B")
+    Rails.logger.debug("RWV remove_from_group B")
     if permission
-      Rails.logger.info("RWV remove_from_group C")
+      Rails.logger.debug("RWV remove_from_group C")
       if class_name2.tableize == db_group.table_name
         class_ok = true
-        Rails.logger.info("RWV remove_from_group D")
+        Rails.logger.debug("RWV remove_from_group D")
         if ids.length > 0
-          Rails.logger.info("RWV remove_from_group E")
+          Rails.logger.debug("RWV remove_from_group E")
           id_str = ""
           ids.each do |id|
             if id_str.length > 0
@@ -3134,37 +3134,37 @@ class WelcomeController < ApplicationController
             end
             id_str << id.to_s
           end
-          Rails.logger.info("RWV remove_from_group F")
+          Rails.logger.debug("RWV remove_from_group F")
           already_existing = Group.find_by_sql("SELECT * FROM group_#{class_name2.tableize} WHERE #{class_name2.underscore}_id IN (#{id_str}) AND group_id = #{group_id}")
           num_existing = already_existing.length
           not_present_members = Array.new(ids)
-          Rails.logger.info("RWV remove_from_group G")
+          Rails.logger.debug("RWV remove_from_group G")
 
           already_existing.each do |existing|
             existing_id_str = "existing.#{class_name2.underscore}_id"
             existing_id = eval(existing_id_str)
-            Rails.logger.info("RWV remove_from_group existing_id_str = #{existing_id_str}, existing_id = #{existing_id}")
+            Rails.logger.debug("RWV remove_from_group existing_id_str = #{existing_id_str}, existing_id = #{existing_id}")
             not_present_members.delete(existing_id.to_s)
           end
-          Rails.logger.info("RWV remove_from_group H")
-          Rails.logger.info("RWV remove_from_group not_present_members = #{not_present_members.inspect}")
+          Rails.logger.debug("RWV remove_from_group H")
+          Rails.logger.debug("RWV remove_from_group not_present_members = #{not_present_members.inspect}")
           already_existing.each do |delete_obj|
             destroy_str = "Group#{class_name2}.destroy(#{delete_obj.id})"
-            Rails.logger.info("RWV remove_from_group #{destroy_str}")
+            Rails.logger.debug("RWV remove_from_group #{destroy_str}")
             eval(destroy_str)
             # delete_obj.destroy;
           end
-          Rails.logger.info("RWV remove_from_group I")
+          Rails.logger.debug("RWV remove_from_group I")
         end
-        Rails.logger.info("RWV remove_from_group J")
+        Rails.logger.debug("RWV remove_from_group J")
       end
-      Rails.logger.info("RWV remove_from_group K")
+      Rails.logger.debug("RWV remove_from_group K")
     end
 
     # ActionCable invalidation notification for remove_from_group
     if permission && class_ok && num_existing > 0
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for remove_from_group operation")
+        Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for remove_from_group operation")
 
         # Build affected relationships for group membership removal
         affected_relationships = []
@@ -3199,9 +3199,9 @@ class WelcomeController < ApplicationController
           source_operation: "remove_from_group"
         }
 
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for remove_from_group")
+        Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for remove_from_group")
         affected_relationships.each do |rel|
-          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+          Rails.logger.debug("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
         end
 
         # Broadcast the invalidation notification
@@ -3218,40 +3218,40 @@ class WelcomeController < ApplicationController
           timestamp: Time.current.to_f
         })
 
-        Rails.logger.info("RWV Successfully broadcast invalidation notification for remove_from_group operation")
+        Rails.logger.debug("RWV Successfully broadcast invalidation notification for remove_from_group operation")
       rescue => e
-        Rails.logger.error "RWV ActionCable broadcast failed in remove_from_group: #{e.message}"
-        Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
+        Rails.logger.debug "RWV ActionCable broadcast failed in remove_from_group: #{e.message}"
+        Rails.logger.debug "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for remove_from_group due to permission/class/existence issues")
+      Rails.logger.debug("RWV Skipping ActionCable invalidation broadcast for remove_from_group due to permission/class/existence issues")
     end
 
-    Rails.logger.info("RWV remove_from_group L")
+    Rails.logger.debug("RWV remove_from_group L")
     @search_ctls = session[:search_ctls]
     if class_ok
-      Rails.logger.info("RWV remove_from_group M")
+      Rails.logger.debug("RWV remove_from_group M")
       table_name = class_name2
       search_ctl = @search_ctls[table_name]
       search_ctl_group = @search_ctls["Group"]
     else
-      Rails.logger.info("RWV remove_from_group O")
+      Rails.logger.debug("RWV remove_from_group O")
       search_ctl = nil
     end
-    Rails.logger.info("RWV remove_from_group P")
+    Rails.logger.debug("RWV remove_from_group P")
 
     respond_to do |format|
       format.js { render "remove_from_group", locals: {db_group: db_group, group_id: group_id, permission: permission, class_ok: class_ok, class_name2: class_name2, not_present_members: not_present_members, num_existing: num_existing, search_ctl: search_ctl, search_ctl_group: search_ctl_group, ids: ids, table_name: table_name} }
     end
-    Rails.logger.info("RWV remove_from_group END")
+    Rails.logger.debug("RWV remove_from_group END")
     Rails.logger.flush
   end
 
   def add_to_groups(group_ids, class_id, class_name)
     @user_id = session[:user_id]
     debug_prefix = "WelcomeController:add_to_groups  (#{Time.now.strftime("%H:%M:%S")})"
-    Rails.logger.info("#{debug_prefix}: BEGIN")
+    Rails.logger.debug("#{debug_prefix}: BEGIN")
     permissioned = []
     if group_ids.length > 0
       group_ids_str = ""
@@ -3263,13 +3263,13 @@ class WelcomeController < ApplicationController
       end
       group_ids_str = "(#{group_ids_str})"
       unpermissioned_str = "SELECT * FROM groups WHERE id IN #{group_ids_str} AND table_name = '#{class_name.tableize}' AND (owner_id != #{@user_id} AND private = true)"
-      Rails.logger.info("#{debug_prefix}: unpermissioned_str: #{unpermissioned_str}")
+      Rails.logger.debug("#{debug_prefix}: unpermissioned_str: #{unpermissioned_str}")
       unpermissioned = Group.find_by_sql(unpermissioned_str)
       wrong_types_str = "SELECT * FROM groups WHERE id IN #{group_ids_str} AND table_name != '#{class_name.tableize}' AND (owner_id = #{@user_id} OR private = false)"
-      Rails.logger.info("#{debug_prefix}: wrong_types_str: #{wrong_types_str}")
+      Rails.logger.debug("#{debug_prefix}: wrong_types_str: #{wrong_types_str}")
       wrong_types = Group.find_by_sql(wrong_types_str)
       permissioned_str = "SELECT * FROM groups WHERE id IN #{group_ids_str} AND table_name = '#{class_name.tableize}' AND (owner_id = #{@user_id} OR private = false)"
-      Rails.logger.info("#{debug_prefix}: permissioned_str: #{permissioned_str}")
+      Rails.logger.debug("#{debug_prefix}: permissioned_str: #{permissioned_str}")
       permissioned = Group.find_by_sql(permissioned_str)
       if permissioned.length > 0
         permission_id_str = ""
@@ -3298,7 +3298,7 @@ class WelcomeController < ApplicationController
     # ActionCable invalidation notification for add_to_groups
     if permissioned.length > 0 && unpresent.length > 0
       begin
-        Rails.logger.info("#{debug_prefix}: RWV Broadcasting ActionCable invalidation notifications for add_to_groups operation")
+        Rails.logger.debug("#{debug_prefix}: RWV Broadcasting ActionCable invalidation notifications for add_to_groups operation")
 
         # Build affected relationships for adding to multiple groups
         affected_relationships = []
@@ -3334,9 +3334,9 @@ class WelcomeController < ApplicationController
           source_operation: "add_to_groups"
         }
 
-        Rails.logger.info("#{debug_prefix}: RWV Identified #{affected_relationships.length} affected table relationships for add_to_groups")
+        Rails.logger.debug("#{debug_prefix}: RWV Identified #{affected_relationships.length} affected table relationships for add_to_groups")
         affected_relationships.each do |rel|
-          Rails.logger.info("#{debug_prefix}: RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+          Rails.logger.debug("#{debug_prefix}: RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
         end
 
         # Broadcast the invalidation notification
@@ -3353,14 +3353,14 @@ class WelcomeController < ApplicationController
           timestamp: Time.current.to_f
         })
 
-        Rails.logger.info("#{debug_prefix}: RWV Successfully broadcast invalidation notification for add_to_groups operation")
+        Rails.logger.debug("#{debug_prefix}: RWV Successfully broadcast invalidation notification for add_to_groups operation")
       rescue => e
-        Rails.logger.error "#{debug_prefix}: RWV ActionCable broadcast failed in add_to_groups: #{e.message}"
-        Rails.logger.error "#{debug_prefix}: RWV #{e.backtrace.first(5).join("\n")}"
+        Rails.logger.debug "#{debug_prefix}: RWV ActionCable broadcast failed in add_to_groups: #{e.message}"
+        Rails.logger.debug "#{debug_prefix}: RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
     else
-      Rails.logger.info("#{debug_prefix}: RWV Skipping ActionCable invalidation broadcast for add_to_groups due to no valid operations")
+      Rails.logger.debug("#{debug_prefix}: RWV Skipping ActionCable invalidation broadcast for add_to_groups due to no valid operations")
     end
 
     @search_ctls = session[:search_ctls]
@@ -3373,7 +3373,7 @@ class WelcomeController < ApplicationController
   end
 
   def remove_from_groups(group_ids, class_id, class_name)
-    Rails.logger.info("remove_from_groups begin ")
+    Rails.logger.debug("remove_from_groups begin ")
     @user_id = session[:user_id]
     if group_ids.length > 0
       group_ids_str = ""
@@ -3410,7 +3410,7 @@ class WelcomeController < ApplicationController
     # ActionCable invalidation notification for remove_from_groups
     if permissioned.length > 0 && present.length > 0
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for remove_from_groups operation")
+        Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for remove_from_groups operation")
 
         # Build affected relationships for removing from multiple groups
         affected_relationships = []
@@ -3446,9 +3446,9 @@ class WelcomeController < ApplicationController
           source_operation: "remove_from_groups"
         }
 
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for remove_from_groups")
+        Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for remove_from_groups")
         affected_relationships.each do |rel|
-          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+          Rails.logger.debug("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
         end
 
         # Broadcast the invalidation notification
@@ -3465,21 +3465,21 @@ class WelcomeController < ApplicationController
           timestamp: Time.current.to_f
         })
 
-        Rails.logger.info("RWV Successfully broadcast invalidation notification for remove_from_groups operation")
+        Rails.logger.debug("RWV Successfully broadcast invalidation notification for remove_from_groups operation")
       rescue => e
-        Rails.logger.error "RWV ActionCable broadcast failed in remove_from_groups: #{e.message}"
+        Rails.logger.debug "RWV ActionCable broadcast failed in remove_from_groups: #{e.message}"
         Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for remove_from_groups due to no valid operations")
+      Rails.logger.debug("RWV Skipping ActionCable invalidation broadcast for remove_from_groups due to no valid operations")
     end
 
     @search_ctls = session[:search_ctls]
     table_name = class_name
     search_ctl = @search_ctls[table_name]
     search_ctl_group = @search_ctls["Group"]
-    Rails.logger.info("remove_from_groups 01 ")
+    Rails.logger.debug("remove_from_groups 01 ")
     respond_to do |format|
       format.js { render "remove_from_groups", locals: {group_ids: group_ids, permissioned: permissioned, present: present, unpresent: unpresent, wrong_types: wrong_types, unpermissioned: unpermissioned, search_ctl: search_ctl, search_ctl_group: search_ctl_group, class_name: class_name, class_id: class_id} }
     end
@@ -3508,23 +3508,23 @@ class WelcomeController < ApplicationController
             id_str << id.to_s
           end
           already_existing_str = "SELECT * FROM group_#{class_name2.tableize} WHERE #{class_name2.underscore}_id IN (#{id_str}) AND group_id = #{group_id}"
-          Rails.logger.info("RWV add_to_group, already_existing_str = #{already_existing_str}")
+          Rails.logger.debug("RWV add_to_group, already_existing_str = #{already_existing_str}")
           already_existing = Group.find_by_sql(already_existing_str)
           new_members = Array.new(ids)
-          Rails.logger.info("RWV ids = #{ids.inspect}")
+          Rails.logger.debug("RWV ids = #{ids.inspect}")
           already_existing.each do |existing|
             existing_id_str = "existing.#{class_name2.underscore}_id"
             existing_id = eval(existing_id_str)
-            Rails.logger.info("RWV existing_id_str = #{existing_id_str}, existing_id = #{existing_id}")
+            Rails.logger.debug("RWV existing_id_str = #{existing_id_str}, existing_id = #{existing_id}")
             new_members.delete(existing_id.to_s)
           end
-          Rails.logger.info("RWV new_members = #{new_members.inspect}")
+          Rails.logger.debug("RWV new_members = #{new_members.inspect}")
           new_members.each do |new_id|
             new_group_member_str = "Group#{class_name2}.new"
             new_group_member = eval(new_group_member_str)
             new_group_member.group_id = db_group.id
             new_group_member_id_str = "new_group_member.#{class_name2.underscore}_id = #{new_id}"
-            Rails.logger.info("RWV new_group_member_id_str = #{new_group_member_id_str}")
+            Rails.logger.debug("RWV new_group_member_id_str = #{new_group_member_id_str}")
 
             eval(new_group_member_id_str)
             new_group_member.save
@@ -3536,7 +3536,7 @@ class WelcomeController < ApplicationController
     # ActionCable invalidation notification for add_to_group
     if permission && class_ok && new_members.length > 0
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for add_to_group operation")
+        Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for add_to_group operation")
 
         # Build affected relationships for group membership addition
         affected_relationships = []
@@ -3571,9 +3571,9 @@ class WelcomeController < ApplicationController
           source_operation: "add_to_group"
         }
 
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for add_to_group")
+        Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for add_to_group")
         affected_relationships.each do |rel|
-          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+          Rails.logger.debug("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
         end
 
         # Broadcast the invalidation notification
@@ -3590,14 +3590,14 @@ class WelcomeController < ApplicationController
           timestamp: Time.current.to_f
         })
 
-        Rails.logger.info("RWV Successfully broadcast invalidation notification for add_to_group operation")
+        Rails.logger.debug("RWV Successfully broadcast invalidation notification for add_to_group operation")
       rescue => e
-        Rails.logger.error "RWV ActionCable broadcast failed in add_to_group: #{e.message}"
+        Rails.logger.debug "RWV ActionCable broadcast failed in add_to_group: #{e.message}"
         Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for add_to_group due to permission/class/membership issues")
+      Rails.logger.debug("RWV Skipping ActionCable invalidation broadcast for add_to_group due to permission/class/membership issues")
     end
 
     @search_ctls = session[:search_ctls]
@@ -3652,7 +3652,7 @@ class WelcomeController < ApplicationController
     end
 
     table_name = class_name.tableize
-    Rails.logger.info("RWV Created new group I am here")
+    Rails.logger.debug("RWV Created new group I am here")
     existing_group = Group.where(group_name: group_name, table_name: table_name).first
     new_group_id = nil
 
@@ -3670,7 +3670,7 @@ class WelcomeController < ApplicationController
     Rails.logger.debug("WelcomeController:new_group search_done: #{search_done}")
 
     # Create the new group
-    Rails.logger.info("RWV Created new group")
+    Rails.logger.debug("RWV Created new group")
 
     new_group = Group.new
     new_group.group_name = group_name
@@ -3722,7 +3722,7 @@ class WelcomeController < ApplicationController
           group_search_results = SearchResults.new([new_row], :search_results, search_ctl_group)
         end
       rescue => e
-        Rails.logger.error("ERROR creating Group row object: #{e.message}")
+        Rails.logger.debug("ERROR creating Group row object: #{e.message}")
         new_row = nil
       end
     else
@@ -3731,7 +3731,7 @@ class WelcomeController < ApplicationController
 
     # ActionCable invalidation notification for new_group
     begin
-      Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for new_group operation")
+      Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for new_group operation")
 
       # Build affected relationships for group creation
       affected_relationships = []
@@ -3769,9 +3769,9 @@ class WelcomeController < ApplicationController
         }
       end
 
-      Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for new_group")
+      Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for new_group")
       affected_relationships.each do |rel|
-        Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+        Rails.logger.debug("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
       end
 
       # Broadcast the invalidation notification
@@ -3789,9 +3789,9 @@ class WelcomeController < ApplicationController
         timestamp: Time.current.to_f
       })
 
-      Rails.logger.info("RWV Successfully broadcast invalidation notification for new_group operation")
+      Rails.logger.debug("RWV Successfully broadcast invalidation notification for new_group operation")
     rescue => e
-      Rails.logger.error "RWV ActionCable broadcast failed in new_group: #{e.message}"
+      Rails.logger.debug "RWV ActionCable broadcast failed in new_group: #{e.message}"
       Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
       # Continue without ActionCable if it fails
     end
@@ -3864,7 +3864,7 @@ class WelcomeController < ApplicationController
     # ActionCable invalidation notification for update_tutorial_number
     if tutorial_schedules.any?
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for update_tutorial_number operation")
+        Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for update_tutorial_number operation")
 
         # Build affected relationships for tutorial number updates
         affected_relationships = []
@@ -3878,9 +3878,9 @@ class WelcomeController < ApplicationController
           source_operation: "update_tutorial_number"
         }
 
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for update_tutorial_number")
+        Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for update_tutorial_number")
         affected_relationships.each do |rel|
-          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+          Rails.logger.debug("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
         end
 
         # Broadcast the invalidation notification
@@ -3896,14 +3896,14 @@ class WelcomeController < ApplicationController
           timestamp: Time.current.to_f
         })
 
-        Rails.logger.info("RWV Successfully broadcast invalidation notification for update_tutorial_number operation")
+        Rails.logger.debug("RWV Successfully broadcast invalidation notification for update_tutorial_number operation")
       rescue => e
-        Rails.logger.error "RWV ActionCable broadcast failed in update_tutorial_number: #{e.message}"
+        Rails.logger.debug "RWV ActionCable broadcast failed in update_tutorial_number: #{e.message}"
         Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for update_tutorial_number due to no tutorial schedules")
+      Rails.logger.debug("RWV Skipping ActionCable invalidation broadcast for update_tutorial_number due to no tutorial schedules")
     end
 
     @pluralize_num = ids.length
@@ -3960,7 +3960,7 @@ class WelcomeController < ApplicationController
     # ActionCable invalidation notification for update_collection_status
     if ids.length > 0
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for update_collection_status operation")
+        Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for update_collection_status operation")
 
         # Build affected relationships for collection status updates
         affected_relationships = []
@@ -3974,9 +3974,9 @@ class WelcomeController < ApplicationController
           source_operation: "update_collection_status"
         }
 
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships for update_collection_status")
+        Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships for update_collection_status")
         affected_relationships.each do |rel|
-          Rails.logger.info("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
+          Rails.logger.debug("RWV  - #{rel[:table]} #{rel[:operation]} (#{rel[:ids]&.length || 0} records): #{rel[:reason]}")
         end
 
         # Broadcast the invalidation notification
@@ -3992,14 +3992,14 @@ class WelcomeController < ApplicationController
           timestamp: Time.current.to_f
         })
 
-        Rails.logger.info("RWV Successfully broadcast invalidation notification for update_collection_status operation")
+        Rails.logger.debug("RWV Successfully broadcast invalidation notification for update_collection_status operation")
       rescue => e
-        Rails.logger.error "RWV ActionCable broadcast failed in update_collection_status: #{e.message}"
+        Rails.logger.debug "RWV ActionCable broadcast failed in update_collection_status: #{e.message}"
         Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
     else
-      Rails.logger.info("RWV Skipping ActionCable invalidation broadcast for update_collection_status due to no tutorials selected")
+      Rails.logger.debug("RWV Skipping ActionCable invalidation broadcast for update_collection_status due to no tutorials selected")
     end
 
     if error_str.length > 0
@@ -4080,10 +4080,10 @@ class WelcomeController < ApplicationController
 
   def delete_array(ids, table_name)
     debug_prefix = "WelcomeController:delete_array (#{Time.now.strftime("%H:%M:%S")})"
-    Rails.logger.info("#{debug_prefix} BEGIN")
+    Rails.logger.debug("#{debug_prefix} BEGIN")
     dependencies_present = check_dependencies(ids, table_name)
 
-    Rails.logger.info("#{debug_prefix} dependencies_present: #{dependencies_present.inspect}")
+    Rails.logger.debug("#{debug_prefix} dependencies_present: #{dependencies_present.inspect}")
 
     delete_hash = {}
     delete_hash_str = {}
@@ -4097,36 +4097,36 @@ class WelcomeController < ApplicationController
       do_delete = true
 
       current_dependencies = dependencies_present[id_count]
-      Rails.logger.info("#{debug_prefix} delete_array current_dependencies: #{current_dependencies.inspect}")
+      Rails.logger.debug("#{debug_prefix} delete_array current_dependencies: #{current_dependencies.inspect}")
       if table_name == "User" && ids[id_count] == session[:user_id]
         do_delete = false
         error_str = "You cannot delete your user account whilst you are logged in. "
       elsif current_dependencies.length > 0
         if current_dependencies.has_key?("WillingTutor") || current_dependencies.has_key?("WillingLecturer") || current_dependencies.has_key?("Group") || current_dependencies.has_key?("MaxTutorial") || current_dependencies.has_key?("User") || current_dependencies.has_key?("TutorialSchedule") || current_dependencies.has_key?("Lecture") || current_dependencies.has_key?("Term") || current_dependencies.has_key?("Person") || current_dependencies.has_key?("AgathaEmail") || current_dependencies.has_key?("AgathaFile")
           do_delete = false
-          Rails.logger.info("#{debug_prefix} delete_array do_delete = false for current_dependencies: #{current_dependencies.inspect}")
+          Rails.logger.debug("#{debug_prefix} delete_array do_delete = false for current_dependencies: #{current_dependencies.inspect}")
         elsif table_name == "AgathaFile" && current_dependencies.has_key?("EmailAttachment")
           do_delete = false
-          Rails.logger.info("#{debug_prefix} delete_array do_delete = false for AgathaFile")
+          Rails.logger.debug("#{debug_prefix} delete_array do_delete = false for AgathaFile")
         elsif table_name == "Lecture" && current_dependencies.has_key?("Attendee")
           do_delete = false
-          Rails.logger.info("#{debug_prefix} delete_array do_delete = false for Lecture")
+          Rails.logger.debug("#{debug_prefix} delete_array do_delete = false for Lecture")
         elsif table_name == "TutorialSchedule" && current_dependencies.has_key?("Tutorial") && current_dependencies["Tutorial"].length > 1
           do_delete = false
-          Rails.logger.info("#{debug_prefix} delete_array do_delete = false for TutorialSchedule with multiple Tutorials")
+          Rails.logger.debug("#{debug_prefix} delete_array do_delete = false for TutorialSchedule with multiple Tutorials")
         elsif table_name == "Person" && current_dependencies.has_key?("TutorialSchedule")
           do_delete = false
-          Rails.logger.info("#{debug_prefix} delete_array do_delete = false for Person with TutorialSchedule")
+          Rails.logger.debug("#{debug_prefix} delete_array do_delete = false for Person with TutorialSchedule")
         else
           do_delete = true
-          Rails.logger.info("#{debug_prefix} delete_array do_delete = true for current_dependencies: #{current_dependencies.inspect}")
+          Rails.logger.debug("#{debug_prefix} delete_array do_delete = true for current_dependencies: #{current_dependencies.inspect}")
         end
       end
       if do_delete
-        Rails.logger.info("#{debug_prefix} do_delete = true")
+        Rails.logger.debug("#{debug_prefix} do_delete = true")
         delete_tutorial_schedule = false
         ids_for_deletion << ids[id_count]
-        Rails.logger.info("#{debug_prefix} delete_array added #{ids[id_count]} to ids_for_deletion: #{ids_for_deletion.inspect}")
+        Rails.logger.debug("#{debug_prefix} delete_array added #{ids[id_count]} to ids_for_deletion: #{ids_for_deletion.inspect}")
         num_deletes += 1
         if table_name == "Tutorial"
           tutorial = Tutorial.find(ids[id_count])
@@ -4137,7 +4137,7 @@ class WelcomeController < ApplicationController
           end
 
         elsif table_name == "Person"
-          Rails.logger.info("#{debug_prefix} table_name = Person")
+          Rails.logger.debug("#{debug_prefix} table_name = Person")
           tutorials = Tutorial.find_by_sql("SELECT * FROM tutorials WHERE person_id IN (#{ids[id_count]})")
           tutorial_schedule_id_str = ""
           tutorials.each do |tutorial2|
@@ -4148,7 +4148,7 @@ class WelcomeController < ApplicationController
           end
           tutorial_schedules = []
           if tutorials.length > 0
-            Rails.logger.info("#{debug_prefix} tutorials.length >0")
+            Rails.logger.debug("#{debug_prefix} tutorials.length >0")
             tutorial_schedules = TutorialSchedule.find_by_sql("SELECT * FROM tutorial_schedules a1 WHERE id IN (#{tutorial_schedule_id_str}) AND (SELECT COUNT(*) FROM tutorials a2 WHERE a2.tutorial_schedule_id = a1.id)=1")
           end
           if tutorial_schedules.length > 0
@@ -4159,7 +4159,7 @@ class WelcomeController < ApplicationController
             end
           end
         end
-        Rails.logger.info("#{debug_prefix} table_name not Tutorial or Person.length >0")
+        Rails.logger.debug("#{debug_prefix} table_name not Tutorial or Person.length >0")
         current_dependencies.each do |dependent_table, dependent_ids|
           if delete_hash.has_key?(dependent_table) == false
             delete_hash[dependent_table] = {}
@@ -4170,14 +4170,14 @@ class WelcomeController < ApplicationController
         end
 
         if deleted_ids.length > 0
-          Rails.logger.info("#{debug_prefix} deleted_ids.length >0")
+          Rails.logger.debug("#{debug_prefix} deleted_ids.length >0")
           deleted_ids << ", "
         else
-          Rails.logger.info("#{debug_prefix} deleted_ids.length =0")
+          Rails.logger.debug("#{debug_prefix} deleted_ids.length =0")
         end
         deleted_ids << ids[id_count].to_s
         if delete_tutorial_schedule
-          Rails.logger.info("#{debug_prefix} delete_tutorial_schedule = true")
+          Rails.logger.debug("#{debug_prefix} delete_tutorial_schedule = true")
           if delete_hash.has_key?("TutorialSchedule") == false
             delete_hash["TutorialSchedule"] = {}
           end
@@ -4205,7 +4205,7 @@ class WelcomeController < ApplicationController
           end
         end
       else
-        Rails.logger.info("#{debug_prefix} do_delete = false")
+        Rails.logger.debug("#{debug_prefix} do_delete = false")
         current_dependencies.each do |dependent_table, dependent_ids|
           @pluralize_num = dependent_ids.length
           error_str << "#{table_name} id = #{ids[id_count]} depends on #{dependent_table} with " + pl("id") + " = "
@@ -4221,16 +4221,16 @@ class WelcomeController < ApplicationController
         end
       end
     end
-    Rails.logger.info("#{debug_prefix} ids_for_deletion: #{ids_for_deletion.inspect}")
+    Rails.logger.debug("#{debug_prefix} ids_for_deletion: #{ids_for_deletion.inspect}")
     if !table_name.start_with?("Group")
       join_model_class = "Group#{table_name}".constantize
-      Rails.logger.info("#{debug_prefix} join_model_class: #{join_model_class.inspect}")
-      Rails.logger.info("#{debug_prefix} table_name.name.underscore for #{table_name}: #{table_name.constantize.name.underscore}")
+      Rails.logger.debug("#{debug_prefix} join_model_class: #{join_model_class.inspect}")
+      Rails.logger.debug("#{debug_prefix} table_name.name.underscore for #{table_name}: #{table_name.constantize.name.underscore}")
       group_ids = join_model_class
         .where("#{table_name.underscore}_id": ids_for_deletion)
         .distinct
         .pluck(:group_id)
-      Rails.logger.info("#{debug_prefix} delete_array group_ids: #{group_ids.inspect}")
+      Rails.logger.debug("#{debug_prefix} delete_array group_ids: #{group_ids.inspect}")
 
       affected_groups = Group.where(id: group_ids)
     else
@@ -4243,15 +4243,15 @@ class WelcomeController < ApplicationController
     person_ids_from_attendees = []
 
     if table_name == "Attendee"
-      Rails.logger.info("RWV Processing Attendee deletions - extracting relationship data before deletion")
+      Rails.logger.debug("RWV Processing Attendee deletions - extracting relationship data before deletion")
       deleted_attendees = Attendee.where(id: ids_for_deletion)
-      Rails.logger.info("RWV Found #{deleted_attendees.count} attendees to delete")
+      Rails.logger.debug("RWV Found #{deleted_attendees.count} attendees to delete")
 
       lecture_ids_from_attendees = deleted_attendees.distinct.pluck(:lecture_id)
       person_ids_from_attendees = deleted_attendees.distinct.pluck(:person_id)
 
-      Rails.logger.info("RWV Extracted lecture_ids: #{lecture_ids_from_attendees.inspect}")
-      Rails.logger.info("RWV Extracted person_ids: #{person_ids_from_attendees.inspect}")
+      Rails.logger.debug("RWV Extracted lecture_ids: #{lecture_ids_from_attendees.inspect}")
+      Rails.logger.debug("RWV Extracted person_ids: #{person_ids_from_attendees.inspect}")
     end
 
     # Now destroy the records
@@ -4272,14 +4272,14 @@ class WelcomeController < ApplicationController
         end
       end
     end
-    Rails.logger.info("RWV deleted_ids = #{deleted_ids.inspect}")
+    Rails.logger.debug("RWV deleted_ids = #{deleted_ids.inspect}")
 
     # Add ActionCable broadcasts for cross-tab data invalidation notifications
     # This new approach tells each client what data might have changed, then each client
     # refreshes their own data with their own filters and display preferences
     if num_deletes > 0
       begin
-        Rails.logger.info("RWV Broadcasting ActionCable invalidation notifications for delete operation")
+        Rails.logger.debug("RWV Broadcasting ActionCable invalidation notifications for delete operation")
 
         # Build a comprehensive list of table relationships that might be affected
         affected_relationships = []
@@ -4351,7 +4351,7 @@ class WelcomeController < ApplicationController
 
         # Lecture attendance and Person attendance changes when Attendee is deleted
         if table_name == "Attendee"
-          Rails.logger.info("RWV Processing Attendee deletions - using extracted relationship data")
+          Rails.logger.debug("RWV Processing Attendee deletions - using extracted relationship data")
 
           if lecture_ids_from_attendees.any?
             affected_relationships << {
@@ -4362,9 +4362,9 @@ class WelcomeController < ApplicationController
               source_table: table_name,
               source_operation: "delete"
             }
-            Rails.logger.info("RWV Added Lecture relationship to affected_relationships")
+            Rails.logger.debug("RWV Added Lecture relationship to affected_relationships")
           else
-            Rails.logger.info("RWV No lecture_ids found - skipping Lecture relationship")
+            Rails.logger.debug("RWV No lecture_ids found - skipping Lecture relationship")
           end
 
           if person_ids_from_attendees.any?
@@ -4376,12 +4376,12 @@ class WelcomeController < ApplicationController
               source_table: table_name,
               source_operation: "delete"
             }
-            Rails.logger.info("RWV Added Person relationship to affected_relationships")
+            Rails.logger.debug("RWV Added Person relationship to affected_relationships")
           else
-            Rails.logger.info("RWV No person_ids found - skipping Person relationship")
+            Rails.logger.debug("RWV No person_ids found - skipping Person relationship")
           end
         else
-          Rails.logger.info("RWV Not processing Attendee deletions - table_name is: #{table_name}")
+          Rails.logger.debug("RWV Not processing Attendee deletions - table_name is: #{table_name}")
         end
 
         # Tutorial schedule enrollment count changes when Tutorial is deleted
@@ -4397,17 +4397,17 @@ class WelcomeController < ApplicationController
               source_table: table_name,
               source_operation: "delete"
             }
-            Rails.logger.info("RWV Added TutorialSchedule relationship for Tutorial deletions - schedules: #{tutorial_schedule_ids}")
+            Rails.logger.debug("RWV Added TutorialSchedule relationship for Tutorial deletions - schedules: #{tutorial_schedule_ids}")
           else
-            Rails.logger.info("RWV No tutorial_schedule_ids found for deleted tutorials")
+            Rails.logger.debug("RWV No tutorial_schedule_ids found for deleted tutorials")
           end
         end
 
-        Rails.logger.info("RWV Identified #{affected_relationships.length} affected table relationships")
-        Rails.logger.info("RWV Complete affected_relationships array:")
+        Rails.logger.debug("RWV Identified #{affected_relationships.length} affected table relationships")
+        Rails.logger.debug("RWV Complete affected_relationships array:")
         affected_relationships.each_with_index do |rel, index|
-          Rails.logger.info("RWV  [#{index}] #{rel[:table]} #{rel[:operation]} (#{rel[:ids].length} records): #{rel[:reason]}")
-          Rails.logger.info("RWV      IDs: #{rel[:ids].inspect}")
+          Rails.logger.debug("RWV  [#{index}] #{rel[:table]} #{rel[:operation]} (#{rel[:ids].length} records): #{rel[:reason]}")
+          Rails.logger.debug("RWV      IDs: #{rel[:ids].inspect}")
         end
 
         # Broadcast the invalidation notification
@@ -4424,9 +4424,9 @@ class WelcomeController < ApplicationController
           timestamp: Time.current.to_f
         })
 
-        Rails.logger.info("RWV Successfully broadcast data invalidation notification")
+        Rails.logger.debug("RWV Successfully broadcast data invalidation notification")
       rescue => e
-        Rails.logger.error "RWV ActionCable broadcast failed in delete_array: #{e.message}"
+        Rails.logger.debug "RWV ActionCable broadcast failed in delete_array: #{e.message}"
         Rails.logger.error "RWV #{e.backtrace.first(5).join("\n")}"
         # Continue without ActionCable if it fails
       end
@@ -4435,7 +4435,7 @@ class WelcomeController < ApplicationController
     respond_to do |format|
       format.js { render "delete_array", locals: {success_str: success_str, error_str: error_str, deleted_ids: deleted_ids, table_name: table_name, delete_hash_str: delete_hash_str} }
     end
-    Rails.logger.info("RWV delete_array END")
+    Rails.logger.debug("RWV delete_array END")
   end
 
   def delete
@@ -4481,7 +4481,7 @@ class WelcomeController < ApplicationController
     @format_controller = FormatController.new(user_id)
     for table_object in @format_controller.table_objects
       sql_str = "FormatElement.find_by_sql(\"SELECT id, field_name, insert_string, element_order, in_use FROM format_elements WHERE (user_id = " + user_id.to_s + " AND table_name = '" + table_object.table + "') ORDER BY element_order asc\")"
-      #     Rails.logger.error( "DEBUG: before eval(#{sql_str})" );
+      #     Rails.logger.debug( "DEBUG: before eval(#{sql_str})" );
       old_fields = eval(sql_str)
       old_fields_count = old_fields.length
       new_fields_count = params["display_format_count_#{table_object.table}"].to_i
@@ -4549,7 +4549,7 @@ class WelcomeController < ApplicationController
     group_id = params[:group_id]
     @user_id = session[:user_id]
     sql_str = "GroupFilter.find_by_sql(\"SELECT id, table_name, group_id, foreign_key, user_id  FROM group_filters WHERE (user_id = " + @user_id.to_s + " AND table_name = '" + table_name + "' AND foreign_key = '" + foreign_key + "') \")"
-    #    Rails.logger.error( "DEBUG: before eval(#{sql_str})" );
+    #    Rails.logger.debug( "DEBUG: before eval(#{sql_str})" );
     group_filters = eval(sql_str)
     if group_filters.length == 0
       group_filter = GroupFilter.new
@@ -4588,7 +4588,7 @@ class WelcomeController < ApplicationController
         field_name = reflection.options[:foreign_key]
 
         eval_str = "not_set_obj.#{field_name} = @not_set_value"
-        #      Rails.logger.error( "DEBUG: before SetNotClass(#{class_name}) eval(#{eval_str})" );
+        #      Rails.logger.debug( "DEBUG: before SetNotClass(#{class_name}) eval(#{eval_str})" );
         eval(eval_str)
       end
       not_set_obj.save
@@ -5276,11 +5276,11 @@ class WelcomeController < ApplicationController
   end
 
   def fetch_updated_rows
-    Rails.logger.info("RWV fetch_updated_rows called with params: #{params.inspect}")
+    Rails.logger.debug("RWV fetch_updated_rows called with params: #{params.inspect}")
 
     # Capture user ID at the start of the request to prevent race conditions
     current_user_id = session[:user_id]
-    Rails.logger.info("RWV fetch_updated_rows: Request initiated by user_id=#{current_user_id}")
+    Rails.logger.debug("RWV fetch_updated_rows: Request initiated by user_id=#{current_user_id}")
 
     table_name = params[:table_name]
     row_ids = params[:row_ids]&.split(",")&.map(&:to_i) || []
@@ -5332,7 +5332,7 @@ class WelcomeController < ApplicationController
       # Use the search controller's eval string to get filtered results
       sql_str = search_controller.get_sql_id_string(row_ids)
       eval_str = "#{table_name}.find_by_sql(\"#{sql_str}\")"
-      Rails.logger.info("RWV fetch_updated_rows: User #{current_user_id} using eval string: #{eval_str}")
+      Rails.logger.debug("RWV fetch_updated_rows: User #{current_user_id} using eval string: #{eval_str}")
 
       filtered_results = eval(eval_str)
 
@@ -5351,7 +5351,7 @@ class WelcomeController < ApplicationController
 
       rows = filtered_results.select { |r| row_ids.include?(r.id) }
 
-      Rails.logger.info("RWV fetch_updated_rows: User #{current_user_id} - #{row_ids.size} requested, #{rows.size} matched filters for #{table_name}")
+      Rails.logger.debug("RWV fetch_updated_rows: User #{current_user_id} - #{row_ids.size} requested, #{rows.size} matched filters for #{table_name}")
 
       # Generate HTML for each row using the same logic as the search results
       updated_rows = rows.map do |row|
@@ -5367,7 +5367,7 @@ class WelcomeController < ApplicationController
         }
       end
 
-      Rails.logger.info("RWV fetch_updated_rows: User #{current_user_id} - Successfully generated #{updated_rows.size} row updates for #{table_name}")
+      Rails.logger.debug("RWV fetch_updated_rows: User #{current_user_id} - Successfully generated #{updated_rows.size} row updates for #{table_name}")
 
       respond_to do |format|
         format.json {
@@ -5381,7 +5381,7 @@ class WelcomeController < ApplicationController
         }
       end
     rescue => e
-      Rails.logger.error("RWV Error in fetch_updated_rows for user #{current_user_id}: #{e.message}")
+      Rails.logger.debug("RWV Error in fetch_updated_rows for user #{current_user_id}: #{e.message}")
       Rails.logger.error("RWV #{e.backtrace.first(5).join("\n")}")
       render json: {
         error: e.message,
@@ -5415,7 +5415,7 @@ class WelcomeController < ApplicationController
       result = result.gsub(/<!--\s*END\s*inline\s*template\s*-->/, "")
       result.strip
     rescue => e
-      Rails.logger.error "Email template processing error: #{e.message}"
+      Rails.logger.debug "Email template processing error: #{e.message}"
       # Fallback: return the original string if ERB processing fails
       template_string
     end

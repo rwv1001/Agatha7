@@ -43,6 +43,10 @@ RUN groupadd --gid 1000 rails && \
 # Switch to non-root user
 USER rails
 
+#production setting in development - please remove before deployment
+
+RUN SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile 
+
 # No COPY of application code here! It will come from the volume mount
 
 ENTRYPOINT ["docker-dev-entrypoint"]

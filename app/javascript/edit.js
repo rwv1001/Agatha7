@@ -1,7 +1,5 @@
 import Rails from "@rails/ujs";
 
-console.log("🍪 edit.js loaded!");
-
 window.MyHash = function(){
   // private storage
   this.hash_table = {};

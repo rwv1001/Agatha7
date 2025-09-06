@@ -1,4 +1,15 @@
 services:
+  redis:
+    image: redis:7
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
   db:
     image: postgres:15
     container_name: agatha-postgres-prod
@@ -8,6 +19,7 @@ services:
       - POSTGRES_PASSWORD=${ENV_POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - /home/robert/agathabackup/:/backups
     command: ["postgres", "-c", "max_connections=500"]
     restart: unless-stopped
     ports:
@@ -23,6 +35,8 @@ services:
     depends_on:
       db:
         condition: service_healthy  # Ensure the db service is healthy before starting app
+      redis:
+        condition: service_healthy  # Ensure redis is healthy before starting app
     environment:
       - RAILS_ENV=production
       - POSTGRES_HOST=${ENV_POSTGRES_HOST}
@@ -30,6 +44,12 @@ services:
       - POSTGRES_USER=${ENV_POSTGRES_USER}
       - POSTGRES_PASSWORD=${ENV_POSTGRES_PASSWORD}
       - RAILS_MASTER_KEY=${ENV_RAILS_MASTER_KEY}
+      - REDIS_URL=redis://redis:6379/1
+      - MICROSOFT_GRAPH_CLIENT_ID=${MICROSOFT_GRAPH_CLIENT_ID}
+      - MICROSOFT_GRAPH_CLIENT_SECRET=${MICROSOFT_GRAPH_CLIENT_SECRET}
+      - MICROSOFT_GRAPH_TENANT_ID=${MICROSOFT_GRAPH_TENANT_ID}
+      - AGATHA_USE_MICROSOFT_GRAPH=${AGATHA_USE_MICROSOFT_GRAPH}
+      - AGATHA_ENABLE_DEBUG_LOGGING=${AGATHA_ENABLE_DEBUG_LOGGING:-false}
     restart: unless-stopped
     ports:
       - "3000:3000"

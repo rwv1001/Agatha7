@@ -1,31 +1,26 @@
 <%# DEPRECATED: This file is being replaced by ActionCable real-time updates %>
 <%# The original window.opener approach has been replaced with send_data_invalidation %>
 <%# This compatibility version prevents errors during transition %>
-
-<% Rails.logger.info("DEPRECATED: update_helper .js.erb called - should use ActionCable approach"); %>
-
+<% Rails.logger.debug("DEPRECATED: update_helper .js.erb called - should use ActionCable approach"); %>
 // This approach is deprecated - ActionCable now handles real-time updates
 console.warn('update_helper.js.erb is deprecated - using ActionCable for real-time updates');
-
 // Only update the current edit cells, ActionCable handles the rest
 <% if defined?(edit_cell1) && edit_cell1&.attribute %>
-(function(){
+  (function(){
   const id1 = "<%= "#{@table_name}_#{field_name}" %>";
   const el1 = document.getElementById(id1);
   if (el1) {
-    el1.outerHTML = "<%= j render(partial: 'shared/edit_cell', object: edit_cell1) %>";
+  el1.outerHTML = "<%= j render(partial: 'shared/edit_cell', object: edit_cell1) %>";
   }
-})();
+  })();
 <% end %>
-
 <% if defined?(edit_cell2) && edit_cell2&.attribute %>
-(function(){
+  (function(){
   const id2 = "<%= "#{@table_name}_updated_at" %>";
   const el2 = document.getElementById(id2);
   if (el2) {
-    el2.outerHTML = "<%= j render(partial: 'shared/edit_cell', object: edit_cell2) %>";
+  el2.outerHTML = "<%= j render(partial: 'shared/edit_cell', object: edit_cell2) %>";
   }
-})();
+  })();
 <% end %>
-
 console.log('ActionCable will handle broadcasting updates to all users automatically');

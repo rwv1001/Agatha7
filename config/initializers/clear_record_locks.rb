@@ -7,13 +7,13 @@ Rails.application.config.after_initialize do
   unless Rails.env.test?
     begin
       # Check if the open_records table exists and truncate it
-      if ActiveRecord::Base.connection.table_exists?('open_records')
-        Rails.logger.info "🔓 Application startup: Truncating open_records table to clear all record locks"
-        
+      if ActiveRecord::Base.connection.table_exists?("open_records")
+        Rails.logger.debug "🔓 Application startup: Truncating open_records table to clear all record locks"
+
         # Use TRUNCATE TABLE to completely clear the table
         ActiveRecord::Base.connection.execute("TRUNCATE TABLE open_records")
-        
-        Rails.logger.info "✅ Application startup: Successfully truncated open_records table"
+
+        Rails.logger.debug "✅ Application startup: Successfully truncated open_records table"
       else
         Rails.logger.warn "⚠️ Application startup: open_records table not found, skipping lock cleanup"
       end

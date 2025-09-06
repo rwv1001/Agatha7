@@ -109,7 +109,7 @@ module EditHelper
   end
 
   def win_unload_helper
-    Rails.logger.info("win_unload_helper rwv begin")
+    Rails.logger.debug("win_unload_helper rwv begin")
     @id = params[:id]
     @table_name = params[:table_name]
     attribute_name = params[:field_name]
@@ -126,7 +126,7 @@ module EditHelper
         format.js { render partial: "shared/win_unload_helper", locals: {session_div: session_div, table_name: @table_name, id: @id, attribute: attribute_name} }
       end
     else
-      Rails.logger.info("win_unload_helper rwv NOT updated record")
+      Rails.logger.debug("win_unload_helper rwv NOT updated record")
       respond_to do |format|
         format.js { render partial: "shared/win_unload_helper_blank" }
       end
@@ -140,10 +140,10 @@ module EditHelper
     field_value = params[:field_value]
     field_name = params[:field_name]
     #  readonly_fields = session["#{@table_name}_readonly_fields"]
-    Rails.logger.info("update_helper(), table_name = #{@table_name}, field_value = #{field_value}, field_name = #{field_name}")
+    Rails.logger.debug("update_helper(), table_name = #{@table_name}, field_value = #{field_value}, field_name = #{field_name}")
 
     sql_str = "OpenRecord.find_by_sql(\"SELECT * FROM  open_records WHERE (user_id = " + @user_id.to_s + " AND table_name = '" + @table_name + "' AND  record_id = " + id.to_s + "  AND in_use = true)\")"
-    Rails.logger.info("update_helper sql_str = #{sql_str}")
+    Rails.logger.debug("update_helper sql_str = #{sql_str}")
     open_records = eval(sql_str)
 
     if open_records.length == 0 # 1
@@ -175,9 +175,9 @@ module EditHelper
         open_record = open_records[0]
         open_record.save
         update_str = "object.update(#{field_name}: %q(#{field_value}))"
-        Rails.logger.info("RWV update_str = #{update_str}")
+        Rails.logger.debug("RWV update_str = #{update_str}")
         if field_name.strip.length != 0
-          Rails.logger.info("update_helper updating *#{field_name}*")
+          Rails.logger.debug("update_helper updating *#{field_name}*")
           eval(update_str)
 
           save_ok = false
@@ -189,12 +189,12 @@ module EditHelper
             exception_str = "An update error has occurred. Perhaps you already have #{@table_name} with these details."
           end
           if save_ok  # 4
-            Rails.logger.info("update_helper save_ok")
+            Rails.logger.debug("update_helper save_ok")
             attribute_eval_str = "AttributeList.new(#{@table_name.classify})"
             @attribute_list = AttributeList.new(@table_name.classify)
             @search_ctls = session[:search_ctls]
             attribute1 = @attribute_list.attribute_hash[field_name]
-            Rails.logger.info("update_helper attribute1.name = #{attribute1.name}")
+            Rails.logger.debug("update_helper attribute1.name = #{attribute1.name}")
             if attribute1.foreign_key.length > 0
               @filter_controller = FilterController.new(@search_ctls, @table_name, @user_id)
             end
@@ -217,7 +217,7 @@ module EditHelper
             end
           end # 4
         else
-          Rails.logger.info("update_helper do nothing")
+          Rails.logger.debug("update_helper do nothing")
           respond_to do |format|
             format.js { render partial: "shared/do_nothing" }
           end

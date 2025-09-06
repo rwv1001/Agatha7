@@ -1,86 +1,70 @@
-<% Rails.logger.info("table_search.js.erb updating #{table_name}") %>
-
+<% Rails.logger.debug("table_search.js.erb updating #{table_name}") %>
 (() => {
-  const updateHTMLById = (id, html) => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = html;
-  };
-
-  // Save the checkbox states before updating current_filters
-  const searchChecksDiv = document.getElementById("search_results_table_<%= table_name %>");
-  const savedCheckboxStates = {};
-  
-  if (searchChecksDiv) {
-    const checkboxes = searchChecksDiv.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-      const key = `${checkbox.name}[${checkbox.value}]`;
-      savedCheckboxStates[key] = checkbox.checked;
-    });
-    console.log("🔄 Saved checkbox states:", savedCheckboxStates, "number of checkboxes:", checkboxes.length);
+const updateHTMLById = (id, html) => {
+const el = document.getElementById(id);
+if (el) el.innerHTML = html;
+};
+// Save the checkbox states before updating current_filters
+const searchChecksDiv = document.getElementById("search_results_table_<%= table_name %>");
+const savedCheckboxStates = {};
+if (searchChecksDiv) {
+const checkboxes = searchChecksDiv.querySelectorAll('input[type="checkbox"]');
+checkboxes.forEach(checkbox => {
+const key = `${checkbox.name}[${checkbox.value}]`;
+savedCheckboxStates[key] = checkbox.checked;
+});
+console.log("🔄 Saved checkbox states:", savedCheckboxStates, "number of checkboxes:", checkboxes.length);
+}
+updateHTMLById("<%= "possible_filters_div_" + table_name %>", `<%= j render(:partial => 'shared/possible_filters', locals: { search_ctl: search_ctl }) %>`);
+updateHTMLById("<%= "current_filters_" + table_name %>", `<%= j render(:partial => 'shared/current_filters', :object => search_ctl) %>`);
+<% if(params.has_key?("do_search")) %>
+  updateHTMLById("<%= "search_results_" + table_name %>", `<%= j render(:partial => 'shared/search_results', :object => search_results) %>`);
+  restoreSelectIndices("<%= table_name %>", savedCheckboxStates); 
+  console.log("✅ Search results updated for <%= table_name %>");
+  const currentFiltersDiv = document.getElementById("current_filters_<%= table_name %>");
+  if (currentFiltersDiv) {
+  currentFiltersDiv.style.display = 'none';
   }
-
-  updateHTMLById("<%= "possible_filters_div_" + table_name %>", `<%= j render(:partial => 'shared/possible_filters', locals: { search_ctl: search_ctl }) %>`);
-  updateHTMLById("<%= "current_filters_" + table_name %>", `<%= j render(:partial => 'shared/current_filters', :object => search_ctl) %>`);
-
-  <% if(params.has_key?("do_search")) %>
-    updateHTMLById("<%= "search_results_" + table_name %>", `<%= j render(:partial => 'shared/search_results', :object => search_results) %>`);
-    restoreSelectIndices("<%= table_name %>", savedCheckboxStates); 
-    console.log("✅ Search results updated for <%= table_name %>");
-    const currentFiltersDiv = document.getElementById("current_filters_<%= table_name %>");
-    if (currentFiltersDiv) {
-      currentFiltersDiv.style.display = 'none';
-    }
-  <% else %>
-    console.log("ℹ️ Search executed without 'do_search' parameter; only filters updated for <%= table_name %>");
-
-  <% end %>
-
-  
-  <% if (local_assigns[:open_edit] && local_assigns[:new_entry_id]) || local_assigns[:display_notification] %>
-    // Hide current_filters div when creating new entry without prior search
-
-    
-    // Open edit window for the newly created entry (only if open_edit is true)
-    <% if local_assigns[:open_edit] && local_assigns[:new_entry_id] %>
-      const attribute_opener = '';
-      const opener_id = 1;
-      const table_name = '<%= table_name.tableize %>';
-      const class_name = '<%= table_name %>';
-      const new_id = '<%= local_assigns[:new_entry_id] %>';
-      
-      if (typeof open_edit_window === 'function') {
-        open_edit_window(attribute_opener, opener_id, table_name, class_name, new_id);
-        console.log('✅ Opened edit window for new <%= table_name %> (ID: <%= local_assigns[:new_entry_id] %>)');
-      } else {
-        console.log('⚠️ open_edit_window function not available');
-      }
-    <% end %>
-    
-    // Show notification (either way - whether opening edit or just showing notification)
-    if (window.showNotification) {
-      <% if local_assigns[:success_str] %>
-        window.showNotification('<%= j success_str %>', 'success');
-      <% else %>
-        window.showNotification('New <%= table_name %> created successfully', 'success');
-      <% end %>
+<% else %>
+  console.log("ℹ️ Search executed without 'do_search' parameter; only filters updated for <%= table_name %>");
+<% end %>
+<% if (local_assigns[:open_edit] && local_assigns[:new_entry_id]) || local_assigns[:display_notification] %>
+  // Hide current_filters div when creating new entry without prior search
+  // Open edit window for the newly created entry (only if open_edit is true)
+  <% if local_assigns[:open_edit] && local_assigns[:new_entry_id] %>
+    const attribute_opener = '';
+    const opener_id = 1;
+    const table_name = '<%= table_name.tableize %>';
+    const class_name = '<%= table_name %>';
+    const new_id = '<%= local_assigns[:new_entry_id] %>';
+    if (typeof open_edit_window === 'function') {
+    open_edit_window(attribute_opener, opener_id, table_name, class_name, new_id);
+    console.log('✅ Opened edit window for new <%= table_name %> (ID: <%= local_assigns[:new_entry_id] %>)');
     } else {
-      <% if local_assigns[:success_str] %>
-        alert('<%= j success_str %>');
-      <% else %>
-        alert('New <%= table_name %> created successfully');
-      <% end %>
+    console.log('⚠️ open_edit_window function not available');
     }
   <% end %>
-  
-  resizeX();
-
-  action_select_no_js();
-  resizeFilters();
-  
-  // Refresh external filter selects to ensure they're properly populated
-  if (typeof refreshExternalFilterSelects === 'function') {
-    // refreshExternalFilterSelects("<%= table_name %>");
+  // Show notification (either way - whether opening edit or just showing notification)
+  if (window.showNotification) {
+  <% if local_assigns[:success_str] %>
+    window.showNotification('<%= j success_str %>', 'success');
+  <% else %>
+    window.showNotification('New <%= table_name %> created successfully', 'success');
+  <% end %>
+  } else {
+  <% if local_assigns[:success_str] %>
+    alert('<%= j success_str %>');
+  <% else %>
+    alert('New <%= table_name %> created successfully');
+  <% end %>
   }
-  
-  unwait();
+<% end %>
+resizeX();
+action_select_no_js();
+resizeFilters();
+// Refresh external filter selects to ensure they're properly populated
+if (typeof refreshExternalFilterSelects === 'function') {
+// refreshExternalFilterSelects("<%= table_name %>");
+}
+unwait();
 })();
