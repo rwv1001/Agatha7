@@ -41,13 +41,15 @@ Rails.application.configure do
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
-  # config.action_cable.url = "ws://192.168.1.21/cable"
+  config.action_cable.url = "wss://rwvagatha.duckdns.org/cable"
   config.action_cable.allowed_request_origins = [
     "https://rwvagatha.duckdns.org",
     "http://rwvagatha.duckdns.org",
     "https://agatha.bfriars.ox.ac.uk",
     "http://agatha.bfriars.ox.ac.uk",
-    "http://192.168.1.21"
+    "http://192.168.1.21",
+    "http://10.156.142.196",
+    "http://10.156.142.121"
 
   ]
 
@@ -108,7 +110,9 @@ Rails.application.configure do
     "agatha.bfriars.ox.ac.uk",
     "rwv1111.duckdns.org",
     "192.168.1.21",
-    "192.168.1.28"
+    "192.168.1.28",
+    "10.156.142.196",
+    "10.156.142.121"
   ]
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
