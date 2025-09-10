@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define variables
-PROD_SERVER="rwvagatha.duckdns.org"  # Replace with your server's IP or hostname
+PROD_SERVER="rverrill@rwvagatha.duckdns.org"  # Replace with your server's IP or hostname
 PROD_DIR="/home/rverrill/agatha"  # Directory on production server
 LOCAL_DIR="/home/robert/agatha"  # Local directory with your app files
 IMAGE_NAME="rwv1001/agatha"  # Replace with your Docker Hub username and app name
