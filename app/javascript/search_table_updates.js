@@ -350,6 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Function to show connection status to users
   function showConnectionStatus(status, message) {
     console.log(`🔗 Connection Status: ${status} - ${message}`);
+    /*
     
     // Create or update a connection status indicator
     let statusIndicator = document.getElementById('actioncable-status');
@@ -395,6 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
       statusIndicator.style.color = 'white';
       statusIndicator.style.opacity = '1';
     }
+  */
   }
   
   // Function to attempt reconnection with exponential backoff

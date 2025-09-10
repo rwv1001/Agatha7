@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # Handle Chrome DevTools requests gracefully
+  get "/.well-known/appspecific/com.chrome.devtools.json", to: proc { |env| [204, {}, [""]] }
+  
   # ActionCable mount
   mount ActionCable.server => '/cable'
   
