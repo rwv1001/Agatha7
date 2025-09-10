@@ -6,9 +6,11 @@
 <meta name="agatha-debug-logging" content="<%= ENV['AGATHA_ENABLE_DEBUG_LOGGING'].to_s.downcase == 'true' ? 'true' : 'false' %>">
 <title><%= yield :title %></title>
 <link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/icon.png" type="image/png">
-<link rel="icon" href="/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/icon.png">
+<link rel="icon" type="image/x-icon" href="/laudare-favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/laudare-favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/laudare-favicon-16x16.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<link rel="shortcut icon" href="/laudare-favicon.ico" type="image/x-icon">
 <!-- Quill.js CSS -->
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
 <%= stylesheet_link_tag "application" %>
