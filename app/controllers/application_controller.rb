@@ -7,7 +7,11 @@
 class ApplicationController < ActionController::Base
  #before_action :validaccess, :except => :accessdenied
  # before_action :authorize, [:except => "/admin/login", :except => :accessdenied ]
-  before_action :authorize
+  before_action :authorize, except: [:render_404]
+  
+  # Add error handling for routing errors
+  rescue_from ActionController::RoutingError, with: :render_404
+  rescue_from ActiveRecord::RecordNotFound, with: :render_404
   
   helper :all # include all helpers, all the time
 
@@ -27,6 +31,17 @@ class ApplicationController < ActionController::Base
     escaped_message = message.gsub("'", "\\'")
     "if (window.showNotification) { window.showNotification('#{escaped_message}', '#{type}'); } else { alert('#{escaped_message}'); }"
   end
+
+  # Handle 404 errors gracefully - public so it can be used as a route action
+  def render_404
+    respond_to do |format|
+      format.html { render file: Rails.public_path.join('404.html'), status: :not_found, layout: false }
+      format.json { render json: { error: 'Page not found' }, status: :not_found }
+      format.any  { head :not_found }
+    end
+  end
+
+private
 
 
 protected

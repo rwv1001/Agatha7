@@ -161,8 +161,6 @@ Rails.application.routes.draw do
     end
   end
 
-  # If you really need a catch‑all (NOT recommended!), you can uncomment:
-  # match ":controller(/:action(/:id))",
-  #       via: [:get, :post],
-  #       format: false
+  # Catch-all route for unmatched URLs - must be last!
+  match "*path", to: "application#render_404", via: :all
 end
