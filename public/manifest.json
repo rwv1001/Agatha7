@@ -1,0 +1,33 @@
+{
+  "name": "Agatha",
+  "short_name": "Agatha",
+  "description": "Agatha Application",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2c3e50",
+  "background_color": "#ecf0f1",
+  "icons": [
+    {
+      "src": "/laudare-favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/laudare-favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/laudare-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/laudare-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
