@@ -19,5 +19,7 @@ sed -i "s/^ENV_IMAGE_TAG=.*/ENV_IMAGE_TAG=${IMAGE_TAG}/" .env
 
 scp -P 22222 .env "$PROD_SERVER:$PROD_DIR"
 
-ssh -p 22222 "$PROD_SERVER" "docker pull $IMAGE_NAME:$IMAGE_TAG && cd $PROD_DIR && docker compose -f docker-compose-pull.yml down -v && docker compose -f docker-compose-pull.yml up -d --build && sleep 20 && ./dbrestore.sh"
+scp -P 22222 dbrestore.sh "$PROD_SERVER:$PROD_DIR/dbrestore.sh"
+
+ssh -p 22222 "$PROD_SERVER" "docker pull $IMAGE_NAME:$IMAGE_TAG && cd $PROD_DIR && docker compose -f docker-compose-pull.yml down && docker compose -f docker-compose-pull.yml up -d --build"
 

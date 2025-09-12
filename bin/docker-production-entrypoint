@@ -23,14 +23,23 @@ until pg_isready -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB; do
 done;
 echo 'Postgres is up — starting Rails';
         
-#if [ "$1" == "./bin/rails" ] && [ "$2" == "server" ]; then
-  #if ! ./bin/rails db:version RAILS_ENV="development" > /dev/null 2>&1; then
-   # echo "Database does not exist or is not set up. Creating anddd preparing..."
-    #./bin/rails db:create RAILS_ENV="development"
-    ./bin/rails db:prepare RAILS_ENV=production
-  #else
-   # echo "Database for development already exists. Skipping creation."
-  #fi
-#fi
+# Check if database exists and has been migrated before running any setup
+if ./bin/rails runner "ActiveRecord::Base.connection" RAILS_ENV=production 2>/dev/null; then
+  echo "Database connection successful. Checking if migrations are needed..."
+  
+  # Only run migrations if needed - this preserves existing data
+  if ./bin/rails db:migrate:status RAILS_ENV=production 2>/dev/null | grep -q "down"; then
+    echo "Found pending migrations. Running db:migrate to apply them..."
+    ./bin/rails db:migrate RAILS_ENV=production
+  else
+    echo "Database is up to date. No migrations needed."
+  fi
+else
+  echo "Database does not exist or cannot connect. Setting up database..."
+  # Only create and setup if database doesn't exist
+  ./bin/rails db:create RAILS_ENV=production
+  ./bin/rails db:schema:load RAILS_ENV=production
+  ./bin/rails db:seed RAILS_ENV=production
+fi
 echo "docker-production-entrypoint is still running."
 exec "$@"

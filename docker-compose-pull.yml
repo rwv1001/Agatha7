@@ -56,5 +56,10 @@ services:
     volumes:
       - app-storage:/rails/storage
 volumes:
-  postgres_data: {}
-  app-storage: {}
+  postgres_data:
+    # Explicitly configure as external to prevent Docker from recreating
+    external: false
+    driver: local
+  app-storage:
+    external: false  
+    driver: local
