@@ -545,6 +545,147 @@ class FilterService
         WHEN 'willing_tutors' THEN (SELECT COUNT(*) FROM group_willing_tutors x1 WHERE x1.group_id = a0.id)
         WHEN 'willing_lecturers' THEN (SELECT COUNT(*) FROM group_willing_lecturers x1 WHERE x1.group_id = a0.id)
         ELSE 0 END)", "")),
+
+      ExtendedFilter.new(:subquery, SubQuery.new([], "Group members", "group_members",
+        "array_to_string(ARRAY(SELECT CONCAT(COALESCE(NULLIF(TRIM(p.first_name), ''), 'Not Set'), ' ', COALESCE(NULLIF(TRIM(p.second_name), ''), 'Not Set')) AS member_name
+        FROM groups g
+        JOIN group_people gp ON gp.group_id = g.id
+        JOIN people p ON p.id = gp.person_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'people'
+          AND p.id <> 1
+
+        UNION ALL
+
+        SELECT COALESCE(NULLIF(TRIM(i.conventual_name), ''), 'Not Set') AS member_name
+        FROM groups g
+        JOIN group_institutions gi ON gi.group_id = g.id
+        JOIN institutions i ON i.id = gi.institution_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'institutions'
+          AND i.id <> 1
+
+        UNION ALL
+
+        SELECT COALESCE(NULLIF(TRIM(c.name), ''), 'Not Set') AS member_name
+        FROM groups g
+        JOIN group_courses gc ON gc.group_id = g.id
+        JOIN courses c ON c.id = gc.course_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'courses'
+          AND c.id <> 1
+
+        UNION ALL
+
+        SELECT CONCAT(COALESCE(NULLIF(TRIM(c.name), ''), 'Not Set'), ', ', tn.name, ' ', t.year) AS member_name
+        FROM groups g
+        JOIN group_lectures gl ON gl.group_id = g.id
+        JOIN lectures l ON l.id = gl.lecture_id
+        JOIN courses c ON c.id = l.course_id
+        JOIN terms t ON t.id = l.term_id
+        JOIN term_names tn ON tn.id = t.term_name_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'lectures'
+          AND l.id <> 1
+
+        UNION ALL
+
+        SELECT CONCAT(COALESCE(NULLIF(TRIM(p.first_name), ''), 'Not Set'), ' ', COALESCE(NULLIF(TRIM(p.second_name), ''), 'Not Set'),': '  ,COALESCE(NULLIF(TRIM(c.name), ''), 'Not Set'), ', ', tn.name, ' ', t.year) AS member_name
+        FROM groups g
+        JOIN group_attendees ga ON ga.group_id = g.id
+        JOIN attendees at ON at.id = ga.attendee_id
+        JOIN lectures l ON l.id = at.lecture_id
+        JOIN courses c ON c.id = l.course_id
+        JOIN terms t ON t.id = l.term_id
+        JOIN term_names tn ON tn.id = t.term_name_id
+        JOIN people p ON p.id = at.person_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'attendees'
+          AND at.id <> 1
+
+        UNION ALL
+
+        SELECT CONCAT(COALESCE(NULLIF(TRIM(p.first_name), ''), 'Not Set'), ' ', COALESCE(NULLIF(TRIM(p.second_name), ''), 'Not Set'),': '  ,COALESCE(NULLIF(TRIM(c.name), ''), 'Not Set'), ', ', tn.name, ' ', t.year) AS member_name
+        FROM groups g
+        JOIN group_tutorials gt ON gt.group_id = g.id
+        JOIN tutorials tu ON tu.id = gt.tutorial_id
+        JOIN tutorial_schedules ts ON ts.id = tu.tutorial_schedule_id
+        JOIN courses c ON c.id = ts.course_id
+        JOIN terms t ON t.id = ts.term_id
+        JOIN term_names tn ON tn.id = t.term_name_id
+        JOIN people p ON p.id = tu.person_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'tutorials'
+          AND tu.id <> 1
+
+        UNION ALL
+
+        SELECT CONCAT(COALESCE(NULLIF(TRIM(c.name), ''), 'Not Set'), ', ', tn.name, ' ', t.year) AS member_name
+        FROM groups g
+        JOIN group_tutorial_schedules gts ON gts.group_id = g.id
+        JOIN lectures ts ON ts.id = gts.tutorial_schedule_id
+        JOIN courses c ON c.id = ts.course_id
+        JOIN terms t ON t.id = ts.term_id
+        JOIN term_names tn ON tn.id = t.term_name_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'tutorial_schedules'
+          AND ts.id <> 1
+
+        UNION ALL
+
+        SELECT CONCAT(COALESCE(NULLIF(TRIM(ae.to_email), ''), 'Not Set'), ', ', COALESCE(NULLIF(TRIM(ae.subject), ''), 'Not Set')) AS member_name
+        FROM groups g
+        JOIN group_agatha_emails gae ON gae.group_id = g.id
+        JOIN agatha_emails ae ON ae.id = gae.agatha_email_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'agatha_emails'
+          AND ae.id <> 1
+
+        UNION ALL
+
+        SELECT COALESCE(NULLIF(TRIM(et.subject), ''), 'Not Set') AS member_name
+        FROM groups g
+        JOIN group_email_templates get ON get.group_id = g.id
+        JOIN email_templates et ON et.id = get.email_template_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'email_templates'
+          AND et.id <> 1
+
+        UNION ALL
+
+        SELECT CONCAT(COALESCE(NULLIF(TRIM(c.name), ''), 'Not Set'), ', ', COALESCE(NULLIF(TRIM(p.first_name), ''), 'Not Set'), ' ', COALESCE(NULLIF(TRIM(p.second_name), ''), 'Not Set')) AS member_name
+        FROM groups g
+        JOIN group_willing_lecturers gwl ON gwl.group_id = g.id
+        JOIN willing_lecturers wl ON wl.id = gwl.willing_lecturer_id
+        JOIN people p ON p.id = wl.person_id
+        JOIN courses c ON c.id = wl.course_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'willing_lecturers'
+          AND wl.id <> 1
+
+        UNION ALL
+
+        SELECT CONCAT(COALESCE(NULLIF(TRIM(c.name), ''), 'Not Set'), ', ', COALESCE(NULLIF(TRIM(p.first_name), ''), 'Not Set'), ' ', COALESCE(NULLIF(TRIM(p.second_name), ''), 'Not Set')) AS member_name
+        FROM groups g
+        JOIN group_willing_tutors gwt ON gwt.group_id = g.id
+        JOIN willing_tutors wt ON wt.id = gwt.willing_tutor_id
+        JOIN people p ON p.id = wt.person_id
+        JOIN courses c ON c.id = wt.course_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'willing_tutors'
+          AND wt.id <> 1
+
+        UNION ALL
+
+        SELECT CONCAT(COALESCE(NULLIF(TRIM(u.name), ''), 'Not Set'), ', ', COALESCE(NULLIF(TRIM(p.first_name), ''), 'Not Set'), ' ', COALESCE(NULLIF(TRIM(p.second_name), ''), 'Not Set')) AS member_name
+        FROM groups g
+        JOIN group_users gu ON gu.group_id = g.id
+        JOIN users u ON u.id = gu.user_id
+        JOIN people p ON p.id = u.person_id
+        WHERE g.id = a0.id
+          AND g.table_name = 'users'
+          AND u.id <> 1), ',<br> ')", "")),
+
       ExtendedFilter.new(:external_filter, ExternalFilter.new("Group", # class_name
         "Groups of type", # header
         "a0.table_name = 'arg_value'", # where_str_

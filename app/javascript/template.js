@@ -910,22 +910,6 @@ function load_pages() {
   option_hash.set('GroupAttendee', 0);
 
   next_option_id = 0;
-  const group_location_page_views = [];
-  group_location_page_views.push(new PageView("group_locations", "GroupLocation", "Select Action", true,
-    [new DisplayDiv("welcome_GroupLocation", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
-    new DisplayDiv("GroupLocation_action_div", "first_menu_div", [], [], [], "")]));
-  group_location_page_views.push(new PageView("group_locations", "GroupLocation", "Remove members", true,
-    [new DisplayDiv("welcome_GroupLocation", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell", ".delete-cell"], ""),
-    new DisplayDiv("GroupLocation_action_div", "first_menu_div", [], [], [".delete_div"], "")]));
-  group_location_page_views.forEach(function (page_view) {
-    page_view.RegisterClasses(["welcome_GroupLocation"], [".help-cell", ".search_title", ".default_class"]);
-    page_view.RegisterClasses(["welcome_Group"], [".select_options", ".select-cell"]);
-  });
-  displayPageCl.set('GroupLocation', group_location_page_views);
-  add_action_items(group_location_page_views);
-  option_hash.set('GroupLocation', 0);
-
-  next_option_id = 0;
   const group_tutorial_page_views = [];
   group_tutorial_page_views.push(new PageView("group_tutorials", "GroupTutorial", "Select Action", true,
     [new DisplayDiv("welcome_GroupTutorial", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),

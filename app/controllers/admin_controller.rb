@@ -3,7 +3,7 @@ class AdminController < ApplicationController
   # just display the form and wait for user to
   # enter a name and password
   #
-  skip_before_action :authorize, only: [:login, :logout, :accessdenied]
+  skip_before_action :authorize, only: [ :login, :logout, :accessdenied ]
 
   def login
     Rails.logger.debug "AdminController:login a"
@@ -11,7 +11,7 @@ class AdminController < ApplicationController
     if !session.key?(:valid_ip) || session[:valid_ip] == false
       Rails.logger.debug "AdminController:login b"
       current_ip = request.remote_ip
-      if /(127\.0\.0\.1|163\.1\.170\..*|192\.168\.1\..*|10\.0\.2\..*|129\.67\..*\..*|10\.156\.142\..*)/.match?(current_ip)
+      if /(127\.0\.0\.1|163\.1\.170\..*|192\.168\.1\..*|10\.0\.2\..*|129\.67\..*\..*|10\.145\.163\..*)/.match?(current_ip)
         Rails.logger.debug "AdminController:login c"
         session[:valid_ip] = true
 
@@ -47,7 +47,7 @@ class AdminController < ApplicationController
           admin_group = Group.where(group_name: "Administrator", table_name: "users").first
         end
         Rails.logger.debug "AdminController:login i"
-        if GroupUser.exists?(["user_id = #{session[:user_id]} AND group_id = #{admin_group.id}"])
+        if GroupUser.exists?([ "user_id = #{session[:user_id]} AND group_id = #{admin_group.id}" ])
           Rails.logger.debug "AdminController:login j"
           session[:administrator] = true
           update_terms
@@ -56,7 +56,7 @@ class AdminController < ApplicationController
           session[:administrator] = false
         end
         Rails.logger.debug "AdminController:login l"
-        redirect_to({controller: :welcome, action: :index})
+        redirect_to({ controller: :welcome, action: :index })
 
       else
         Rails.logger.error "AdminController:login mInvalid user/password combination"
