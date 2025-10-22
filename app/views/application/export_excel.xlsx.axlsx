@@ -5,7 +5,7 @@ header_style = wb.styles.add_style(
   bg_color: "4F81BD",  # Blue header background
   fg_color: "FFFFFF",  # White text
   b: true,             # Bold
-  alignment: { horizontal: :center },
+  alignment: { horizontal: :center, vertical: :top, wrap_text: true },
   border: {
     style: :thick,
     color: "000000",   # Black borders
@@ -24,7 +24,8 @@ light_green_style = wb.styles.add_style(
     style: :thin,
     color: "808080",   # Grey borders
     edges: [:top, :bottom, :left, :right]
-  }
+  },
+  alignment: { vertical: :top, wrap_text: true }  # Top align with text wrapping
 )
 
 # White style for alternating rows with thin grey borders
@@ -34,7 +35,8 @@ white_style = wb.styles.add_style(
     style: :thin,
     color: "808080",   # Grey borders
     edges: [:top, :bottom, :left, :right]
-  }
+  },
+  alignment: { vertical: :top, wrap_text: true }  # Top align with text wrapping
 )
 
 wb.add_worksheet(name: "#{table_name} Export") do |sheet|
@@ -48,7 +50,20 @@ wb.add_worksheet(name: "#{table_name} Export") do |sheet|
     
     # Add data rows with alternating colors
     results.each_with_index do |row, index|
-      row_data = headers.map { |field| row[field] }
+      # Process row data to convert HTML tags to line breaks
+      row_data = headers.map do |field|
+        value = row[field]
+        if value.is_a?(String)
+          # Replace various HTML line break patterns with actual newlines
+          value.gsub(/<br\s*\/?>/i, "\n")
+               .gsub(/<\/p>\s*<p>/i, "\n\n")  # Convert paragraph breaks
+               .gsub(/<p>/i, "")              # Remove opening paragraph tags
+               .gsub(/<\/p>/i, "")            # Remove closing paragraph tags
+               .strip                         # Remove leading/trailing whitespace
+        else
+          value
+        end
+      end
       # Alternate between white and light green (starting with white for row 1)
       row_style = (index % 2 == 0) ? white_style : light_green_style
       sheet.add_row row_data, style: row_style

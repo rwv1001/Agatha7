@@ -361,7 +361,7 @@ function load_pages() {
   person_page_views.push(new PageView("people", "Person", "Multi-edit", true,
     [new DisplayDiv("welcome_Person", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("Person_action_div", "first_menu_div", [], [], [".multi_change_div"], "create_multi_change_table('Person')")]));
-  person_page_views.push(new PageView("people", "Person", "Create-Excel", true,
+  person_page_views.push(new PageView("people", "Person", "Create Excel", true,
     [new DisplayDiv("welcome_Person", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("Person_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));  
   person_page_views.push(new PageView("people", "Person", "Create group", true,
@@ -401,6 +401,9 @@ function load_pages() {
   institution_page_views.push(new PageView("institutions", "Institution", "Edit", true,
     [new DisplayDiv("welcome_Institution", "first_div", ["content_div"], ["two_column_div"], [".create_new_entry", ".update-cell", ".dummy-cell"], ""),
     new DisplayDiv("Institution_action_div", "first_menu_div", [], [], [], "")]));
+  institution_page_views.push(new PageView("institutions", "Institution", "Create Excel", true,
+    [new DisplayDiv("welcome_Institution", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
+    new DisplayDiv("Institution_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   institution_page_views.push(new PageView("institutions", "Institution", "Create group", true,
     [new DisplayDiv("welcome_Institution", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("Institution_action_div", "first_menu_div", [], [], [".group_div"], "")]));
@@ -432,6 +435,9 @@ function load_pages() {
   course_page_views.push(new PageView("courses", "Course", "Edit", true,
     [new DisplayDiv("welcome_Course", "first_div", ["content_div"], ["two_column_div"], [".update-cell", ".dummy-cell"], ""),
     new DisplayDiv("Course_action_div", "first_menu_div", [], [], [], "")]));
+  course_page_views.push(new PageView("courses", "Course", "Create Excel", true,
+    [new DisplayDiv("welcome_Course", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
+    new DisplayDiv("Course_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   course_page_views.push(new PageView("courses", "Course", "Create lectures", true,
     [new DisplayDiv("welcome_Course", "first_div", ["content_div"], ["two_column_div"], [".create-cell", ".suggest-cell", ".dummy-cell"], " set_action_class('Course','','create_lecture_from_course');set_suggestion_class('Lecture','Course')"),
     new DisplayDiv("Course_action_div", "first_menu_div", [], [], [".schedule_div"], "")]));
@@ -478,6 +484,9 @@ function load_pages() {
   lecture_page_views.push(new PageView("lectures", "Lecture", "Edit", true,
     [new DisplayDiv("welcome_Lecture", "first_div", ["content_div"], ["two_column_div"], [".update-cell", ".dummy-cell"], ""),
     new DisplayDiv("Lecture_action_div", "first_menu_div", [], [], [], "")]));
+  lecture_page_views.push(new PageView("lectures", "Lecture", "Create Excel", true,
+    [new DisplayDiv("welcome_Lecture", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
+    new DisplayDiv("Lecture_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   lecture_page_views.push(new PageView("lectures", "Lecture", "Multi-edit", true,
     [new DisplayDiv("welcome_Lecture", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("Lecture_action_div", "first_menu_div", [], [], [".multi_change_div"], "create_multi_change_table('Lecture')")]));
@@ -515,6 +524,9 @@ function load_pages() {
   willing_lecturer_page_views.push(new PageView("willing_lecturers", "WillingLecturer", "Edit", true,
     [new DisplayDiv("welcome_WillingLecturer", "first_div", ["content_div"], ["two_column_div"], [".update-cell", ".dummy-cell"], ""),
     new DisplayDiv("WillingLecturer_action_div", "first_menu_div", [], [], [], "")]));
+  willing_lecturer_page_views.push(new PageView("willing_lecturers", "WillingLecturer", "Create Excel", true,
+    [new DisplayDiv("welcome_WillingLecturer", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
+    new DisplayDiv("WillingLecturer_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   willing_lecturer_page_views.push(new PageView("willing_lecturers", "WillingLecturer", "Multi-edit", true,
     [new DisplayDiv("welcome_WillingLecturer", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("WillingLecturer_action_div", "first_menu_div", [], [], [".multi_change_div"], "create_multi_change_table('WillingLecturer')")]));
@@ -548,6 +560,9 @@ function load_pages() {
   attendee_page_views.push(new PageView("attendees", "Attendee", "Edit", true,
     [new DisplayDiv("welcome_Attendee", "first_div", ["content_div"], ["two_column_div"], [".update-cell", ".dummy-cell"], ""),
     new DisplayDiv("Attendee_action_div", "first_menu_div", [], [], [], "")]));
+  attendee_page_views.push(new PageView("attendees", "Attendee", "Create Excel", true,
+    [new DisplayDiv("welcome_Attendee", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
+    new DisplayDiv("Attendee_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   attendee_page_views.push(new PageView("attendees", "Attendee", "Multi-edit", true,
     [new DisplayDiv("welcome_Attendee", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("Attendee_action_div", "first_menu_div", [], [], [".multi_change_div"], "create_multi_change_table('Attendee')")]));
@@ -582,6 +597,9 @@ function load_pages() {
   location_page_views.push(new PageView("locations", "Location", "Edit", true,
     [new DisplayDiv("welcome_Location", "first_div", ["content_div"], ["two_column_div"], [".update-cell", ".dummy-cell"], ""),
     new DisplayDiv("Location_action_div", "first_menu_div", [], [], [], "")]));
+  location_page_views.push(new PageView("locations", "Location", "Create Excel", true,
+    [new DisplayDiv("welcome_Location", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
+    new DisplayDiv("Location_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   location_page_views.push(new PageView("locations", "Location", "Create group", true,
     [new DisplayDiv("welcome_Location", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("Location_action_div", "first_menu_div", [], [], [".group_div"], "")]));
@@ -613,6 +631,9 @@ function load_pages() {
   tutorial_schedule_page_views.push(new PageView("tutorial_schedules", "TutorialSchedule", "Edit", true,
     [new DisplayDiv("welcome_TutorialSchedule", "first_div", ["content_div", "content_div"], ["two_column_div"], [".update-cell", ".dummy-cell"], [".select_options", ".select-cell", ".delete-cell"], ""),
     new DisplayDiv("TutorialSchedule_action_div", "first_menu_div", [], [], [], "")]));
+  tutorial_schedule_page_views.push(new PageView("tutorial_schedules", "TutorialSchedule", "Create Excel", true,
+    [new DisplayDiv("welcome_TutorialSchedule", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
+    new DisplayDiv("TutorialSchedule_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   tutorial_schedule_page_views.push(new PageView("tutorial_schedules", "TutorialSchedule", "Multi-edit", true,
     [new DisplayDiv("welcome_TutorialSchedule", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("TutorialSchedule_action_div", "first_menu_div", [], [], [".multi_change_div"], "create_multi_change_table('TutorialSchedule')")]));
@@ -658,6 +679,9 @@ function load_pages() {
   tutorial_page_views.push(new PageView("tutorials", "Tutorial", "Edit", true,
     [new DisplayDiv("welcome_Tutorial", "first_div", ["content_div", "content_div"], ["two_column_div"], [".update-cell", ".dummy-cell"], ""),
     new DisplayDiv("Tutorial_action_div", "first_menu_div", [], [], [], "")]));
+  tutorial_page_views.push(new PageView("tutorials", "Tutorial", "Create Excel", true,
+    [new DisplayDiv("welcome_Tutorial", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
+    new DisplayDiv("Tutorial_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   tutorial_page_views.push(new PageView("tutorials", "Tutorial", "Multi-edit", true,
     [new DisplayDiv("welcome_Tutorial", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("Tutorial_action_div", "first_menu_div", [], [], [".multi_change_div"], "create_multi_change_table('Tutorial')")]));
@@ -694,6 +718,9 @@ function load_pages() {
   willing_tutor_page_views.push(new PageView("willing_tutors", "WillingTutor", "Edit", true,
     [new DisplayDiv("welcome_WillingTutor", "first_div", ["content_div"], ["two_column_div"], [".update-cell", ".dummy-cell"], ""),
     new DisplayDiv("WillingTutor_action_div", "first_menu_div", [], [], [], "")]));
+  willing_tutor_page_views.push(new PageView("willing_tutors", "WillingTutor", "Create Excel", true,
+    [new DisplayDiv("welcome_WillingTutor", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
+    new DisplayDiv("WillingTutor_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   willing_tutor_page_views.push(new PageView("willing_tutors", "WillingTutor", "Multi-edit", true,
     [new DisplayDiv("welcome_WillingTutor", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("WillingTutor_action_div", "first_menu_div", [], [], [".multi_change_div"], "create_multi_change_table('WillingTutor')")]));
@@ -727,6 +754,9 @@ function load_pages() {
   maximum_tutorial_page_views.push(new PageView("maximum_tutorials", "MaximumTutorial", "Edit", true,
     [new DisplayDiv("welcome_MaximumTutorial", "first_div", ["content_div"], ["two_column_div"], [".update-cell", ".dummy-cell"], ""),
     new DisplayDiv("MaximumTutorial_action_div", "first_menu_div", [], [], [], "")]));
+  maximum_tutorial_page_views.push(new PageView("maximum_tutorials", "MaximumTutorial", "Create Excel", true,
+    [new DisplayDiv("welcome_MaximumTutorial", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
+    new DisplayDiv("MaximumTutorial_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   maximum_tutorial_page_views.push(new PageView("maximum_tutorials", "MaximumTutorial", "Delete max tutorials", true,
     [new DisplayDiv("welcome_MaximumTutorial", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell", ".delete-cell"], ""),
     new DisplayDiv("MaximumTutorial_action_div", "first_menu_div", [], [], [".delete_div"], "")]));
@@ -747,6 +777,9 @@ function load_pages() {
   group_page_views.push(new PageView("groups", "Group", "Edit", true,
     [new DisplayDiv("welcome_Group", "first_div", ["content_div"], ["two_column_div"], [".update-cell", ".dummy-cell"], "group_unrestriction()"),
     new DisplayDiv("Group_action_div", "first_menu_div", [], [], [], "")]));
+  group_page_views.push(new PageView("groups", "Group", "Create Excel", true,
+    [new DisplayDiv("welcome_Group", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], "group_unrestriction()"),
+    new DisplayDiv("Group_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));
   group_page_views.push(new PageView("groups", "Group", "Delete groups", true,
     [new DisplayDiv("welcome_Group", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell", ".delete-cell"], "group_unrestriction()"),
     new DisplayDiv("Group_action_div", "first_menu_div", [], [], [".delete_div"], "")]));
