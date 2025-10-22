@@ -1,0 +1,18 @@
+wb = xlsx_package.workbook
+wb.add_worksheet(name: "#{table_name} Export") do |sheet|
+  
+  # Add headers (column names) if results exist
+  if results.ntuples > 0
+    headers = results.fields
+    sheet.add_row headers
+    
+    # Add data rows
+    results.each do |row|
+      row_data = headers.map { |field| row[field] }
+      sheet.add_row row_data
+    end
+  else
+    sheet.add_row ["No data found"]
+  end
+  
+end

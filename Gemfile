@@ -72,5 +72,9 @@ end
 gem "microsoft_graph_mailer", "~> 0.1.0"
 gem "oauth2", "~> 2.0"
 
+# Excel export functionality
+gem "caxlsx"
+gem "caxlsx_rails"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: [:mingw, :mswin, :x64_mingw, :jruby]

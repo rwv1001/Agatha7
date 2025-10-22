@@ -145,6 +145,7 @@ Rails.application.routes.draw do
         post :updater
         post :win_load
         post :win_unload
+        get :export_excel
       end
 
       # Add custom member actions for users
