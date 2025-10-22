@@ -1,16 +1,66 @@
 wb = xlsx_package.workbook
+
+# Define styles for formatting
+header_style = wb.styles.add_style(
+  bg_color: "4F81BD",  # Blue header background
+  fg_color: "FFFFFF",  # White text
+  b: true,             # Bold
+  alignment: { horizontal: :center },
+  border: {
+    style: :thick,
+    color: "000000",   # Black borders
+    edges: [:top, :bottom]
+  },
+  border_top: { style: :thick, color: "000000" },
+  border_bottom: { style: :thick, color: "000000" },
+  border_left: { style: :thin, color: "000000" },
+  border_right: { style: :thin, color: "000000" }
+)
+
+# Light green for alternating rows with thin grey borders
+light_green_style = wb.styles.add_style(
+  bg_color: "E8F5E8",  # Very light green
+  border: {
+    style: :thin,
+    color: "808080",   # Grey borders
+    edges: [:top, :bottom, :left, :right]
+  }
+)
+
+# White style for alternating rows with thin grey borders
+white_style = wb.styles.add_style(
+  bg_color: "FFFFFF",  # White
+  border: {
+    style: :thin,
+    color: "808080",   # Grey borders
+    edges: [:top, :bottom, :left, :right]
+  }
+)
+
 wb.add_worksheet(name: "#{table_name} Export") do |sheet|
   
   # Add headers (column names) if results exist
   if results.ntuples > 0
     headers = results.fields
-    sheet.add_row headers
     
-    # Add data rows
-    results.each do |row|
+    # Add header row with styling
+    sheet.add_row headers, style: header_style
+    
+    # Add data rows with alternating colors
+    results.each_with_index do |row, index|
       row_data = headers.map { |field| row[field] }
-      sheet.add_row row_data
+      # Alternate between white and light green (starting with white for row 1)
+      row_style = (index % 2 == 0) ? white_style : light_green_style
+      sheet.add_row row_data, style: row_style
     end
+    
+    # Freeze the top row (header row)
+    sheet.sheet_view.pane do |pane|
+      pane.top_left_cell = "A2"
+      pane.state = :frozen
+      pane.y_split = 1
+    end
+    
   else
     sheet.add_row ["No data found"]
   end

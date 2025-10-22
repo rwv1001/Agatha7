@@ -4,7 +4,7 @@
 class ApplicationController < ActionController::Base
   # before_action :validaccess, :except => :accessdenied
   # before_action :authorize, [:except => "/admin/login", :except => :accessdenied ]
-  before_action :authorize, except: [:render_404]
+  before_action :authorize, except: [:render_404, :tableize_class_name]
 
   # Add error handling for routing errors
   rescue_from ActionController::RoutingError, with: :render_404
@@ -38,44 +38,51 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  # Convert class name to table name using Rails inflection
+  def tableize_class_name
+    class_name = params[:class_name]
+    if class_name.present?
+      render json: {table_name: class_name.tableize}
+    else
+      render json: {error: "class_name parameter required"}, status: :bad_request
+    end
+  end
+
   # Export search results to Excel
   def export_excel
-    begin
-      table_name = controller_name.classify
-      Rails.logger.debug "Export Excel: Table name = #{table_name}"
-      
-      search_controller = session[:search_ctls][table_name]
-      
-      unless search_controller
-        Rails.logger.error "Export Excel: Search controller not found for #{table_name}"
-        render json: { error: "Search controller not found for #{table_name}" }, status: :not_found
-        return
-      end
-      
-      # Get the SQL without LIMIT clause - export everything from current search/filters
-      sql_string = search_controller.get_sql_string.gsub(/LIMIT\s+\d+/i, '')
-      Rails.logger.debug "Export Excel: SQL = #{sql_string}"
-      
-      # Execute the query
-      results = ActiveRecord::Base.connection.execute(sql_string)
-      Rails.logger.debug "Export Excel: Found #{results.ntuples} records"
-      
-      respond_to do |format|
-        format.xlsx do
-          render xlsx: 'export_excel', 
-                 filename: "#{table_name.underscore.pluralize}_export_#{Date.current.strftime('%Y%m%d')}.xlsx",
-                 locals: { results: results, table_name: table_name }
-        end
-        format.html do
-          redirect_to root_path, alert: "Excel export not available"
-        end
-      end
-      
-    rescue => e
-      Rails.logger.error "Export Excel Error: #{e.message}"
-      Rails.logger.error e.backtrace.join("\n")
-      render json: { error: "Export failed: #{e.message}" }, status: :internal_server_error
+    table_name = controller_name.classify
+    Rails.logger.debug "Export Excel: Table name = #{table_name}"
+
+    search_controller = session[:search_ctls][table_name]
+
+    unless search_controller
+      Rails.logger.error "Export Excel: Search controller not found for #{table_name}"
+      render json: {error: "Search controller not found for #{table_name}"}, status: :not_found
+      return
     end
+
+    # Get the SQL without LIMIT clause - export everything from current search/filters
+    sql_string = search_controller.get_sql_string.gsub(/LIMIT\s+\d+/i, "")
+    Rails.logger.debug "Export Excel: SQL = #{sql_string}"
+
+    # Execute the query
+    results = ActiveRecord::Base.connection.execute(sql_string)
+    Rails.logger.debug "Export Excel: Found #{results.ntuples} records"
+
+    respond_to do |format|
+      format.xlsx do
+        render xlsx: "export_excel",
+          filename: "#{table_name.underscore.pluralize}_export_#{Date.current.strftime("%Y%m%d")}.xlsx",
+          locals: {results: results, table_name: table_name}
+      end
+      format.html do
+        redirect_to root_path, alert: "Excel export not available"
+      end
+    end
+  rescue => e
+    Rails.logger.error "Export Excel Error: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: {error: "Export failed: #{e.message}"}, status: :internal_server_error
   end
 
   private

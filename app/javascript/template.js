@@ -180,70 +180,36 @@ function set_option(table_name, option_id_input) {
 window.set_option = set_option;
 
 function GenerateExcel(table_name) {
-  // Convert table name to controller name (pluralized)
-  let controller_name;
-  switch(table_name) {
-    case 'Person':
-      controller_name = 'people';
-      break;
-    case 'Course':
-      controller_name = 'courses';
-      break;
-    case 'Lecture':
-      controller_name = 'lectures';
-      break;
-    case 'Tutorial':
-      controller_name = 'tutorials';
-      break;
-    case 'TutorialSchedule':
-      controller_name = 'tutorial_schedules';
-      break;
-    case 'AgathaEmail':
-      controller_name = 'agatha_emails';
-      break;
-    case 'AgathaFile':
-      controller_name = 'agatha_files';
-      break;
-    case 'EmailTemplate':
-      controller_name = 'email_templates';
-      break;
-    case 'Group':
-      controller_name = 'groups';
-      break;
-    case 'Institution':
-      controller_name = 'institutions';
-      break;
-    case 'Location':
-      controller_name = 'locations';
-      break;
-    case 'User':
-      controller_name = 'users';
-      break;
-    case 'WillingTutor':
-      controller_name = 'willing_tutors';
-      break;
-    case 'WillingLecturer':
-      controller_name = 'willing_lecturers';
-      break;
-    case 'MaximumTutorial':
-      controller_name = 'maximum_tutorials';
-      break;
-    default:
-      // Fallback to simple pluralization
-      controller_name = table_name.toLowerCase() + 's';
-  }
-  
-  // Build the download URL
-  const url = `/${controller_name}/export_excel.xlsx`;
-  
-  // Create a temporary link to trigger download
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${table_name}_export.xlsx`;
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  console.log("Generating Excel for table:", table_name);
+
+  // Use Rails tableize endpoint to get the correct controller name
+  fetch(`/tableize_class_name?class_name=${encodeURIComponent(table_name)}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        console.error("Error getting table name:", data.error);
+        return;
+      }
+      
+      const controllerName = data.table_name;
+      console.log("Using controller name:", controllerName);
+      
+      // Generate the Excel export URL
+      const exportUrl = `/${controllerName}/export_excel.xlsx`;
+      console.log("Excel export URL:", exportUrl);
+      
+      // Create a temporary link to trigger the download
+      const link = document.createElement("a");
+      link.href = exportUrl;
+      link.download = `${table_name}_export.xlsx`;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    })
+    .catch(error => {
+      console.error("Error generating Excel export:", error);
+    });
   
   return false;
 }

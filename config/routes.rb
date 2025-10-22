@@ -118,6 +118,9 @@ Rails.application.routes.draw do
   post "session_test/increment", to: "session_test#increment"
   post "session_test/reset", to: "session_test#reset"
 
+  # Utility routes
+  get "tableize_class_name", to: "application#tableize_class_name"
+
   # RESTful resources with custom actions
   %w[
     attendees
