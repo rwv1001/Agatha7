@@ -610,6 +610,58 @@ function on_create(id) {
     }
     const action_type = document.getElementById('action_type').value;
     switch (action_type) {
+        case 'create_transcripts': {
+            console.log('=== CREATE TRANSCRIPTS CASE TRIGGERED ===');
+            const class_name = document.getElementById('action_class').value;
+            console.log('class_name:', class_name);
+            const search_results_div = document.getElementById('search_results_' + class_name);
+            console.log('search_results_div:', search_results_div);
+            const checks = search_results_div.querySelectorAll('.check');
+            console.log('checks found:', checks.length);
+            
+            // Collect the IDs
+            const ids = [];
+            checks.forEach(function(check) {
+                const new_elt = check.cloneNode(true);
+                new_elt.removeAttribute('id');
+                specific_div.appendChild(new_elt);
+                ids.push(check.value);
+            });
+            
+            console.log('Transcript IDs collected:', ids);
+            
+            // After form submission, trigger the download
+            const actionForm = document.getElementById('action_form');
+            console.log('action_form element:', actionForm);
+            if (actionForm) {
+                console.log('Adding ajax:success listener to form');
+                actionForm.addEventListener('ajax:success', function(event) {
+                    console.log('=== AJAX:SUCCESS FIRED ===');
+                    console.log('Event:', event);
+                    console.log('Transcript action success, triggering download');
+                    console.log('window.GenerateTranscripts type:', typeof window.GenerateTranscripts);
+                    // Trigger download after successful response
+                    setTimeout(function() {
+                        console.log('=== SETTIMEOUT CALLBACK EXECUTING ===');
+                        console.log('About to call GenerateTranscripts()');
+                        if (typeof window.GenerateTranscripts === 'function') {
+                            window.GenerateTranscripts();
+                        } else {
+                            console.error('ERROR: GenerateTranscripts is not a function!');
+                            console.log('window.GenerateTranscripts:', window.GenerateTranscripts);
+                        }
+                    }, 500);
+                }, { once: true });
+                console.log('ajax:success listener added successfully');
+            } else {
+                console.error('ERROR: action_form element not found!');
+            }
+            
+            console.log('About to call createNewEntryParams');
+            createNewEntryParams('Person','action_form');
+            console.log('createNewEntryParams called');
+            break;
+        }
         case 'create_lecture_from_course': {
             const class_name = document.getElementById('action_class').value;
             const lecturer_elt = document.getElementById('edit_Lecture_person_id');

@@ -76,5 +76,14 @@ gem "oauth2", "~> 2.0"
 gem "caxlsx"
 gem "caxlsx_rails"
 
+# Word document generation
+gem "caracal"
+gem "docx"
+gem "sablon"
+gem "mime-types"
+
+# ZIP file generation
+gem "rubyzip"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: [:mingw, :mswin, :x64_mingw, :jruby]

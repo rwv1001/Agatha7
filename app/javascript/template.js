@@ -179,6 +179,8 @@ function set_option(table_name, option_id_input) {
 }
 window.set_option = set_option;
 
+
+
 function GenerateExcel(table_name) {
   console.log("Generating Excel for table:", table_name);
 
@@ -215,6 +217,25 @@ function GenerateExcel(table_name) {
 }
 window.GenerateExcel = GenerateExcel;
 
+function GenerateTranscripts(ids) {
+  console.log("Generating transcripts with IDs:", ids);
+  
+  // Generate the transcript download URL with IDs as parameter
+  const downloadUrl = `/welcome/download_transcripts?ids=${encodeURIComponent(ids)}`;
+  console.log("Transcript download URL:", downloadUrl);
+  
+  // Create a temporary link to trigger the download
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  return false;
+}
+window.GenerateTranscripts = GenerateTranscripts;
+
 const all_invisible_classes = [
   ".add_attendee_options",
   ".add-cell",
@@ -245,6 +266,7 @@ const all_invisible_classes = [
   ".group_div",
   ".multi_change_div",
   ".generate_excel_div",
+  ".generate_transcript_div",
   ".tutorial_no_div",
   ".max_tutorials_div",
   ".remove-cell",
@@ -364,6 +386,9 @@ function load_pages() {
   person_page_views.push(new PageView("people", "Person", "Create Excel", true,
     [new DisplayDiv("welcome_Person", "first_div", ["content_div"], ["two_column_div"], [".dummy-cell"], ""),
     new DisplayDiv("Person_action_div", "first_menu_div", [], [], [".generate_excel_div"], "")]));  
+  person_page_views.push(new PageView("people", "Person", "Create Transcript", true,
+    [new DisplayDiv("welcome_Person", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
+    new DisplayDiv("Person_action_div", "first_menu_div", [], [], [".generate_transcript_div"], "set_action_class('Person','','create_transcripts')")])); 
   person_page_views.push(new PageView("people", "Person", "Create group", true,
     [new DisplayDiv("welcome_Person", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("Person_action_div", "first_menu_div", [], [], [".group_div"], "")]));

@@ -193,6 +193,10 @@
           <% onclick_str = "GenerateExcel('#{table_name}');return false;" %>
           <input type="button" id=<%="generate_excel_button_#{table_name}"%> value='<%="Create Excel" %>' class="list_button"  onclick= '<%="#{onclick_str }"%>'  >
         </div>
+        <div class="generate_transcript_div" align="center" style=" position:relative; left:-3.5px">
+          <% onclick_str = "on_create('0');return false;" %>
+          <input type="button" id=<%="generate_transcript_button"%> value='<%="Create Transcript" %>' class="list_button"  onclick= '<%="#{onclick_str }"%>'  >
+        </div>
         <% if table_name == "Tutorial" %>
           <% onclick_str = "\"UpdateCollectionStatus();return false\"" %>
           <div class="collection_div">

@@ -1,5 +1,6 @@
 # require 'ruby-prof'
 require "ostruct"
+require "sablon"
 
 class Dependency
   attr_reader :dependent_table
@@ -1280,7 +1281,8 @@ class WelcomeController < ApplicationController
       update_collection_status(ids, new_status)
     when "multi_update"
       multi_update(ids, class_name)
-
+    when "create_transcripts"
+      create_transcripts(ids)
     when "group"
 
       group_name = params[:new_group_name]
@@ -1348,6 +1350,378 @@ class WelcomeController < ApplicationController
     end
     Rails.logger.flush
   end
+
+  def create_transcripts(ids)
+    Rails.logger.debug "create_transcripts called with ids: #{ids.inspect}"
+    error_str = ""
+    success_str = ""
+    ids_param = ""
+
+    if ids.nil? || ids.length == 0
+      error_str = "You have not selected any people. "
+    else
+      # Encode IDs as URL parameter
+      ids_param = ids.join(",")
+      success_str = "Transcripts prepared for #{ids.length} #{"person".pluralize(ids.length)}. Download starting..."
+    end
+
+    if error_str.length > 0
+      alert_str = error_str
+      alert_status = "error"
+    else
+      alert_str = success_str
+      alert_status = "success"
+    end
+
+    respond_to do |format|
+      format.js {
+        render js: "
+          if (window.showNotification) {
+            window.showNotification('#{alert_str.gsub("'", "\\\\'")}', '#{alert_status}');
+          } else {
+            alert('#{alert_str.gsub("'", "\\\\'")}');
+          }
+          #{"setTimeout(function() { if (typeof window.GenerateTranscripts === 'function') { window.GenerateTranscripts('#{ids_param}'); } }, 500);" if alert_status == "success"}
+          unwait();
+        "
+      }
+    end
+  end
+
+  def download_transcripts
+    require "caracal"
+    require "zip"
+
+    Rails.logger.debug "download_transcripts called"
+    Rails.logger.debug "Params: #{params.inspect}"
+
+    # Get IDs from URL parameter
+    ids_param = params[:ids]
+
+    if ids_param.blank?
+      render plain: "No transcripts to download. Please select people first.", status: :bad_request
+      return
+    end
+
+    ids = ids_param.split(",").map(&:to_i)
+    Rails.logger.debug "Person IDs from params: #{ids.inspect}"
+
+    begin
+      people = Person.where(id: ids)
+      Rails.logger.debug "Found #{people.length} people for transcripts"
+
+      if people.length == 1
+        # Single person - download just the Word document
+        person = people.first
+        filename = generate_transcript_filename(person)
+
+        Rails.logger.debug "Generating single transcript for: #{filename}"
+        docx_data = generate_transcript_docx(person)
+
+        send_data docx_data,
+          filename: filename,
+          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          disposition: "attachment"
+      else
+        # Multiple people - create ZIP file
+        Rails.logger.debug "Generating ZIP file for #{people.length} transcripts"
+        zip_data = create_transcripts_zip(people)
+
+        send_data zip_data,
+          filename: "Transcripts_#{Time.current.strftime("%Y%m%d_%H%M%S")}.zip",
+          type: "application/zip",
+          disposition: "attachment"
+      end
+
+      # Clear the session data after successful download
+      session.delete(:transcript_ids)
+    rescue => e
+      Rails.logger.error "Error in download_transcripts: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      render plain: "Error creating transcripts: #{e.message}", status: :internal_server_error
+    end
+  end
+
+  private
+
+  def generate_transcript_filename(person)
+    # Build filename: "First name Second name Postnomials - Transcript.docx"
+    name_parts = []
+    name_parts << person.first_name if person.first_name.present?
+    name_parts << person.second_name if person.second_name.present?
+    name_parts << person.postnomials if person.postnomials.present?
+
+    base_name = name_parts.join(" ")
+    base_name = "Person_#{person.id}" if base_name.blank?
+
+    "#{base_name} - Transcript.docx"
+  end
+
+  def generate_transcript_docx(person)
+    # Build the name for the content
+    name_parts = []
+    name_parts << person.first_name if person.first_name.present?
+    name_parts << person.second_name if person.second_name.present?
+    name_parts << person.postnomials if person.postnomials.present?
+
+    full_name = name_parts.join(" ")
+    full_name = "Person #{person.id}" if full_name.blank?
+
+    # Get course IDs that belong to groups containing "Philosophy" in the name
+    philosophy_course_ids = GroupCourse
+      .joins(:group)
+      .where("groups.group_name LIKE ?", "%Philosophy%")
+      .pluck(:course_id)
+      .uniq
+
+    # Get course IDs that belong to groups containing "Language" in the name
+    language_course_ids = GroupCourse
+      .joins(:group)
+      .where("groups.group_name LIKE ?", "%Language%")
+      .pluck(:course_id)
+      .uniq
+
+    # Get course IDs for other subject groups
+    scripture_course_ids = GroupCourse
+      .joins(:group)
+      .where("groups.group_name LIKE ?", "%Scripture%")
+      .pluck(:course_id)
+      .uniq
+
+    church_history_course_ids = GroupCourse
+      .joins(:group)
+      .where("groups.group_name LIKE ?", "%Church%")
+      .pluck(:course_id)
+      .uniq
+
+    positive_theology_course_ids = GroupCourse
+      .joins(:group)
+      .where("groups.group_name LIKE ?", "%Positive%")
+      .pluck(:course_id)
+      .uniq
+
+    liturgy_course_ids = GroupCourse
+      .joins(:group)
+      .where("groups.group_name LIKE ?", "%Liturgy%")
+      .pluck(:course_id)
+      .uniq
+
+    dogmatic_course_ids = GroupCourse
+      .joins(:group)
+      .where("groups.group_name LIKE ?", "%Dogmatic%")
+      .pluck(:course_id)
+      .uniq
+
+    moral_course_ids = GroupCourse
+      .joins(:group)
+      .where("groups.group_name LIKE ?", "%Moral%")
+      .pluck(:course_id)
+      .uniq
+
+    # Get attendee records with course and term information
+    # Filter to only include courses in Philosophy groups
+    attendees = Attendee.where(person_id: person.id)
+      .joins(lecture: :course)
+      .where(lectures: { course_id: philosophy_course_ids })
+      .includes(lecture: [:course, {term: :term_name}])
+
+    # Map to an array of hashes for the table rows
+    attendee_rows = attendees.map do |attendee|
+      {
+        course_name: attendee.lecture.course.name,
+        term_name: attendee.lecture.term.term_name.name,
+        term_year: attendee.lecture.term.year.to_s,
+        mark: attendee.mark,
+        term_id: attendee.lecture.term_id # Keep for sorting
+      }
+    end
+
+    # Get tutorial records with course and term information
+    # Filter to only include courses in Philosophy groups
+    tutorials = Tutorial.where(person_id: person.id)
+      .joins(tutorial_schedule: :course)
+      .where(tutorial_schedules: { course_id: philosophy_course_ids })
+      .includes(tutorial_schedule: [:course, {term: :term_name}])
+
+    # Map to an array of hashes for the table rows
+    tutorial_rows = tutorials.map do |tutorial|
+      {
+        course_name: tutorial.tutorial_schedule.course.name,
+        term_name: tutorial.tutorial_schedule.term.term_name.name,
+        term_year: tutorial.tutorial_schedule.term.year.to_s,
+        mark: tutorial.mark,
+        term_id: tutorial.tutorial_schedule.term_id # Keep for sorting
+      }
+    end
+
+    # Merge attendees and tutorials, then sort by term_id first, then by course name
+    combined_rows = (attendee_rows + tutorial_rows).sort_by do |row|
+      [row[:term_id], row[:course_name]]
+    end
+
+    # Remove term_id from the final output (not needed in template)
+    combined_rows.each { |row| row.delete(:term_id) }
+
+    # Get Language courses (attendees only)
+    language_attendees = Attendee.where(person_id: person.id)
+      .joins(lecture: :course)
+      .where(lectures: { course_id: language_course_ids })
+      .includes(lecture: [:course, {term: :term_name}])
+
+    # Map to an array of hashes for the language table rows
+    language_attendee_rows = language_attendees.map do |attendee|
+      {
+        course_name: attendee.lecture.course.name,
+        term_name: attendee.lecture.term.term_name.name,
+        term_year: attendee.lecture.term.year.to_s,
+        mark: attendee.mark,
+        term_id: attendee.lecture.term_id # Keep for sorting
+      }
+    end
+
+    # Get Language tutorials
+    language_tutorials = Tutorial.where(person_id: person.id)
+      .joins(tutorial_schedule: :course)
+      .where(tutorial_schedules: { course_id: language_course_ids })
+      .includes(tutorial_schedule: [:course, {term: :term_name}])
+
+    # Map to an array of hashes for the language table rows
+    language_tutorial_rows = language_tutorials.map do |tutorial|
+      {
+        course_name: tutorial.tutorial_schedule.course.name,
+        term_name: tutorial.tutorial_schedule.term.term_name.name,
+        term_year: tutorial.tutorial_schedule.term.year.to_s,
+        mark: tutorial.mark,
+        term_id: tutorial.tutorial_schedule.term_id # Keep for sorting
+      }
+    end
+
+    # Merge language attendees and tutorials, then sort by term_id first, then by course name
+    language_rows = (language_attendee_rows + language_tutorial_rows).sort_by do |row|
+      [row[:term_id], row[:course_name]]
+    end
+
+    # Remove term_id from the final output (not needed in template)
+    language_rows.each { |row| row.delete(:term_id) }
+
+    # Helper method to generate rows for a given set of course IDs
+    def generate_course_rows(person_id, course_ids)
+      # Get attendees
+      attendees = Attendee.where(person_id: person_id)
+        .joins(lecture: :course)
+        .where(lectures: { course_id: course_ids })
+        .includes(lecture: [:course, {term: :term_name}])
+
+      attendee_rows = attendees.map do |attendee|
+        {
+          course_name: attendee.lecture.course.name,
+          term_name: attendee.lecture.term.term_name.name,
+          term_year: attendee.lecture.term.year.to_s,
+          mark: attendee.mark,
+          term_id: attendee.lecture.term_id
+        }
+      end
+
+      # Get tutorials
+      tutorials = Tutorial.where(person_id: person_id)
+        .joins(tutorial_schedule: :course)
+        .where(tutorial_schedules: { course_id: course_ids })
+        .includes(tutorial_schedule: [:course, {term: :term_name}])
+
+      tutorial_rows = tutorials.map do |tutorial|
+        {
+          course_name: tutorial.tutorial_schedule.course.name,
+          term_name: tutorial.tutorial_schedule.term.term_name.name,
+          term_year: tutorial.tutorial_schedule.term.year.to_s,
+          mark: tutorial.mark,
+          term_id: tutorial.tutorial_schedule.term_id
+        }
+      end
+
+      # Merge and sort
+      combined = (attendee_rows + tutorial_rows).sort_by do |row|
+        [row[:term_id], row[:course_name]]
+      end
+
+      # Remove term_id
+      combined.each { |row| row.delete(:term_id) }
+
+      combined
+    end
+
+    # Generate rows for all the additional subject tables
+    scripture_rows = generate_course_rows(person.id, scripture_course_ids)
+    church_history_rows = generate_course_rows(person.id, church_history_course_ids)
+    positive_theology_rows = generate_course_rows(person.id, positive_theology_course_ids)
+    liturgy_rows = generate_course_rows(person.id, liturgy_course_ids)
+    dogmatic_rows = generate_course_rows(person.id, dogmatic_course_ids)
+    moral_rows = generate_course_rows(person.id, moral_course_ids)
+
+    Rails.logger.info "🔍 TRANSCRIPT DEBUG - Person #{person.id}: #{full_name}"
+    Rails.logger.info "🔍 TRANSCRIPT DEBUG - Attendee count: #{attendee_rows.length}"
+    Rails.logger.info "🔍 TRANSCRIPT DEBUG - Tutorial count: #{tutorial_rows.length}"
+    Rails.logger.info "🔍 TRANSCRIPT DEBUG - Combined count: #{combined_rows.length}"
+    Rails.logger.info "🔍 TRANSCRIPT DEBUG - First row: #{combined_rows.first.inspect}" if combined_rows.any?
+
+    # Get the template path
+    template_path = Rails.root.join("app", "assets", "template.docx")
+
+    # Create a temporary file for output
+    tempfile = Tempfile.new(["transcript", ".docx"], binmode: true)
+
+    begin
+      # Use Sablon to render the template with data
+      template = Sablon.template(template_path)
+
+      # Context data for the template
+      # Template uses «=full_name» and «=FOOTER_NAME» merge fields
+      # For tables: use «#attendee_rows», «#language_rows», «#scripture_rows», etc. loops in template
+      context = {
+        full_name: full_name,
+        FOOTER_NAME: full_name,
+        person_id: person.id,
+        attendee_rows: combined_rows,
+        language_rows: language_rows,
+        scripture_rows: scripture_rows,
+        church_history_rows: church_history_rows,
+        positive_theology_rows: positive_theology_rows,
+        liturgy_rows: liturgy_rows,
+        dogmatic_rows: dogmatic_rows,
+        moral_rows: moral_rows
+      }
+
+      Rails.logger.info "🔍 TRANSCRIPT DEBUG - Context: #{context.inspect}"
+
+      # Render to the temp file
+      template.render_to_file(tempfile.path, context)
+
+      # Read the file content
+      tempfile.rewind
+      content = tempfile.read
+
+      content
+    ensure
+      tempfile.close
+      tempfile.unlink
+    end
+  end
+
+  def create_transcripts_zip(people)
+    # Create a temporary ZIP file in memory
+    zip_stream = Zip::OutputStream.write_buffer do |zip|
+      people.each do |person|
+        filename = generate_transcript_filename(person)
+        docx_data = generate_transcript_docx(person)
+
+        zip.put_next_entry(filename)
+        zip.write(docx_data)
+      end
+    end
+
+    zip_stream.string
+  end
+
+  public
 
   def multi_update(ids, class_name)
     error_str = ""

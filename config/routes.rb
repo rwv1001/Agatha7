@@ -91,6 +91,9 @@ Rails.application.routes.draw do
     to: "welcome#select_action",
     via: [:get, :post]
 
+  get "welcome/download_transcripts",
+    to: "welcome#download_transcripts"
+
   match "accessdenied", to: "admin#accessdenied", via: [:get, :post]
 
   # Static‐style welcome pages
@@ -149,6 +152,7 @@ Rails.application.routes.draw do
         post :win_load
         post :win_unload
         get :export_excel
+        get :download_transcripts
       end
 
       # Add custom member actions for users
