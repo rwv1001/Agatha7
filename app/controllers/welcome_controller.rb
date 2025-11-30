@@ -1283,6 +1283,12 @@ class WelcomeController < ApplicationController
       multi_update(ids, class_name)
     when "create_transcripts"
       create_transcripts(ids)
+    when "create_exam_results"
+      Rails.logger.debug "🔍 CREATE EXAM RESULTS - All params: #{params.inspect}"
+      Rails.logger.debug "🔍 CREATE EXAM RESULTS - exam_results_term_id param: #{params[:exam_results_term_id].inspect}"
+      exam_results_term_id = params[:exam_results_term_id].to_i
+      Rails.logger.debug "🔍 CREATE EXAM RESULTS - exam_results_term_id after to_i: #{exam_results_term_id}"
+      create_exam_results(ids, exam_results_term_id)
     when "group"
 
       group_name = params[:new_group_name]
@@ -1388,6 +1394,47 @@ class WelcomeController < ApplicationController
     end
   end
 
+  def create_exam_results(ids, exam_results_term_id)
+    Rails.logger.debug "create_exam_results called with ids: #{ids.inspect}, term_id: #{exam_results_term_id}"
+    error_str = ""
+    success_str = ""
+    ids_param = ""
+
+    if ids.nil? || ids.length == 0
+      error_str = "You have not selected any people. "
+    elsif exam_results_term_id.nil? || exam_results_term_id == 0
+      error_str = "You have not selected a term. "
+    else
+      # Store term_id in session for the download action
+      session[:exam_results_term_id] = exam_results_term_id
+      # Encode IDs as URL parameter
+      ids_param = ids.join(",")
+      success_str = "Exam results prepared for #{ids.length} #{"person".pluralize(ids.length)}. Download starting..."
+    end
+
+    if error_str.length > 0
+      alert_str = error_str
+      alert_status = "error"
+    else
+      alert_str = success_str
+      alert_status = "success"
+    end
+
+    respond_to do |format|
+      format.js {
+        render js: "
+          if (window.showNotification) {
+            window.showNotification('#{alert_str.gsub("'", "\\\\'")}', '#{alert_status}');
+          } else {
+            alert('#{alert_str.gsub("'", "\\\\'")}');
+          }
+          #{"setTimeout(function() { if (typeof window.GenerateExamResults === 'function') { window.GenerateExamResults('#{ids_param}'); } }, 500);" if alert_status == "success"}
+          unwait();
+        "
+      }
+    end
+  end
+
   def download_transcripts
     require "caracal"
     require "zip"
@@ -1439,6 +1486,70 @@ class WelcomeController < ApplicationController
       Rails.logger.error "Error in download_transcripts: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
       render plain: "Error creating transcripts: #{e.message}", status: :internal_server_error
+    end
+  end
+
+  def download_exam_results
+    require "caracal"
+    require "zip"
+
+    Rails.logger.debug "download_exam_results called"
+    Rails.logger.debug "Params: #{params.inspect}"
+
+    # Get IDs from URL parameter
+    ids_param = params[:ids]
+
+    if ids_param.blank?
+      render plain: "No exam results to download. Please select people first.", status: :bad_request
+      return
+    end
+
+    ids = ids_param.split(",").map(&:to_i)
+    Rails.logger.debug "Person IDs from params: #{ids.inspect}"
+
+    # Get term_id from URL parameter (sent by GenerateExamResults function)
+    term_id = params[:exam_results_term_id].to_i
+    Rails.logger.debug "exam_results_term_id from params: #{term_id}"
+    
+    if term_id.nil? || term_id == 0
+      render plain: "No term selected for exam results.", status: :bad_request
+      return
+    end
+
+    begin
+      people = Person.where(id: ids)
+      Rails.logger.debug "Found #{people.length} people for exam results (term_id: #{term_id})"
+
+      if people.length == 1
+        # Single person - download just the Word document
+        person = people.first
+        filename = generate_exam_results_filename(person)
+
+        Rails.logger.debug "Generating single exam results for: #{filename}"
+        docx_data = generate_exam_results_docx(person, term_id)
+
+        send_data docx_data,
+          filename: filename,
+          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          disposition: "attachment"
+      else
+        # Multiple people - create ZIP file
+        Rails.logger.debug "Generating ZIP file for #{people.length} exam results"
+        zip_data = create_exam_results_zip(people, term_id)
+
+        send_data zip_data,
+          filename: "Exam_Results_#{Time.current.strftime("%Y%m%d_%H%M%S")}.zip",
+          type: "application/zip",
+          disposition: "attachment"
+      end
+
+      # Clear the session data after successful download
+      session.delete(:exam_results_ids)
+      session.delete(:exam_results_term_id)
+    rescue => e
+      Rails.logger.error "Error in download_exam_results: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      render plain: "Error creating exam results: #{e.message}", status: :internal_server_error
     end
   end
 
@@ -1526,6 +1637,7 @@ class WelcomeController < ApplicationController
       .includes(lecture: [:course, {term: :term_name}])
 
     # Map to an array of hashes for the table rows
+    # Filter out entries without marks
     attendee_rows = attendees.map do |attendee|
       {
         course_name: attendee.lecture.course.name,
@@ -1534,7 +1646,7 @@ class WelcomeController < ApplicationController
         mark: attendee.mark,
         term_id: attendee.lecture.term_id # Keep for sorting
       }
-    end
+    end.reject { |row| row[:mark].blank? }
 
     # Get tutorial records with course and term information
     # Filter to only include courses in Philosophy groups
@@ -1544,6 +1656,7 @@ class WelcomeController < ApplicationController
       .includes(tutorial_schedule: [:course, {term: :term_name}])
 
     # Map to an array of hashes for the table rows
+    # Filter out entries without marks
     tutorial_rows = tutorials.map do |tutorial|
       {
         course_name: tutorial.tutorial_schedule.course.name,
@@ -1552,7 +1665,7 @@ class WelcomeController < ApplicationController
         mark: tutorial.mark,
         term_id: tutorial.tutorial_schedule.term_id # Keep for sorting
       }
-    end
+    end.reject { |row| row[:mark].blank? }
 
     # Merge attendees and tutorials, then sort by term_id first, then by course name
     combined_rows = (attendee_rows + tutorial_rows).sort_by do |row|
@@ -1569,6 +1682,7 @@ class WelcomeController < ApplicationController
       .includes(lecture: [:course, {term: :term_name}])
 
     # Map to an array of hashes for the language table rows
+    # Filter out entries without marks
     language_attendee_rows = language_attendees.map do |attendee|
       {
         course_name: attendee.lecture.course.name,
@@ -1577,7 +1691,7 @@ class WelcomeController < ApplicationController
         mark: attendee.mark,
         term_id: attendee.lecture.term_id # Keep for sorting
       }
-    end
+    end.reject { |row| row[:mark].blank? }
 
     # Get Language tutorials
     language_tutorials = Tutorial.where(person_id: person.id)
@@ -1586,6 +1700,7 @@ class WelcomeController < ApplicationController
       .includes(tutorial_schedule: [:course, {term: :term_name}])
 
     # Map to an array of hashes for the language table rows
+    # Filter out entries without marks
     language_tutorial_rows = language_tutorials.map do |tutorial|
       {
         course_name: tutorial.tutorial_schedule.course.name,
@@ -1594,7 +1709,7 @@ class WelcomeController < ApplicationController
         mark: tutorial.mark,
         term_id: tutorial.tutorial_schedule.term_id # Keep for sorting
       }
-    end
+    end.reject { |row| row[:mark].blank? }
 
     # Merge language attendees and tutorials, then sort by term_id first, then by course name
     language_rows = (language_attendee_rows + language_tutorial_rows).sort_by do |row|
@@ -1620,7 +1735,7 @@ class WelcomeController < ApplicationController
           mark: attendee.mark,
           term_id: attendee.lecture.term_id
         }
-      end
+      end.reject { |row| row[:mark].blank? }
 
       # Get tutorials
       tutorials = Tutorial.where(person_id: person_id)
@@ -1636,7 +1751,7 @@ class WelcomeController < ApplicationController
           mark: tutorial.mark,
           term_id: tutorial.tutorial_schedule.term_id
         }
-      end
+      end.reject { |row| row[:mark].blank? }
 
       # Merge and sort
       combined = (attendee_rows + tutorial_rows).sort_by do |row|
@@ -1712,6 +1827,128 @@ class WelcomeController < ApplicationController
       people.each do |person|
         filename = generate_transcript_filename(person)
         docx_data = generate_transcript_docx(person)
+
+        zip.put_next_entry(filename)
+        zip.write(docx_data)
+      end
+    end
+
+    zip_stream.string
+  end
+
+  def generate_exam_results_filename(person)
+    # Build filename: "First name Second name Postnomials - Exam Results.docx"
+    name_parts = []
+    name_parts << person.first_name if person.first_name.present?
+    name_parts << person.second_name if person.second_name.present?
+    name_parts << person.postnomials if person.postnomials.present?
+
+    base_name = name_parts.join(" ")
+    base_name = "Person_#{person.id}" if base_name.blank?
+
+    "#{base_name} - Exam Results.docx"
+  end
+
+  def generate_exam_results_docx(person, term_id)
+    # Build the name for the content
+    name_parts = []
+    name_parts << person.first_name if person.first_name.present?
+    name_parts << person.second_name if person.second_name.present?
+    name_parts << person.postnomials if person.postnomials.present?
+
+    full_name = name_parts.join(" ")
+    full_name = "Person #{person.id}" if full_name.blank?
+    full_name = full_name.upcase # Capitalize the full name
+
+    # Get the term information for merge fields
+    term = Term.includes(:term_name).find(term_id)
+    term_name = term.term_name.name
+    term_year = term.year.to_s
+
+    # Get attendee records for this person in the specified term
+    attendees = Attendee.where(person_id: person.id)
+      .joins(:lecture)
+      .where(lectures: {term_id: term_id})
+      .includes(lecture: :course)
+
+    # Map to an array of hashes with just course_name and mark
+    # Filter out entries without marks
+    attendee_rows = attendees.map do |attendee|
+      {
+        course_name: attendee.lecture.course.name,
+        mark: attendee.mark
+      }
+    end.reject { |row| row[:mark].blank? }
+
+    # Get tutorial records for this person in the specified term
+    tutorials = Tutorial.where(person_id: person.id)
+      .joins(:tutorial_schedule)
+      .where(tutorial_schedules: {term_id: term_id})
+      .includes(tutorial_schedule: :course)
+
+    # Map to an array of hashes with just course_name and mark
+    # Filter out entries without marks
+    tutorial_rows = tutorials.map do |tutorial|
+      {
+        course_name: tutorial.tutorial_schedule.course.name,
+        mark: tutorial.mark
+      }
+    end.reject { |row| row[:mark].blank? }
+
+    # Merge attendees and tutorials, then sort by course name
+    exam_result_rows = (attendee_rows + tutorial_rows).sort_by do |row|
+      row[:course_name]
+    end
+
+    Rails.logger.info "🔍 EXAM RESULTS DEBUG - Person #{person.id}: #{full_name}"
+    Rails.logger.info "🔍 EXAM RESULTS DEBUG - Term: #{term_name} #{term_year} (ID: #{term_id})"
+    Rails.logger.info "🔍 EXAM RESULTS DEBUG - Attendee count: #{attendee_rows.length}"
+    Rails.logger.info "🔍 EXAM RESULTS DEBUG - Tutorial count: #{tutorial_rows.length}"
+    Rails.logger.info "🔍 EXAM RESULTS DEBUG - Total exam_result_rows count: #{exam_result_rows.length}"
+    Rails.logger.info "🔍 EXAM RESULTS DEBUG - First row: #{exam_result_rows.first.inspect}" if exam_result_rows.any?
+
+    # Get the template path
+    template_path = Rails.root.join("app", "assets", "exam_results_template.docx")
+
+    # Create a temporary file for output
+    tempfile = Tempfile.new(["exam_results", ".docx"], binmode: true)
+
+    begin
+      # Use Sablon to render the template with data
+      template = Sablon.template(template_path)
+
+      # Context data for the template
+      # Template uses «=full_name», «=term_name», «=term_year» merge fields
+      # For the table: use «#exam_result_rows» loop in template
+      context = {
+        full_name: full_name,
+        FOOTER_NAME: full_name,
+        person_id: person.id,
+        term_name: term_name,
+        term_year: term_year,
+        exam_result_rows: exam_result_rows
+      }
+
+      # Render to the temp file
+      template.render_to_file(tempfile.path, context)
+
+      # Read the file content
+      tempfile.rewind
+      content = tempfile.read
+
+      content
+    ensure
+      tempfile.close
+      tempfile.unlink
+    end
+  end
+
+  def create_exam_results_zip(people, term_id)
+    # Create a temporary ZIP file in memory
+    zip_stream = Zip::OutputStream.write_buffer do |zip|
+      people.each do |person|
+        filename = generate_exam_results_filename(person)
+        docx_data = generate_exam_results_docx(person, term_id)
 
         zip.put_next_entry(filename)
         zip.write(docx_data)

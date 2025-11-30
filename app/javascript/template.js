@@ -236,6 +236,34 @@ function GenerateTranscripts(ids) {
 }
 window.GenerateTranscripts = GenerateTranscripts;
 
+function GenerateExamResults(ids) {
+  console.log("Generating exam results with IDs:", ids);
+  
+  // Get the term_id from the exam_results_term_id select element
+  const exam_results_term_elt = document.getElementById('exam_results_term_id');
+  const exam_results_term_id = exam_results_term_elt ? exam_results_term_elt.value : null;
+  
+  console.log("GenerateExamResults - exam_results_term_id:", exam_results_term_id);
+  
+  // Generate the exam results download URL with IDs and term_id as parameters
+  let downloadUrl = `/welcome/download_exam_results?ids=${encodeURIComponent(ids)}`;
+  if (exam_results_term_id) {
+    downloadUrl += `&exam_results_term_id=${encodeURIComponent(exam_results_term_id)}`;
+  }
+  console.log("Exam results download URL:", downloadUrl);
+  
+  // Create a temporary link to trigger the download
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  return false;
+}
+window.GenerateExamResults = GenerateExamResults;
+
 const all_invisible_classes = [
   ".add_attendee_options",
   ".add-cell",
@@ -267,6 +295,7 @@ const all_invisible_classes = [
   ".multi_change_div",
   ".generate_excel_div",
   ".generate_transcript_div",
+  ".generate_exam_results_div",
   ".tutorial_no_div",
   ".max_tutorials_div",
   ".remove-cell",
@@ -389,6 +418,9 @@ function load_pages() {
   person_page_views.push(new PageView("people", "Person", "Create Transcript", true,
     [new DisplayDiv("welcome_Person", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("Person_action_div", "first_menu_div", [], [], [".generate_transcript_div"], "set_action_class('Person','','create_transcripts')")])); 
+  person_page_views.push(new PageView("people", "Person", "Create Exam Results", true,
+    [new DisplayDiv("welcome_Person", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
+    new DisplayDiv("Person_action_div", "first_menu_div", [], [], [".generate_exam_results_div"], "set_action_class('Person','','create_exam_results')")])); 
   person_page_views.push(new PageView("people", "Person", "Create group", true,
     [new DisplayDiv("welcome_Person", "first_div", ["content_div"], ["two_column_div"], [".select_options", ".select-cell"], ""),
     new DisplayDiv("Person_action_div", "first_menu_div", [], [], [".group_div"], "")]));

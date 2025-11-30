@@ -197,6 +197,25 @@
           <% onclick_str = "on_create('0');return false;" %>
           <input type="button" id=<%="generate_transcript_button"%> value='<%="Create Transcript" %>' class="list_button"  onclick= '<%="#{onclick_str }"%>'  >
         </div>
+        <div class="generate_exam_results_div" style=" position:relative; left:-3.5px">
+          <div align="left">
+            <% onclick_str = "on_create('1');return false;" %>
+            <input type="button" id=<%="generate_exam_results_button"%> value='<%="Create Exam Results" %>' class="list_button"  onclick= '<%="#{onclick_str }"%>'  >
+            <%  possible_terms = search_controller.filter_controller.GetOptions("term","Term", session[:current_term], true,false) %>
+          </div>
+          <div align="left">
+            <label>Term</label><br>
+            <select style="width: 115px"  name = "term_id"  id= "exam_results_term_id">
+              <% for p in possible_terms -%>
+                <% if p.id == session[:current_term] %>
+                  <option selected value = "<%=p.id %>"><%= p.name %></option>
+                <% else %>
+                  <option  value = "<%= p.id %>"><%= p.name %></option>
+                <% end  %>
+              <% end -%>
+            </select>
+          </div>
+        </div>
         <% if table_name == "Tutorial" %>
           <% onclick_str = "\"UpdateCollectionStatus();return false\"" %>
           <div class="collection_div">

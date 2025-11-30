@@ -645,7 +645,7 @@ function on_create(id) {
                         console.log('=== SETTIMEOUT CALLBACK EXECUTING ===');
                         console.log('About to call GenerateTranscripts()');
                         if (typeof window.GenerateTranscripts === 'function') {
-                            window.GenerateTranscripts();
+                            window.GenerateTranscripts(ids.join(','));
                         } else {
                             console.error('ERROR: GenerateTranscripts is not a function!');
                             console.log('window.GenerateTranscripts:', window.GenerateTranscripts);
@@ -657,9 +657,65 @@ function on_create(id) {
                 console.error('ERROR: action_form element not found!');
             }
             
-            console.log('About to call createNewEntryParams');
-            createNewEntryParams('Person','action_form');
-            console.log('createNewEntryParams called');
+            console.log('collected ids:', ids);
+            break;
+        }
+        case 'create_exam_results': {
+            console.log('=== CREATE EXAM RESULTS CASE TRIGGERED ===');
+            const class_name = document.getElementById('action_class').value;
+            console.log('class_name:', class_name);
+            const search_results_div = document.getElementById('search_results_' + class_name);
+            console.log('search_results_div:', search_results_div);
+            const checks = search_results_div.querySelectorAll('.check');
+            console.log('checks found:', checks.length);
+            const exam_results_term_elt = document.getElementById('exam_results_term_id');
+            console.log('exam_results_term_elt:', exam_results_term_elt);
+            const exam_results_term_id = exam_results_term_elt.value;
+            console.log('exam_results_term_id value:', exam_results_term_id);
+
+            const exam_results_term = document.createElement('input');
+            exam_results_term.type = 'hidden';
+            exam_results_term.name = 'exam_results_term_id';
+            exam_results_term.value = exam_results_term_id;
+            console.log('Created input element with name:', exam_results_term.name, 'value:', exam_results_term.value);
+            
+            // Collect the IDs
+            const ids = [];
+            checks.forEach(function(check) {
+                const new_elt = check.cloneNode(true);
+                new_elt.removeAttribute('id');
+                specific_div.appendChild(new_elt);
+                ids.push(check.value);
+            });
+            specific_div.appendChild(exam_results_term);
+            
+            console.log('Exam Results IDs collected:', ids);
+            
+            // After form submission, trigger the download
+            const actionForm = document.getElementById('action_form');
+            console.log('action_form element:', actionForm);
+            if (actionForm) {
+                console.log('Adding ajax:success listener to form');
+                actionForm.addEventListener('ajax:success', function(event) {
+                    console.log('=== AJAX:SUCCESS FIRED ===');
+                    console.log('window.GenerateExamResults type:', typeof window.GenerateExamResults);
+                    
+                    setTimeout(function() {
+                        console.log('Timeout function executing...');
+                        console.log('About to call GenerateExamResults()');
+                        if (typeof window.GenerateExamResults === 'function') {
+                            window.GenerateExamResults(ids.join(','));
+                        } else {
+                            console.error('ERROR: GenerateExamResults is not a function!');
+                            console.log('window.GenerateExamResults:', window.GenerateExamResults);
+                        }
+                    }, 500);
+                }, { once: true });
+            } else {
+                console.error('ERROR: action_form not found!');
+            }
+            
+            console.log('collected ids:', ids);
             break;
         }
         case 'create_lecture_from_course': {

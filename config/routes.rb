@@ -94,6 +94,9 @@ Rails.application.routes.draw do
   get "welcome/download_transcripts",
     to: "welcome#download_transcripts"
 
+  get "welcome/download_exam_results",
+    to: "welcome#download_exam_results"
+
   match "accessdenied", to: "admin#accessdenied", via: [:get, :post]
 
   # Static‐style welcome pages
