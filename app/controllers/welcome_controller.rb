@@ -1522,7 +1522,7 @@ class WelcomeController < ApplicationController
     # Filter to only include courses in Philosophy groups
     attendees = Attendee.where(person_id: person.id)
       .joins(lecture: :course)
-      .where(lectures: { course_id: philosophy_course_ids })
+      .where(lectures: {course_id: philosophy_course_ids})
       .includes(lecture: [:course, {term: :term_name}])
 
     # Map to an array of hashes for the table rows
@@ -1540,7 +1540,7 @@ class WelcomeController < ApplicationController
     # Filter to only include courses in Philosophy groups
     tutorials = Tutorial.where(person_id: person.id)
       .joins(tutorial_schedule: :course)
-      .where(tutorial_schedules: { course_id: philosophy_course_ids })
+      .where(tutorial_schedules: {course_id: philosophy_course_ids})
       .includes(tutorial_schedule: [:course, {term: :term_name}])
 
     # Map to an array of hashes for the table rows
@@ -1565,7 +1565,7 @@ class WelcomeController < ApplicationController
     # Get Language courses (attendees only)
     language_attendees = Attendee.where(person_id: person.id)
       .joins(lecture: :course)
-      .where(lectures: { course_id: language_course_ids })
+      .where(lectures: {course_id: language_course_ids})
       .includes(lecture: [:course, {term: :term_name}])
 
     # Map to an array of hashes for the language table rows
@@ -1582,7 +1582,7 @@ class WelcomeController < ApplicationController
     # Get Language tutorials
     language_tutorials = Tutorial.where(person_id: person.id)
       .joins(tutorial_schedule: :course)
-      .where(tutorial_schedules: { course_id: language_course_ids })
+      .where(tutorial_schedules: {course_id: language_course_ids})
       .includes(tutorial_schedule: [:course, {term: :term_name}])
 
     # Map to an array of hashes for the language table rows
@@ -1609,7 +1609,7 @@ class WelcomeController < ApplicationController
       # Get attendees
       attendees = Attendee.where(person_id: person_id)
         .joins(lecture: :course)
-        .where(lectures: { course_id: course_ids })
+        .where(lectures: {course_id: course_ids})
         .includes(lecture: [:course, {term: :term_name}])
 
       attendee_rows = attendees.map do |attendee|
@@ -1625,7 +1625,7 @@ class WelcomeController < ApplicationController
       # Get tutorials
       tutorials = Tutorial.where(person_id: person_id)
         .joins(tutorial_schedule: :course)
-        .where(tutorial_schedules: { course_id: course_ids })
+        .where(tutorial_schedules: {course_id: course_ids})
         .includes(tutorial_schedule: [:course, {term: :term_name}])
 
       tutorial_rows = tutorials.map do |tutorial|
