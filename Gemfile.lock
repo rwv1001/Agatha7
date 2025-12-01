@@ -432,7 +432,7 @@ DEPENDENCIES
   caxlsx_rails
   docx
   importmap-rails
-  jbuilder (~> 2.5)
+  jbuilder (~> 2.14)
   listen (>= 3.0.5, < 3.2)
   microsoft_graph_mailer (~> 0.1.0)
   mime-types
